@@ -9,13 +9,14 @@ import {
   Settings,
   HelpCircle,
   Users,
-  Swords,
-  Heart,
   BookOpen,
+  LogIn,
+  LogOut,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/components/providers/auth-provider";
 
 interface NavItem {
   icon: React.ComponentType<{ className?: string }>;
