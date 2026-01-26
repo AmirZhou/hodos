@@ -248,9 +248,13 @@ function GameHeader({
 function GameModeRouter({
   showFrench,
   characterId,
+  onSaveEntry,
+  savedEntries,
 }: {
   showFrench: boolean;
   characterId?: Id<"characters">;
+  onSaveEntry: (entry: GameLogEntry) => void;
+  savedEntries: Set<string>;
 }) {
   const { gameState } = useGame();
 
