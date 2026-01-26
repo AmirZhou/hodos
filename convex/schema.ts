@@ -494,4 +494,36 @@ export default defineSchema({
     isComplete: v.boolean(),
     createdAt: v.number(),
   }).index("by_campaign", ["campaignId"]),
+
+  // ============ FRENCH LEARNING NOTEBOOK ============
+  notebook: defineTable({
+    userId: v.id("users"),
+    frenchText: v.string(),
+    englishText: v.string(),
+    grammarNotes: v.array(v.string()),
+    vocabularyItems: v.array(
+      v.object({
+        word: v.string(),
+        translation: v.string(),
+        partOfSpeech: v.string(),
+      })
+    ),
+    usageNote: v.string(),
+    gameLogId: v.id("gameLog"),
+    campaignId: v.id("campaigns"),
+    sceneSummary: v.string(),
+    tags: v.array(v.string()),
+    userNotes: v.string(),
+    // Spaced repetition fields (SM-2 algorithm)
+    nextReviewDate: v.number(),
+    intervalDays: v.number(),
+    easeFactor: v.number(),
+    reviewCount: v.number(),
+    lastReviewDate: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_and_review", ["userId", "nextReviewDate"])
+    .index("by_game_log", ["gameLogId"])
+    .index("by_campaign", ["campaignId"]),
 });
