@@ -1,0 +1,138 @@
+"use client";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { ArrowLeft, Sparkles, Globe, Users } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+
+export default function NewCampaignPage() {
+  const [campaignName, setCampaignName] = useState("");
+  const [setting, setSetting] = useState<string | null>(null);
+
+  const settings = [
+    {
+      id: "quebec-modern",
+      name: "Modern Quebec",
+      nameFr: "Québec moderne",
+      description: "Contemporary Montreal with hidden supernatural elements",
+      icon: Globe,
+    },
+    {
+      id: "quebec-fantasy",
+      name: "Quebec Fantasy",
+      nameFr: "Québec fantastique",
+      description: "A magical version of Quebec with full fantasy elements",
+      icon: Sparkles,
+    },
+    {
+      id: "custom",
+      name: "Custom Setting",
+      nameFr: "Paramètre personnalisé",
+      description: "Define your own world with the AI DM",
+      icon: Users,
+    },
+  ];
+
+  return (
+    <div className="min-h-screen">
+      {/* Header */}
+      <header className="border-b border-[var(--border)] bg-[var(--background-secondary)]">
+        <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6 lg:px-8">
+          <Link
+            href="/campaigns"
+            className="inline-flex items-center gap-2 text-sm text-[var(--foreground-secondary)] hover:text-[var(--foreground)] mb-4"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to campaigns
+          </Link>
+          <h1 className="text-2xl font-bold">Create Campaign</h1>
+          <p className="text-sm text-[var(--foreground-secondary)]">
+            Start a new adventure
+          </p>
+        </div>
+      </header>
+
+      {/* Form */}
+      <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="space-y-8">
+          {/* Campaign Name */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Campaign Name</label>
+            <Input
+              placeholder="Enter a name for your campaign..."
+              value={campaignName}
+              onChange={(e) => setCampaignName(e.target.value)}
+            />
+          </div>
+
+          {/* Setting Selection */}
+          <div className="space-y-4">
+            <label className="text-sm font-medium">Choose a Setting</label>
+            <div className="grid gap-4">
+              {settings.map((s) => (
+                <Card
+                  key={s.id}
+                  className={`cursor-pointer transition-colors ${
+                    setting === s.id
+                      ? "border-[var(--accent-gold)] bg-[var(--accent-gold)]/5"
+                      : "hover:border-[var(--border-hover)]"
+                  }`}
+                  onClick={() => setSetting(s.id)}
+                >
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`h-10 w-10 rounded-lg flex items-center justify-center ${
+                          setting === s.id
+                            ? "bg-[var(--accent-gold)] text-[var(--background)]"
+                            : "bg-[var(--background-tertiary)]"
+                        }`}
+                      >
+                        <s.icon className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-base">{s.name}</CardTitle>
+                        <p className="text-xs text-[var(--accent-blue)]">{s.nameFr}</p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <CardDescription>{s.description}</CardDescription>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          {/* Content Warning */}
+          <Card className="bg-[var(--accent-red)]/10 border-[var(--accent-red)]/30">
+            <CardContent className="py-4">
+              <p className="text-sm">
+                <strong>Adult Content Notice:</strong> This game contains explicit content
+                including violence, romance, and BDSM themes. By creating this campaign,
+                you confirm you are 18+ years old.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Submit */}
+          <div className="flex gap-4">
+            <Link href="/campaigns" className="flex-1">
+              <Button variant="outline" className="w-full">
+                Cancel
+              </Button>
+            </Link>
+            <Button
+              className="flex-1"
+              disabled={!campaignName || !setting}
+            >
+              Create Campaign
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
