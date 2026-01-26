@@ -283,7 +283,13 @@ function GameModeRouter({
   }
 
   // Exploration / Dialogue mode (default)
-  return <ExplorationView showFrench={showFrench} />;
+  return (
+    <ExplorationView
+      showFrench={showFrench}
+      onSaveEntry={onSaveEntry}
+      savedEntries={savedEntries}
+    />
+  );
 }
 
 function ExplorationView({ showFrench }: { showFrench: boolean }) {
