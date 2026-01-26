@@ -58,10 +58,21 @@ export const getForCharacter = query({
     characterId: v.id("characters"),
   },
   handler: async (ctx, args) => {
-    return await ctx.db
+    const relationships = await ctx.db
       .query("relationships")
       .withIndex("by_character", (q) => q.eq("characterId", args.characterId))
       .collect();
+
+    // Enrich with NPC data
+    return Promise.all(
+      relationships.map(async (rel) => {
+        const npc = await ctx.db.get(rel.npcId);
+        return {
+          ...rel,
+          npc: npc ? { name: npc.name, portrait: npc.portrait } : null,
+        };
+      })
+    );
   },
 });
 
