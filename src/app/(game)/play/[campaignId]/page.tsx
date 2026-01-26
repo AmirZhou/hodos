@@ -436,9 +436,13 @@ interface GameLogEntry {
 function LogEntry({
   entry,
   showFrench,
+  onSave,
+  isSaved,
 }: {
   entry: GameLogEntry;
   showFrench: boolean;
+  onSave?: () => void;
+  isSaved?: boolean;
 }) {
   const isPlayerAction = entry.actorType === "character";
   const isRoll = entry.type === "roll";
