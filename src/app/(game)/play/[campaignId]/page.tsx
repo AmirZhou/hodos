@@ -155,6 +155,8 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
         <GameModeRouter
           showFrench={showFrench}
           characterId={currentCharacter?._id}
+          onSaveEntry={handleSaveEntry}
+          savedEntries={savedEntries}
         />
       </div>
 
