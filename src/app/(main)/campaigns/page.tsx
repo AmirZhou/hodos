@@ -135,20 +135,24 @@ export default function CampaignsPage() {
   );
 }
 
-// Component for when there are campaigns
+// Component for campaign cards
 function CampaignCard({
   name,
+  status,
   lastPlayed,
   playerCount,
   characterName,
   imageUrl,
 }: {
   name: string;
+  status: string;
   lastPlayed: string;
   playerCount: number;
   characterName?: string;
   imageUrl?: string;
 }) {
+  const statusLabel = status === "lobby" ? "Lobby" : status === "active" ? "Active" : status === "paused" ? "Paused" : status;
+
   return (
     <Card className="overflow-hidden cursor-pointer hover:border-[var(--accent-gold)] transition-colors">
       {/* Campaign Image */}
@@ -161,8 +165,8 @@ function CampaignCard({
           </div>
         )}
         {/* Status badge */}
-        <div className="absolute top-2 right-2 px-2 py-1 rounded bg-[var(--background)]/80 text-xs">
-          Active
+        <div className={`absolute top-2 right-2 px-2 py-1 rounded text-xs text-white ${getStatusColor(status)}`}>
+          {statusLabel}
         </div>
       </div>
 
