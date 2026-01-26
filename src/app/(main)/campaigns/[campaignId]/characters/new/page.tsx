@@ -196,14 +196,29 @@ export default function NewCharacterPage() {
   };
 
   const handleCreate = async () => {
+    if (!user?._id) {
+      setError("You must be logged in to create a character");
+      return;
+    }
+
     setIsCreating(true);
+    setError(null);
+
     try {
-      // TODO: Get actual userId from auth
-      // For now, we'll need to implement this properly with Clerk
-      console.log("Creating character:", character);
+      await createCharacter({
+        userId: user._id,
+        campaignId,
+        name: character.name,
+        pronouns: character.pronouns,
+        abilities: character.abilities,
+        class: character.class || undefined,
+        background: character.background || undefined,
+        intimacyProfile: character.intimacyProfile,
+      });
       router.push(`/campaigns/${campaignId}`);
-    } catch (error) {
-      console.error("Failed to create character:", error);
+    } catch (err) {
+      console.error("Failed to create character:", err);
+      setError("Failed to create character. Please try again.");
     } finally {
       setIsCreating(false);
     }
