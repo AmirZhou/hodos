@@ -545,14 +545,61 @@ export const endCombat = mutation({
 
 // ============ ACTIONS (AI) ============
 
+// Internal query for NPC turn (avoids circular reference in action)
+export const _getCombatStateInternal = query({
+  args: { sessionId: v.id("gameSessions") },
+  handler: async (ctx, args) => {
+    const session = await ctx.db.get(args.sessionId);
+    if (!session || !session.combat) return null;
+
+    const enrichedCombatants = await Promise.all(
+      session.combat.combatants.map(async (combatant) => {
+        if (combatant.entityType === "character") {
+          const character = await ctx.db.get(combatant.entityId as Id<"characters">);
+          return {
+            ...combatant,
+            entity: character ? { hp: character.hp, ac: character.ac } : null,
+          };
+        } else {
+          const npc = await ctx.db.get(combatant.entityId as Id<"npcs">);
+          return { ...combatant, entity: npc ? { hp: npc.hp, ac: npc.ac } : null };
+        }
+      })
+    );
+    return { ...session.combat, combatants: enrichedCombatants };
+  },
+});
+
+export const _getCurrentTurnInternal = query({
+  args: { sessionId: v.id("gameSessions") },
+  handler: async (ctx, args) => {
+    const session = await ctx.db.get(args.sessionId);
+    if (!session || !session.combat) return null;
+    const combat = session.combat;
+    const now = Date.now();
+    const timeRemaining = Math.max(0, combat.turnTimeoutMs - (now - combat.lastTurnStartedAt));
+    return {
+      combatant: combat.combatants[combat.currentTurnIndex],
+      isTimedOut: timeRemaining === 0,
+    };
+  },
+});
+
+interface CombatantWithEntity {
+  entityId: string;
+  entityType: "character" | "npc";
+  position: { x: number; y: number };
+  entity: { hp: number; ac: number } | null;
+  index: number;
+}
+
 export const executeNpcTurn = action({
   args: {
     sessionId: v.id("gameSessions"),
     npcIndex: v.number(),
   },
-  handler: async (ctx, args) => {
-    // Get current combat state
-    const combatState = await ctx.runQuery(api.game.combat.getCombatState, {
+  handler: async (ctx, args): Promise<{ action: string; target?: number; roll?: number; damage?: number; hit?: boolean; destination?: { x: number; y: number } }> => {
+    const combatState = await ctx.runQuery(api.game.combat._getCombatStateInternal, {
       sessionId: args.sessionId,
     });
 
@@ -566,67 +613,48 @@ export const executeNpcTurn = action({
     }
 
     // Simple AI: Find nearest enemy and attack, or move toward them
-    const enemies = combatState.combatants
-      .map((c, i) => ({ ...c, index: i }))
-      .filter((c) => c.entityType === "character" && c.entity && c.entity.hp > 0);
+    const enemies: CombatantWithEntity[] = combatState.combatants
+      .map((c: typeof combatState.combatants[0], i: number) => ({ ...c, index: i }))
+      .filter((c: CombatantWithEntity) => c.entityType === "character" && c.entity && c.entity.hp > 0);
 
     if (enemies.length === 0) {
-      // No valid targets, end turn
       await ctx.runMutation(api.game.combat.endTurn, { sessionId: args.sessionId });
       return { action: "no_targets" };
     }
 
     // Find nearest enemy
-    const nearest = enemies.reduce((closest, enemy) => {
-      const distToEnemy = Math.abs(enemy.position.x - npc.position.x) +
-                         Math.abs(enemy.position.y - npc.position.y);
-      const distToClosest = Math.abs(closest.position.x - npc.position.x) +
-                           Math.abs(closest.position.y - npc.position.y);
+    const nearest = enemies.reduce((closest: CombatantWithEntity, enemy: CombatantWithEntity) => {
+      const distToEnemy = Math.abs(enemy.position.x - npc.position.x) + Math.abs(enemy.position.y - npc.position.y);
+      const distToClosest = Math.abs(closest.position.x - npc.position.x) + Math.abs(closest.position.y - npc.position.y);
       return distToEnemy < distToClosest ? enemy : closest;
     });
 
-    const distance = Math.abs(nearest.position.x - npc.position.x) +
-                    Math.abs(nearest.position.y - npc.position.y);
+    const distance = Math.abs(nearest.position.x - npc.position.x) + Math.abs(nearest.position.y - npc.position.y);
 
-    // If in melee range (adjacent), attack
     if (distance <= 1) {
-      // Roll attack (simplified)
-      const attackRoll = Math.floor(Math.random() * 20) + 1 + 5; // d20 + 5
+      const attackRoll = Math.floor(Math.random() * 20) + 1 + 5;
       const targetAc = nearest.entity?.ac ?? 10;
 
       if (attackRoll >= targetAc) {
-        // Hit - roll damage
-        const damage = Math.floor(Math.random() * 8) + 1 + 3; // 1d8 + 3
+        const damage = Math.floor(Math.random() * 8) + 1 + 3;
         await ctx.runMutation(api.game.combat.executeAction, {
           sessionId: args.sessionId,
-          action: {
-            type: "attack",
-            targetIndex: nearest.index,
-            roll: attackRoll,
-            damage,
-          },
+          action: { type: "attack", targetIndex: nearest.index, roll: attackRoll, damage },
         });
         await ctx.runMutation(api.game.combat.endTurn, { sessionId: args.sessionId });
         return { action: "attack", target: nearest.index, roll: attackRoll, damage, hit: true };
       } else {
-        // Miss
         await ctx.runMutation(api.game.combat.executeAction, {
           sessionId: args.sessionId,
-          action: {
-            type: "attack",
-            targetIndex: nearest.index,
-            roll: attackRoll,
-            damage: 0,
-          },
+          action: { type: "attack", targetIndex: nearest.index, roll: attackRoll, damage: 0 },
         });
         await ctx.runMutation(api.game.combat.endTurn, { sessionId: args.sessionId });
         return { action: "attack", target: nearest.index, roll: attackRoll, hit: false };
       }
     } else {
-      // Move toward nearest enemy
       const dx = Math.sign(nearest.position.x - npc.position.x);
       const dy = Math.sign(nearest.position.y - npc.position.y);
-      const movementCells = Math.min(6, distance - 1); // Move up to 30ft (6 cells)
+      const movementCells = Math.min(6, distance - 1);
 
       const path = [npc.position];
       let currentX = npc.position.x;
@@ -656,8 +684,8 @@ export const handleTurnTimeout = action({
   args: {
     sessionId: v.id("gameSessions"),
   },
-  handler: async (ctx, args) => {
-    const currentTurn = await ctx.runQuery(api.game.combat.getCurrentTurn, {
+  handler: async (ctx, args): Promise<{ skipped: boolean; combatant?: string; action?: string }> => {
+    const currentTurn = await ctx.runQuery(api.game.combat._getCurrentTurnInternal, {
       sessionId: args.sessionId,
     });
 
@@ -665,23 +693,13 @@ export const handleTurnTimeout = action({
       return { skipped: false };
     }
 
-    // Auto-dodge on timeout
     await ctx.runMutation(api.game.combat.executeAction, {
       sessionId: args.sessionId,
-      action: {
-        type: "dodge",
-        description: "Auto-dodge due to timeout",
-      },
+      action: { type: "dodge", description: "Auto-dodge due to timeout" },
     });
 
-    await ctx.runMutation(api.game.combat.endTurn, {
-      sessionId: args.sessionId,
-    });
+    await ctx.runMutation(api.game.combat.endTurn, { sessionId: args.sessionId });
 
-    return {
-      skipped: true,
-      combatant: currentTurn.combatant.entityId,
-      action: "auto_dodge"
-    };
+    return { skipped: true, combatant: currentTurn.combatant.entityId, action: "auto_dodge" };
   },
 });
