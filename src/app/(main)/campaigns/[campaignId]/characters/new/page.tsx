@@ -158,6 +158,22 @@ export default function NewCharacterPage() {
   };
 
   const assignAbility = (ability: AbilityName, value: number) => {
+    // If clicking on already-assigned value for this ability, deselect it
+    if (abilityAssignments[ability] === value) {
+      setAbilityAssignments((prev) => ({
+        ...prev,
+        [ability]: null,
+      }));
+      setCharacter((prev) => ({
+        ...prev,
+        abilities: {
+          ...prev.abilities,
+          [ability]: 10, // Reset to default
+        },
+      }));
+      return;
+    }
+
     // Find if this value is already assigned elsewhere
     const existingAbility = Object.entries(abilityAssignments).find(
       ([_, v]) => v === value
