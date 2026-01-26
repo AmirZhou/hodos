@@ -5,6 +5,17 @@ import { Id, Doc } from "../_generated/dataModel";
 import * as dice from "../dice";
 
 // Type definitions for the response
+interface LinguisticAnalysis {
+  grammar: string[];
+  vocabulary: Array<{
+    word: string;
+    translation: string;
+    partOfSpeech: string;
+    usage?: string;
+  }>;
+  usageNotes: string[];
+}
+
 interface DMResponse {
   narration?: { en: string; fr: string };
   npcDialogue?: Array<{ name: string; en: string; fr: string }>;
@@ -23,6 +34,7 @@ interface DMResponse {
     relationshipChanges?: Record<string, { affinity?: number; trust?: number; attraction?: number }>;
   };
   vocabularyHighlights?: Array<{ word: string; translation: string; note?: string }>;
+  linguisticAnalysis?: LinguisticAnalysis;
 }
 
 interface RollResult {
