@@ -546,7 +546,13 @@ function LogEntry({
       {showFrench && entry.linguisticAnalysis && (
         <AnalysisPanel
           analysis={entry.linguisticAnalysis}
+          onSave={!isSaved ? onSave : undefined}
         />
+      )}
+      {isSaved && showFrench && entry.linguisticAnalysis && (
+        <div className="mt-1 text-xs text-[var(--accent-green)]">
+          ✓ Saved to notebook
+        </div>
       )}
 
       {/* Action buttons (on hover) */}
