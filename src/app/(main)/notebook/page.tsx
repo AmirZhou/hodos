@@ -113,7 +113,7 @@ export default function NotebookPage() {
         </div>
 
         {/* Review Button */}
-        {entries.length > 0 && (
+        {entries && entries.length > 0 && (
           <Link href="/notebook/review">
             <Button className="gap-2">
               <GraduationCap className="h-4 w-4" />
