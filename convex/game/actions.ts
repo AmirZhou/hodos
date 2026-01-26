@@ -228,7 +228,7 @@ async function executeAction(
       contentFr: rollNarration.response.narration?.fr || "",
       actorType: "dm",
       annotations: {
-        vocabulary: rollNarration.response.vocabularyHighlights || [],
+        vocabulary: sanitizeVocabulary(rollNarration.response.vocabularyHighlights),
       },
     });
 
@@ -244,7 +244,7 @@ async function executeAction(
         contentFr: response.narration.fr,
         actorType: "dm",
         annotations: {
-          vocabulary: response.vocabularyHighlights || [],
+          vocabulary: sanitizeVocabulary(response.vocabularyHighlights),
         },
       });
     }
