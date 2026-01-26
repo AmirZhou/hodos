@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { sanitizeVocabulary } from "./actions";
+import { sanitizeVocabulary, sanitizeLinguisticAnalysis } from "./actions";
 
 describe("sanitizeVocabulary", () => {
   it("strips extra fields from vocabulary items", () => {
