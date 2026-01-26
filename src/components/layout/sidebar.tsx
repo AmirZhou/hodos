@@ -107,17 +107,36 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* User section placeholder */}
+      {/* User section */}
       <div className="border-t border-[var(--border)] p-3">
-        <div className="flex items-center gap-3 rounded-lg px-3 py-2">
-          <div className="h-8 w-8 rounded-full bg-[var(--accent-purple)] flex items-center justify-center text-white text-sm font-medium">
-            U
+        {isAuthenticated && user ? (
+          <div className="space-y-2">
+            <div className="flex items-center gap-3 rounded-lg px-3 py-2">
+              <div className="h-8 w-8 rounded-full bg-[var(--accent-purple)] flex items-center justify-center text-white text-sm font-medium">
+                {user.displayName?.[0]?.toUpperCase() || user.email[0].toUpperCase()}
+              </div>
+              <div className="hidden lg:block flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{user.displayName || "User"}</p>
+                <p className="text-xs text-[var(--foreground-muted)] truncate">{user.email}</p>
+              </div>
+            </div>
+            <button
+              onClick={logout}
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium w-full text-[var(--foreground-secondary)] hover:bg-[var(--background-tertiary)] hover:text-[var(--foreground)] transition-colors"
+            >
+              <LogOut className="h-5 w-5 flex-shrink-0" />
+              <span className="hidden lg:block">Sign out</span>
+            </button>
           </div>
-          <div className="hidden lg:block">
-            <p className="text-sm font-medium">Guest</p>
-            <p className="text-xs text-[var(--foreground-muted)]">Sign in</p>
-          </div>
-        </div>
+        ) : (
+          <Link
+            href="/login"
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-[var(--foreground-secondary)] hover:bg-[var(--background-tertiary)] hover:text-[var(--foreground)] transition-colors"
+          >
+            <LogIn className="h-5 w-5 flex-shrink-0" />
+            <span className="hidden lg:block">Sign in</span>
+          </Link>
+        )}
       </div>
     </aside>
   );
