@@ -378,3 +378,93 @@ export const updateLocationGrid = mutation({
     return { updated: true };
   },
 });
+
+// Seed test locations for a campaign (development helper)
+export const seedTestLocations = mutation({
+  args: {
+    campaignId: v.id("campaigns"),
+  },
+  handler: async (ctx, args) => {
+    // Check if locations already exist
+    const existingLocations = await ctx.db
+      .query("locations")
+      .withIndex("by_campaign", (q) => q.eq("campaignId", args.campaignId))
+      .collect();
+
+    if (existingLocations.length > 0) {
+      return { message: "Locations already exist", count: existingLocations.length };
+    }
+
+    // Create a starting dungeon location
+    const dungeonCellId = await ctx.db.insert("locations", {
+      campaignId: args.campaignId,
+      name: "Stone Chamber",
+      nameFr: "Chambre de Pierre",
+      description: "A dimly lit stone chamber with rough-hewn walls. A single iron door stands on the far side.",
+      descriptionFr: "Une chambre de pierre faiblement éclairée avec des murs grossièrement taillés. Une porte en fer se dresse de l'autre côté.",
+      connectedTo: [],
+      isDiscovered: true,
+      properties: { type: "dungeon", lighting: "dim" },
+    });
+
+    // Create a corridor
+    const corridorId = await ctx.db.insert("locations", {
+      campaignId: args.campaignId,
+      name: "Dark Corridor",
+      nameFr: "Couloir Sombre",
+      description: "A long, narrow corridor stretching into darkness. Torches flicker on the walls at irregular intervals.",
+      descriptionFr: "Un long couloir étroit s'étendant dans l'obscurité. Des torches vacillent sur les murs à intervalles irréguliers.",
+      connectedTo: [dungeonCellId],
+      isDiscovered: false,
+      properties: { type: "dungeon", lighting: "dim" },
+    });
+
+    // Create a guard room with combat grid
+    const guardRoomId = await ctx.db.insert("locations", {
+      campaignId: args.campaignId,
+      name: "Guard Room",
+      nameFr: "Salle de Garde",
+      description: "A larger room with weapon racks and a table. Signs of recent activity.",
+      descriptionFr: "Une salle plus grande avec des râteliers d'armes et une table. Des signes d'activité récente.",
+      connectedTo: [corridorId],
+      isDiscovered: false,
+      properties: { type: "dungeon", lighting: "normal" },
+      gridData: {
+        width: 6,
+        height: 6,
+        cells: Array.from({ length: 36 }, (_, i) => ({
+          x: i % 6,
+          y: Math.floor(i / 6),
+          terrain: "normal" as const,
+        })),
+      },
+    });
+
+    // Create an exit to the surface
+    const forestEdgeId = await ctx.db.insert("locations", {
+      campaignId: args.campaignId,
+      name: "Forest Edge",
+      nameFr: "Orée de la Forêt",
+      description: "Daylight filters through the trees. The dungeon entrance lies behind you.",
+      descriptionFr: "La lumière du jour filtre à travers les arbres. L'entrée du donjon se trouve derrière vous.",
+      connectedTo: [guardRoomId],
+      isDiscovered: false,
+      properties: { type: "outdoor", lighting: "bright" },
+    });
+
+    // Update connections bidirectionally
+    await ctx.db.patch(dungeonCellId, { connectedTo: [corridorId] });
+    await ctx.db.patch(corridorId, { connectedTo: [dungeonCellId, guardRoomId] });
+    await ctx.db.patch(guardRoomId, { connectedTo: [corridorId, forestEdgeId] });
+
+    return {
+      message: "Test locations created",
+      locations: [
+        { id: dungeonCellId, name: "Stone Chamber" },
+        { id: corridorId, name: "Dark Corridor" },
+        { id: guardRoomId, name: "Guard Room" },
+        { id: forestEdgeId, name: "Forest Edge" },
+      ],
+    };
+  },
+});
