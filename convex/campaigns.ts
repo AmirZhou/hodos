@@ -88,9 +88,9 @@ export const list = query({
 });
 
 export const get = query({
-  args: { campaignId: v.id("campaigns") },
+  args: { id: v.id("campaigns") },
   handler: async (ctx, args) => {
-    const campaign = await ctx.db.get(args.campaignId);
+    const campaign = await ctx.db.get(args.id);
     if (!campaign) return null;
 
     const members = await ctx.db
