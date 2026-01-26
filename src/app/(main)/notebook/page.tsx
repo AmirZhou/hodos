@@ -178,7 +178,7 @@ export default function NotebookPage() {
       )}
 
       {/* No results from search */}
-      {entries.length > 0 && filteredEntries.length === 0 && (
+      {entries && entries.length > 0 && filteredEntries.length === 0 && (
         <div className="text-center py-8 text-[var(--foreground-secondary)]">
           No entries match your search.
         </div>
