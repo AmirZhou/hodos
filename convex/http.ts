@@ -1,0 +1,129 @@
+import { httpRouter } from "convex/server";
+import { httpAction } from "./_generated/server";
+import { api } from "./_generated/api";
+import { Id } from "./_generated/dataModel";
+
+const http = httpRouter();
+
+// Streaming AI response endpoint
+http.route({
+  path: "/stream-action",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const body = await request.json();
+    const { campaignId, characterId, input } = body as {
+      campaignId: Id<"campaigns">;
+      characterId: Id<"characters">;
+      input: string;
+    };
+
+    const apiKey = process.env.DEEPSEEK_API_KEY;
+    if (!apiKey) {
+      return new Response("DEEPSEEK_API_KEY not configured", { status: 500 });
+    }
+
+    // Get context data
+    const character = await ctx.runQuery(api.characters.get, { characterId });
+    if (!character) {
+      return new Response("Character not found", { status: 404 });
+    }
+
+    const recentLogs = await ctx.runQuery(api.game.log.getRecent, {
+      campaignId,
+      limit: 10,
+    });
+
+    // Log player action first
+    await ctx.runMutation(api.game.log.add, {
+      campaignId,
+      type: "action",
+      contentEn: input,
+      contentFr: input,
+      actorType: "character",
+      actorId: characterId,
+      actorName: character.name,
+    });
+
+    // Build the prompt
+    const contextMessage = `
+Recent game history:
+${recentLogs?.map((log) => `${log.actorName || "DM"}: ${log.contentEn}`).join("\n") || "No history yet"}
+
+Character: ${character.name}
+
+Player action: ${input}
+
+Respond with vivid narration in both English and French.
+`;
+
+    const systemPrompt = `You are an AI Dungeon Master for an adult TTRPG game. Generate immersive bilingual responses.
+
+Respond in this JSON format:
+{
+  "narration": { "en": "English text", "fr": "French translation" },
+  "npcDialogue": [{ "name": "NPC", "en": "dialogue", "fr": "dialogue" }],
+  "vocabularyHighlights": [{ "word": "french", "translation": "english", "note": "context" }]
+}`;
+
+    // Call DeepSeek with streaming
+    const response = await fetch("https://api.deepseek.com/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "deepseek-chat",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: contextMessage },
+        ],
+        stream: true,
+      }),
+    });
+
+    if (!response.ok || !response.body) {
+      return new Response("Failed to get AI response", { status: 500 });
+    }
+
+    // Stream the response through
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder();
+
+    const transformStream = new TransformStream({
+      async transform(chunk, controller) {
+        const text = decoder.decode(chunk);
+        // Forward the SSE data as-is
+        controller.enqueue(encoder.encode(text));
+      },
+    });
+
+    const streamedResponse = response.body.pipeThrough(transformStream);
+
+    return new Response(streamedResponse, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+        "Access-Control-Allow-Origin": "*",
+      },
+    });
+  }),
+});
+
+// CORS preflight
+http.route({
+  path: "/stream-action",
+  method: "OPTIONS",
+  handler: httpAction(async () => {
+    return new Response(null, {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+      },
+    });
+  }),
+});
+
+export default http;
