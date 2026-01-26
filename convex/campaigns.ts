@@ -119,6 +119,21 @@ export const get = query({
   },
 });
 
+export const getMembership = query({
+  args: {
+    campaignId: v.id("campaigns"),
+    userId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("campaignMembers")
+      .withIndex("by_campaign_and_user", (q) =>
+        q.eq("campaignId", args.campaignId).eq("userId", args.userId)
+      )
+      .first();
+  },
+});
+
 export const join = mutation({
   args: {
     userId: v.id("users"),
