@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as ai_dm from "../ai/dm.js";
 import type * as campaigns from "../campaigns.js";
 import type * as characters from "../characters.js";
 import type * as dice from "../dice.js";
@@ -21,6 +22,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "ai/dm": typeof ai_dm;
   campaigns: typeof campaigns;
   characters: typeof characters;
   dice: typeof dice;
