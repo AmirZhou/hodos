@@ -294,7 +294,7 @@ async function executeAction(
     npcDialogue: response.npcDialogue,
     roll: rollResult,
     suggestedActions: response.suggestedActions,
-    vocabularyHighlights: response.vocabularyHighlights,
+    vocabularyHighlights: sanitizeVocabulary(response.vocabularyHighlights),
   };
 }
 
