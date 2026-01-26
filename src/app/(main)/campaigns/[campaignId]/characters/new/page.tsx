@@ -135,6 +135,12 @@ export default function NewCharacterPage() {
     charisma: null,
   });
 
+  // Redirect to login if not authenticated
+  if (!authLoading && !isAuthenticated) {
+    router.push("/login");
+    return null;
+  }
+
   const currentStepIndex = STEPS.findIndex((s) => s.id === currentStep);
 
   const goNext = () => {
