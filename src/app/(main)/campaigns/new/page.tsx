@@ -6,6 +6,10 @@ import { Input } from "@/components/ui/input";
 import { ArrowLeft, Sparkles, Globe, Users } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useMutation } from "convex/react";
+import { api } from "../../../../../convex/_generated/api";
+import { useAuth } from "@/components/providers/auth-provider";
 
 export default function NewCampaignPage() {
   const [campaignName, setCampaignName] = useState("");
