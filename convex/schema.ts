@@ -127,6 +127,30 @@ const item = v.object({
   properties: v.record(v.string(), v.any()),
 });
 
+// Grid data for tactical combat maps
+const gridCell = v.object({
+  x: v.number(),
+  y: v.number(),
+  terrain: v.union(
+    v.literal("normal"),
+    v.literal("difficult"),
+    v.literal("impassable")
+  ),
+  cover: v.optional(
+    v.union(
+      v.literal("half"),
+      v.literal("three-quarters"),
+      v.literal("full")
+    )
+  ),
+});
+
+const gridData = v.object({
+  width: v.number(),
+  height: v.number(),
+  cells: v.array(gridCell),
+});
+
 const condition = v.object({
   name: v.string(),
   duration: v.optional(v.number()), // turns remaining, or undefined for permanent
