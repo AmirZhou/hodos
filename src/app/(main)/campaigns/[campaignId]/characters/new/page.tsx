@@ -429,7 +429,10 @@ export default function NewCharacterPage() {
                         ? "border-[var(--accent-gold)] bg-[var(--accent-gold)]/5"
                         : "hover:border-[var(--border-hover)]"
                     }`}
-                    onClick={() => setCharacter({ ...character, background: b.id })}
+                    onClick={() => setCharacter({
+                      ...character,
+                      background: character.background === b.id ? "" : b.id
+                    })}
                   >
                     <CardHeader className="pb-2">
                       <CardTitle className="text-base">{b.name}</CardTitle>
