@@ -228,6 +228,16 @@ export const listByCampaign = query({
   },
 });
 
+export const listByUser = query({
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("characters")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .collect();
+  },
+});
+
 export const updateHp = mutation({
   args: {
     characterId: v.id("characters"),
