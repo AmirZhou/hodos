@@ -46,6 +46,7 @@ export function createDefaultMemory(): NpcMemoryData {
       feelingsTowardCharacter: "indifferent",
       trustLevel: 50,
       attractionLevel: 0,
+      lastUpdated: Date.now(),
     },
     relationshipStatus: {
       type: "stranger",
