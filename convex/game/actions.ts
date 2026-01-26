@@ -46,6 +46,25 @@ interface ActionResult {
   vocabularyHighlights?: Array<{ word: string; translation: string; note?: string }>;
 }
 
+// Sanitize vocabulary items to only include allowed fields
+// AI may return extra fields like 'fr' that the validator doesn't accept
+export function sanitizeVocabulary(
+  vocabulary: Array<Record<string, unknown>> | undefined
+): Array<{ word: string; translation: string; note?: string }> {
+  if (!vocabulary) return [];
+
+  return vocabulary.map((item) => {
+    const sanitized: { word: string; translation: string; note?: string } = {
+      word: String(item.word || ""),
+      translation: String(item.translation || ""),
+    };
+    if (item.note !== undefined) {
+      sanitized.note = String(item.note);
+    }
+    return sanitized;
+  });
+}
+
 // Helper function to execute the main action logic
 async function executeAction(
   ctx: any,
