@@ -274,6 +274,7 @@ async function executeAction(
       annotations: {
         vocabulary: sanitizeVocabulary(rollNarration.response.vocabularyHighlights),
       },
+      linguisticAnalysis: sanitizeLinguisticAnalysis(rollNarration.response.linguisticAnalysis),
     });
 
     // Update suggested actions based on roll outcome
