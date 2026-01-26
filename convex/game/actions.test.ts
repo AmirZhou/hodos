@@ -171,12 +171,13 @@ describe("sanitizeLinguisticAnalysis", () => {
 
     const result = sanitizeLinguisticAnalysis(input as any);
 
+    // null/undefined/falsy values become empty strings, "unknown" for partOfSpeech
     expect(result).toEqual({
       grammar: ["123", "true", "valid"],
       vocabulary: [
         {
           word: "456",
-          translation: "null",
+          translation: "",
           partOfSpeech: "unknown",
         },
       ],
