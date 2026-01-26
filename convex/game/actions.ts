@@ -78,6 +78,37 @@ export function sanitizeVocabulary(
   });
 }
 
+// Sanitize linguistic analysis from AI response
+export function sanitizeLinguisticAnalysis(
+  analysis: Record<string, unknown> | undefined
+): LinguisticAnalysis | undefined {
+  if (!analysis) return undefined;
+
+  const grammar = Array.isArray(analysis.grammar)
+    ? analysis.grammar.map((g) => String(g))
+    : [];
+
+  const vocabulary = Array.isArray(analysis.vocabulary)
+    ? analysis.vocabulary.map((item: Record<string, unknown>) => ({
+        word: String(item.word || ""),
+        translation: String(item.translation || ""),
+        partOfSpeech: String(item.partOfSpeech || "unknown"),
+        ...(item.usage !== undefined && { usage: String(item.usage) }),
+      }))
+    : [];
+
+  const usageNotes = Array.isArray(analysis.usageNotes)
+    ? analysis.usageNotes.map((n) => String(n))
+    : [];
+
+  // Only return if there's actual content
+  if (grammar.length === 0 && vocabulary.length === 0 && usageNotes.length === 0) {
+    return undefined;
+  }
+
+  return { grammar, vocabulary, usageNotes };
+}
+
 // Helper function to execute the main action logic
 async function executeAction(
   ctx: any,
