@@ -93,9 +93,9 @@ export default function CampaignsPage() {
           <div className="flex items-center justify-center py-16">
             <p className="text-[var(--foreground-secondary)]">Loading campaigns...</p>
           </div>
-        ) : campaigns && campaigns.length > 0 ? (
+        ) : campaigns && campaigns.filter(c => c !== null).length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {campaigns.map((campaign) => (
+            {campaigns.filter((c): c is NonNullable<typeof c> => c !== null).map((campaign) => (
               <Link key={campaign._id} href={`/campaigns/${campaign._id}`}>
                 <CampaignCard
                   name={campaign.name}
