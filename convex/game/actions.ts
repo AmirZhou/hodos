@@ -56,6 +56,7 @@ interface ActionResult {
   roll: RollResult | null;
   suggestedActions?: Array<{ en: string; fr: string; type: string }>;
   vocabularyHighlights?: Array<{ word: string; translation: string; note?: string }>;
+  linguisticAnalysis?: LinguisticAnalysis;
 }
 
 // Sanitize vocabulary items to only include allowed fields
