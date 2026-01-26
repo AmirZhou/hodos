@@ -12,6 +12,7 @@ import type * as ai_dm from "../ai/dm.js";
 import type * as campaigns from "../campaigns.js";
 import type * as characters from "../characters.js";
 import type * as dice from "../dice.js";
+import type * as game_actions from "../game/actions.js";
 import type * as gameLog from "../gameLog.js";
 import type * as users from "../users.js";
 
@@ -26,6 +27,7 @@ declare const fullApi: ApiFromModules<{
   campaigns: typeof campaigns;
   characters: typeof characters;
   dice: typeof dice;
+  "game/actions": typeof game_actions;
   gameLog: typeof gameLog;
   users: typeof users;
 }>;
