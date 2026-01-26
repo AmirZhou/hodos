@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, ArrowRight, Check, User, Dices, Heart, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/components/providers/auth-provider";
 
 type Step = "basics" | "abilities" | "class" | "intimacy" | "review";
 
