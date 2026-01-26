@@ -352,7 +352,7 @@ function ExplorationView({ showFrench }: { showFrench: boolean }) {
                 key={entry._id}
                 entry={entry}
                 showFrench={showFrench}
-                onSave={() => handleSaveEntry(entry)}
+                onSave={() => onSaveEntry(entry)}
                 isSaved={savedEntries.has(entry._id)}
               />
             ))
