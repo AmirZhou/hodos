@@ -39,6 +39,7 @@ const secondaryNav: NavItem[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { user, isAuthenticated, logout } = useAuth();
 
   return (
     <aside className="fixed left-0 top-0 z-40 flex h-screen w-16 flex-col border-r border-[var(--border)] bg-[var(--background-secondary)] lg:w-56">
