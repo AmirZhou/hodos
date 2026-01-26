@@ -250,8 +250,52 @@ async function executeAction(
     }
   }
 
-  // 9. Log NPC dialogue if any
+  // 9. Auto-create NPCs mentioned in dialogue and log dialogue
   if (response.npcDialogue) {
+    // Extract unique NPC names from dialogue
+    const npcNames = [...new Set(response.npcDialogue.map((d) => d.name))];
+
+    // Auto-create NPCs and relationships for any newly mentioned characters
+    for (const npcName of npcNames) {
+      // Check if NPC already exists in our loaded list
+      const existingNpc = npcs.find((n: Doc<"npcs">) => n.name === npcName);
+
+      if (!existingNpc) {
+        // Auto-create the NPC
+        const newNpcId = await ctx.runMutation(api.game.npcs.getOrCreate, {
+          campaignId,
+          name: npcName,
+        });
+
+        // Auto-create a relationship with the player character
+        await ctx.runMutation(api.relationships.create, {
+          campaignId,
+          characterId,
+          npcId: newNpcId,
+          initialAffinity: 0,
+          initialTrust: 10, // Small initial trust from meeting
+          initialAttraction: 0,
+        });
+      } else {
+        // NPC exists, check if relationship exists
+        const hasRelationship = relationships.some(
+          (r: Doc<"relationships">) => r.npcId === existingNpc._id
+        );
+        if (!hasRelationship) {
+          // Create relationship if it doesn't exist
+          await ctx.runMutation(api.relationships.create, {
+            campaignId,
+            characterId,
+            npcId: existingNpc._id,
+            initialAffinity: 0,
+            initialTrust: 10,
+            initialAttraction: 0,
+          });
+        }
+      }
+    }
+
+    // Log the dialogue
     for (const dialogue of response.npcDialogue) {
       await ctx.runMutation(api.game.log.add, {
         campaignId,
