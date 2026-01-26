@@ -2,15 +2,13 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 
 // Mock Convex
+const mockUseQuery = vi.fn();
 vi.mock("convex/react", () => ({
-  useQuery: vi.fn(),
+  useQuery: (...args: unknown[]) => mockUseQuery(...args),
   useMutation: vi.fn(() => vi.fn()),
 }));
 
-import { useQuery } from "convex/react";
 import NotebookPage from "./page";
-
-const mockUseQuery = useQuery as ReturnType<typeof vi.fn>;
 
 describe("NotebookPage", () => {
   beforeEach(() => {
