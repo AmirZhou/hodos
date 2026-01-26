@@ -480,9 +480,10 @@ function LogEntry({
           </div>
         )}
 
-        {/* Vocabulary annotations */}
+        {/* Vocabulary annotations (legacy) */}
         {entry.annotations?.vocabulary &&
           entry.annotations.vocabulary.length > 0 &&
+          !entry.linguisticAnalysis &&
           showFrench && (
             <div className="mt-3 pt-3 border-t border-[var(--border)]">
               <div className="flex flex-wrap gap-2">
@@ -501,6 +502,13 @@ function LogEntry({
             </div>
           )}
       </div>
+
+      {/* French Learning Analysis Panel */}
+      {showFrench && entry.linguisticAnalysis && (
+        <AnalysisPanel
+          analysis={entry.linguisticAnalysis}
+        />
+      )}
 
       {/* Action buttons (on hover) */}
       {!isPlayerAction && !isRoll && (
