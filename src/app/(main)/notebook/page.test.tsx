@@ -24,10 +24,10 @@ describe("NotebookPage", () => {
   });
 
   it("shows empty state when no entries", () => {
-    mockUseQuery.mockImplementation((query) => {
-      if (query?.toString().includes("getDueCount")) return 0;
-      return [];
-    });
+    // First call is getAll, second is getDueCount
+    mockUseQuery
+      .mockReturnValueOnce([]) // getAll
+      .mockReturnValueOnce(0); // getDueCount
 
     render(<NotebookPage />);
 
@@ -50,10 +50,9 @@ describe("NotebookPage", () => {
       },
     ];
 
-    mockUseQuery.mockImplementation((query) => {
-      if (query?.toString().includes("getDueCount")) return 0;
-      return mockEntries;
-    });
+    mockUseQuery
+      .mockReturnValueOnce(mockEntries) // getAll
+      .mockReturnValueOnce(0); // getDueCount
 
     render(<NotebookPage />);
 
@@ -62,10 +61,24 @@ describe("NotebookPage", () => {
   });
 
   it("shows due count badge when items due for review", () => {
-    mockUseQuery.mockImplementation((query) => {
-      if (query?.toString().includes("getDueCount")) return 5;
-      return [];
-    });
+    const mockEntries = [
+      {
+        _id: "1",
+        frenchText: "Test",
+        englishText: "Test",
+        grammarNotes: [],
+        vocabularyItems: [],
+        usageNote: "",
+        sceneSummary: "",
+        tags: [],
+        nextReviewDate: Date.now() - 1000,
+        createdAt: Date.now(),
+      },
+    ];
+
+    mockUseQuery
+      .mockReturnValueOnce(mockEntries) // getAll
+      .mockReturnValueOnce(5); // getDueCount
 
     render(<NotebookPage />);
 
@@ -100,10 +113,9 @@ describe("NotebookPage", () => {
       },
     ];
 
-    mockUseQuery.mockImplementation((query) => {
-      if (query?.toString().includes("getDueCount")) return 0;
-      return mockEntries;
-    });
+    mockUseQuery
+      .mockReturnValueOnce(mockEntries) // getAll
+      .mockReturnValueOnce(0); // getDueCount
 
     render(<NotebookPage />);
 
@@ -130,13 +142,12 @@ describe("NotebookPage", () => {
       },
     ];
 
-    mockUseQuery.mockImplementation((query) => {
-      if (query?.toString().includes("getDueCount")) return 1;
-      return mockEntries;
-    });
+    mockUseQuery
+      .mockReturnValueOnce(mockEntries) // getAll
+      .mockReturnValueOnce(1); // getDueCount
 
     render(<NotebookPage />);
 
-    expect(screen.getByRole("button", { name: /start review/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /start review/i })).toBeInTheDocument();
   });
 });
