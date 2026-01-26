@@ -69,12 +69,30 @@ export default function NotebookPage() {
   }, [entries]);
 
   // Loading state
-  if (entries === undefined) {
+  if (authLoading || (userId && entries === undefined)) {
     return (
       <div className="flex h-full items-center justify-center">
         <div className="text-center space-y-4">
           <Loader2 className="h-8 w-8 animate-spin mx-auto text-[var(--accent-gold)]" />
           <p className="text-[var(--foreground-secondary)]">Loading notebook...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Not logged in
+  if (!userId) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <div className="text-center space-y-4">
+          <BookOpen className="h-16 w-16 mx-auto text-[var(--foreground-muted)]" />
+          <h2 className="text-xl font-medium">Sign in to view your notebook</h2>
+          <p className="text-[var(--foreground-secondary)]">
+            Your saved French sentences will appear here.
+          </p>
+          <Link href="/login">
+            <Button>Sign In</Button>
+          </Link>
         </div>
       </div>
     );
