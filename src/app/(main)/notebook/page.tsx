@@ -157,7 +157,7 @@ export default function NotebookPage() {
       </div>
 
       {/* Empty State */}
-      {entries.length === 0 && (
+      {(!entries || entries.length === 0) && (
         <div className="text-center py-16">
           <BookOpen className="h-16 w-16 mx-auto text-[var(--foreground-muted)] mb-4" />
           <h2 className="text-xl font-medium mb-2">No saved sentences yet</h2>
