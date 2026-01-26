@@ -108,7 +108,7 @@ export const get = query({
 
     const worldState = await ctx.db
       .query("worldState")
-      .withIndex("by_campaign", (q) => q.eq("campaignId", args.campaignId))
+      .withIndex("by_campaign", (q) => q.eq("campaignId", args.id))
       .first();
 
     return {
