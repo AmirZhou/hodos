@@ -89,32 +89,47 @@ export default function CampaignsPage() {
 
       {/* Campaign List */}
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Empty State */}
-        <Card className="border-dashed">
-          <CardContent className="flex flex-col items-center justify-center py-16">
-            <div className="h-16 w-16 rounded-full bg-[var(--background-tertiary)] flex items-center justify-center mb-4">
-              <Swords className="h-8 w-8 text-[var(--foreground-muted)]" />
-            </div>
-            <h3 className="text-lg font-medium mb-2">No campaigns yet</h3>
-            <p className="text-sm text-[var(--foreground-secondary)] mb-6 text-center max-w-md">
-              Create your first campaign to start your adventure, or join an existing one with an invite code.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Link href="/campaigns/new">
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Campaign
-                </Button>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <p className="text-[var(--foreground-secondary)]">Loading campaigns...</p>
+          </div>
+        ) : campaigns && campaigns.length > 0 ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {campaigns.map((campaign) => (
+              <Link key={campaign._id} href={`/campaigns/${campaign._id}`}>
+                <CampaignCard
+                  name={campaign.name}
+                  status={campaign.status}
+                  lastPlayed={formatLastPlayed(campaign.lastPlayedAt)}
+                  playerCount={campaign.memberCount}
+                />
               </Link>
-              <Button variant="outline">
-                Enter Invite Code
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Campaign cards would go here when there are campaigns */}
-        {/* <CampaignGrid campaigns={campaigns} /> */}
+            ))}
+          </div>
+        ) : (
+          <Card className="border-dashed">
+            <CardContent className="flex flex-col items-center justify-center py-16">
+              <div className="h-16 w-16 rounded-full bg-[var(--background-tertiary)] flex items-center justify-center mb-4">
+                <Swords className="h-8 w-8 text-[var(--foreground-muted)]" />
+              </div>
+              <h3 className="text-lg font-medium mb-2">No campaigns yet</h3>
+              <p className="text-sm text-[var(--foreground-secondary)] mb-6 text-center max-w-md">
+                Create your first campaign to start your adventure, or join an existing one with an invite code.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link href="/campaigns/new">
+                  <Button>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create Campaign
+                  </Button>
+                </Link>
+                <Button variant="outline">
+                  Enter Invite Code
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
