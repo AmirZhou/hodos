@@ -90,10 +90,13 @@ interface CharacterData {
 export default function NewCharacterPage() {
   const params = useParams();
   const router = useRouter();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const campaignId = params.campaignId as Id<"campaigns">;
+  const createCharacter = useMutation(api.characters.create);
 
   const [currentStep, setCurrentStep] = useState<Step>("basics");
   const [isCreating, setIsCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [character, setCharacter] = useState<CharacterData>({
     name: "",
