@@ -118,6 +118,20 @@ const vocabAnnotation = v.object({
   note: v.optional(v.string()),
 });
 
+// Enhanced linguistic analysis for French learning
+const linguisticAnalysisVocabItem = v.object({
+  word: v.string(),
+  translation: v.string(),
+  partOfSpeech: v.string(),
+  usage: v.optional(v.string()),
+});
+
+const linguisticAnalysis = v.object({
+  grammar: v.array(v.string()),
+  vocabulary: v.array(linguisticAnalysisVocabItem),
+  usageNotes: v.array(v.string()),
+});
+
 const item = v.object({
   id: v.string(),
   name: v.string(),
