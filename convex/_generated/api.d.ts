@@ -15,6 +15,7 @@ import type * as dice from "../dice.js";
 import type * as game_actions from "../game/actions.js";
 import type * as game_combat from "../game/combat.js";
 import type * as game_log from "../game/log.js";
+import type * as game_npcs from "../game/npcs.js";
 import type * as game_scene from "../game/scene.js";
 import type * as game_session from "../game/session.js";
 import type * as game_streaming from "../game/streaming.js";
@@ -40,6 +41,7 @@ declare const fullApi: ApiFromModules<{
   "game/actions": typeof game_actions;
   "game/combat": typeof game_combat;
   "game/log": typeof game_log;
+  "game/npcs": typeof game_npcs;
   "game/scene": typeof game_scene;
   "game/session": typeof game_session;
   "game/streaming": typeof game_streaming;

@@ -300,6 +300,10 @@ export default defineSchema({
 
     // AI memory
     memories: v.array(v.string()),
+
+    // Auto-creation tracking
+    autoCreated: v.optional(v.boolean()),
+    firstMetAt: v.optional(v.number()),
   }).index("by_campaign", ["campaignId"]),
 
   // ============ RELATIONSHIPS ============
