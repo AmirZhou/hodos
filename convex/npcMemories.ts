@@ -18,6 +18,14 @@ export interface EmotionalState {
   lastUpdated: number;
 }
 
+// Input type for updating emotional state (lastUpdated is auto-set)
+export interface EmotionalStateInput {
+  currentMood: string;
+  feelingsTowardCharacter: string;
+  trustLevel: number;
+  attractionLevel: number;
+}
+
 export interface RelationshipStatus {
   type: "stranger" | "acquaintance" | "friend" | "intimate" | "rival";
   dynamicEstablished: boolean;
