@@ -95,7 +95,7 @@ export const get = query({
 
     const members = await ctx.db
       .query("campaignMembers")
-      .withIndex("by_campaign", (q) => q.eq("campaignId", args.campaignId))
+      .withIndex("by_campaign", (q) => q.eq("campaignId", args.id))
       .collect();
 
     const membersWithUsers = await Promise.all(
