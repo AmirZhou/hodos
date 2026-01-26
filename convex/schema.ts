@@ -335,6 +335,7 @@ export default defineSchema({
     connectedTo: v.array(v.id("locations")),
     isDiscovered: v.boolean(),
     properties: v.record(v.string(), v.any()),
+    gridData: v.optional(gridData), // Tactical combat grid
   }).index("by_campaign", ["campaignId"]),
 
   worldState: defineTable({
