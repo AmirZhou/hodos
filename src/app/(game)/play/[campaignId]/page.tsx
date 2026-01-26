@@ -1,228 +1,366 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useQuery } from "convex/react";
+import { api } from "../../../../../convex/_generated/api";
+import { Id } from "../../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { GameProvider, useGame } from "@/components/game/engine";
+import { CombatView } from "@/components/game/combat";
+import { SceneView, SafewordButton } from "@/components/game/scene";
+import { LocationGraph } from "@/components/game/map";
 import {
   Send,
   Mic,
-  Settings,
   Users,
   Map,
   BookOpen,
   Heart,
-  Swords,
   ChevronRight,
   Globe,
-  MoreHorizontal,
   ThumbsUp,
   ThumbsDown,
   RefreshCw,
   Edit3,
+  Play,
+  Loader2,
 } from "lucide-react";
-
-// Mock data for demonstration
-const mockLog = [
-  {
-    id: "1",
-    type: "narration" as const,
-    actorName: "DM",
-    contentEn:
-      "The autumn wind cuts through the narrow streets of Old Montreal. You stand before a weathered door, its paint peeling like old secrets. The address matches the one scrawled on the napkin in your pocket. Inside, they say, is someone who can help you find what you've lost.",
-    contentFr:
-      "Le vent d'automne coupe à travers les rues étroites du Vieux-Montréal. Vous vous tenez devant une porte usée, sa peinture s'écaillant comme de vieux secrets. L'adresse correspond à celle griffonnée sur la serviette dans votre poche. À l'intérieur, dit-on, se trouve quelqu'un qui peut vous aider à retrouver ce que vous avez perdu.",
-    annotations: {
-      vocabulary: [
-        { word: "s'écaillant", translation: "peeling", note: "from s'écailler - to peel/flake" },
-        { word: "griffonnée", translation: "scrawled", note: "from griffonner - to scribble" },
-      ],
-    },
-  },
-  {
-    id: "2",
-    type: "action" as const,
-    actorName: "You",
-    contentEn: "I knock on the door three times and wait.",
-    contentFr: "Je frappe à la porte trois fois et j'attends.",
-  },
-  {
-    id: "3",
-    type: "roll" as const,
-    actorName: "System",
-    contentEn: "Perception check",
-    contentFr: "Test de perception",
-    roll: {
-      type: "skill",
-      dice: "1d20+3",
-      result: 17,
-      dc: 12,
-      success: true,
-    },
-  },
-  {
-    id: "4",
-    type: "narration" as const,
-    actorName: "DM",
-    contentEn:
-      "You hear movement inside—soft footsteps approaching, then pausing. A shadow passes behind the frosted glass. The door opens a crack, revealing a sliver of a face: one dark eye, a strand of silver hair, the edge of lips pressed thin with suspicion.",
-    contentFr:
-      "Vous entendez du mouvement à l'intérieur—des pas légers qui s'approchent, puis s'arrêtent. Une ombre passe derrière le verre dépoli. La porte s'ouvre d'un trait, révélant une parcelle de visage : un œil sombre, une mèche de cheveux argentés, le bord de lèvres pincées de méfiance.",
-    annotations: {
-      vocabulary: [
-        { word: "dépoli", translation: "frosted (glass)", note: "lit. 'unpolished'" },
-        { word: "méfiance", translation: "suspicion/distrust" },
-      ],
-    },
-  },
-  {
-    id: "5",
-    type: "dialogue" as const,
-    actorName: "Mysterious Woman",
-    contentEn: '"You\'re not from around here. What do you want?"',
-    contentFr: '"Vous n\'êtes pas d\'ici. Qu\'est-ce que vous voulez ?"',
-  },
-];
 
 export default function GameplayPage({
   params,
 }: {
   params: { campaignId: string };
 }) {
-  const [input, setInput] = useState("");
+  const campaignId = params.campaignId as Id<"campaigns">;
+
+  return (
+    <GameProvider campaignId={campaignId}>
+      <GameplayContent campaignId={campaignId} />
+    </GameProvider>
+  );
+}
+
+function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
+  const {
+    campaign,
+    currentCharacter,
+    gameState,
+    isLoading,
+    startSession,
+  } = useGame();
+
   const [showFrench, setShowFrench] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const logEndRef = useRef<HTMLDivElement>(null);
+  const [showMap, setShowMap] = useState(false);
 
-  useEffect(() => {
-    logEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, []);
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[var(--background)]">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-[var(--accent-gold)]" />
+          <p className="text-[var(--foreground-secondary)]">Loading game...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // No active session - show start button
+  if (!gameState.hasActiveSession) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[var(--background)]">
+        <div className="text-center space-y-6 max-w-md">
+          <h1 className="text-2xl font-bold">{campaign?.name ?? "Game"}</h1>
+          <p className="text-[var(--foreground-secondary)]">
+            No active game session. Start a new session to begin playing.
+          </p>
+          <Button onClick={startSession} size="lg" className="gap-2">
+            <Play className="h-5 w-5" />
+            Start Session
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-[var(--background)]">
       {/* Main Game Area */}
       <div className="flex flex-1 flex-col">
         {/* Top Bar */}
-        <header className="flex h-14 items-center justify-between border-b border-[var(--border)] bg-[var(--background-secondary)] px-4">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" className="lg:hidden">
-              <Users className="h-5 w-5" />
-            </Button>
-            <span className="font-medium">Montreal Mysteries</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowFrench(!showFrench)}
-              className={showFrench ? "text-[var(--accent-blue)]" : ""}
-            >
-              <Globe className="h-4 w-4 mr-1" />
-              FR
-            </Button>
-            <Button variant="ghost" size="icon">
-              <Map className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon">
-              <BookOpen className="h-5 w-5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="hidden lg:flex"
-            >
-              <ChevronRight
-                className={`h-5 w-5 transition-transform ${
-                  sidebarOpen ? "rotate-0" : "rotate-180"
-                }`}
+        <GameHeader
+          campaignName={campaign?.name ?? "Game"}
+          showFrench={showFrench}
+          onToggleFrench={() => setShowFrench(!showFrench)}
+          onToggleMap={() => setShowMap(!showMap)}
+          sidebarOpen={sidebarOpen}
+          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+          onlinePlayers={gameState.onlinePlayers}
+        />
+
+        {/* Map Modal */}
+        {showMap && (
+          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+            <div className="max-w-4xl w-full max-h-[90vh] overflow-auto">
+              <LocationGraph
+                campaignId={campaignId}
+                sessionId={gameState.sessionId}
+                currentLocationId={gameState.locationId}
+                onLocationSelect={() => setShowMap(false)}
+                onClose={() => setShowMap(false)}
               />
-            </Button>
-          </div>
-        </header>
-
-        {/* Game Log */}
-        <div className="flex-1 overflow-y-auto p-4 lg:p-6">
-          <div className="mx-auto max-w-3xl space-y-6">
-            {mockLog.map((entry) => (
-              <LogEntry
-                key={entry.id}
-                entry={entry}
-                showFrench={showFrench}
-              />
-            ))}
-            <div ref={logEndRef} />
-          </div>
-        </div>
-
-        {/* Input Area */}
-        <div className="border-t border-[var(--border)] bg-[var(--background-secondary)] p-4">
-          <div className="mx-auto max-w-3xl">
-            {/* Quick Actions */}
-            <div className="mb-3 flex flex-wrap gap-2">
-              <QuickAction label="Look around" labelFr="Regarder autour" />
-              <QuickAction label="Talk to her" labelFr="Lui parler" />
-              <QuickAction label="Show the napkin" labelFr="Montrer la serviette" />
-              <QuickAction label="Leave" labelFr="Partir" />
             </div>
-
-            {/* Input */}
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Input
-                  placeholder="What do you do? / Que faites-vous ?"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  className="pr-20"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && input.trim()) {
-                      // Submit action
-                      setInput("");
-                    }
-                  }}
-                />
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
-                  <Button variant="ghost" size="icon" className="h-7 w-7">
-                    <Mic className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-              <Button disabled={!input.trim()}>
-                <Send className="h-4 w-4" />
-              </Button>
-            </div>
-
-            <p className="mt-2 text-xs text-[var(--foreground-muted)] text-center">
-              Type anything or choose a quick action. The AI DM will respond.
-            </p>
           </div>
-        </div>
+        )}
+
+        {/* Main Content - Mode Router */}
+        <GameModeRouter
+          showFrench={showFrench}
+          characterId={currentCharacter?._id}
+        />
       </div>
 
       {/* Right Sidebar - Character & World Info */}
       {sidebarOpen && (
         <aside className="hidden w-80 flex-shrink-0 border-l border-[var(--border)] bg-[var(--background-secondary)] lg:block overflow-y-auto">
-          <CharacterSidebar />
+          <GameSidebar campaignId={campaignId} />
         </aside>
+      )}
+
+      {/* Global Safeword Button (always visible during scene) */}
+      {gameState.isInScene && (
+        <SafewordButton
+          variant="floating"
+          onSafeword={() => {
+            // Handled by SceneView
+          }}
+          disabled
+        />
       )}
     </div>
   );
+}
+
+function GameHeader({
+  campaignName,
+  showFrench,
+  onToggleFrench,
+  onToggleMap,
+  sidebarOpen,
+  onToggleSidebar,
+  onlinePlayers,
+}: {
+  campaignName: string;
+  showFrench: boolean;
+  onToggleFrench: () => void;
+  onToggleMap: () => void;
+  sidebarOpen: boolean;
+  onToggleSidebar: () => void;
+  onlinePlayers: Array<{ displayName: string }>;
+}) {
+  return (
+    <header className="flex h-14 items-center justify-between border-b border-[var(--border)] bg-[var(--background-secondary)] px-4">
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" size="icon" className="lg:hidden">
+          <Users className="h-5 w-5" />
+        </Button>
+        <span className="font-medium">{campaignName}</span>
+        {onlinePlayers.length > 0 && (
+          <div className="hidden sm:flex items-center gap-1 text-xs text-[var(--foreground-muted)]">
+            <div className="w-2 h-2 rounded-full bg-[var(--accent-green)]" />
+            {onlinePlayers.length} online
+          </div>
+        )}
+      </div>
+      <div className="flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onToggleFrench}
+          className={showFrench ? "text-[var(--accent-blue)]" : ""}
+        >
+          <Globe className="h-4 w-4 mr-1" />
+          FR
+        </Button>
+        <Button variant="ghost" size="icon" onClick={onToggleMap}>
+          <Map className="h-5 w-5" />
+        </Button>
+        <Button variant="ghost" size="icon">
+          <BookOpen className="h-5 w-5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onToggleSidebar}
+          className="hidden lg:flex"
+        >
+          <ChevronRight
+            className={`h-5 w-5 transition-transform ${
+              sidebarOpen ? "rotate-0" : "rotate-180"
+            }`}
+          />
+        </Button>
+      </div>
+    </header>
+  );
+}
+
+function GameModeRouter({
+  showFrench,
+  characterId,
+}: {
+  showFrench: boolean;
+  characterId?: Id<"characters">;
+}) {
+  const { gameState } = useGame();
+
+  // Combat mode
+  if (gameState.isInCombat && gameState.sessionId) {
+    return (
+      <div className="flex-1 overflow-y-auto p-4 lg:p-6">
+        <CombatView
+          sessionId={gameState.sessionId}
+          currentCharacterId={characterId}
+        />
+      </div>
+    );
+  }
+
+  // Scene mode
+  if (gameState.isInScene && gameState.sessionId) {
+    return (
+      <div className="flex-1 overflow-y-auto p-4 lg:p-6">
+        <SceneView
+          sessionId={gameState.sessionId}
+          currentCharacterId={characterId}
+        />
+      </div>
+    );
+  }
+
+  // Exploration / Dialogue mode (default)
+  return <ExplorationView showFrench={showFrench} />;
+}
+
+function ExplorationView({ showFrench }: { showFrench: boolean }) {
+  const { gameState } = useGame();
+  const [input, setInput] = useState("");
+  const logEndRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to bottom when log updates
+  useEffect(() => {
+    logEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [gameState.gameLog.length]);
+
+  return (
+    <>
+      {/* Game Log */}
+      <div className="flex-1 overflow-y-auto p-4 lg:p-6">
+        <div className="mx-auto max-w-3xl space-y-6">
+          {gameState.gameLog.length === 0 ? (
+            <div className="text-center py-12 text-[var(--foreground-muted)]">
+              <p>The adventure begins...</p>
+              <p className="text-sm mt-2">Type an action or wait for the DM.</p>
+            </div>
+          ) : (
+            gameState.gameLog.map((entry) => (
+              <LogEntry
+                key={entry._id}
+                entry={entry}
+                showFrench={showFrench}
+              />
+            ))
+          )}
+          <div ref={logEndRef} />
+        </div>
+      </div>
+
+      {/* Input Area */}
+      <div className="border-t border-[var(--border)] bg-[var(--background-secondary)] p-4">
+        <div className="mx-auto max-w-3xl">
+          {/* Quick Actions */}
+          <div className="mb-3 flex flex-wrap gap-2">
+            <QuickAction label="Look around" labelFr="Regarder autour" />
+            <QuickAction label="Talk to..." labelFr="Parler à..." />
+            <QuickAction label="Investigate" labelFr="Enquêter" />
+            <QuickAction label="Rest" labelFr="Se reposer" />
+          </div>
+
+          {/* Input */}
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Input
+                placeholder="What do you do? / Que faites-vous ?"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                className="pr-20"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && input.trim()) {
+                    // TODO: Submit action to AI DM
+                    setInput("");
+                  }
+                }}
+              />
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
+                <Button variant="ghost" size="icon" className="h-7 w-7">
+                  <Mic className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            <Button disabled={!input.trim()}>
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
+
+          <p className="mt-2 text-xs text-[var(--foreground-muted)] text-center">
+            Type anything or choose a quick action. The AI DM will respond.
+          </p>
+        </div>
+      </div>
+    </>
+  );
+}
+
+interface GameLogEntry {
+  _id: Id<"gameLog">;
+  type: "narration" | "dialogue" | "action" | "roll" | "system" | "ooc";
+  contentEn: string;
+  contentFr: string;
+  actorName?: string;
+  actorType?: "dm" | "character" | "npc";
+  roll?: {
+    type: string;
+    dice: string;
+    result: number;
+    dc?: number;
+    success?: boolean;
+  };
+  annotations?: {
+    vocabulary: Array<{
+      word: string;
+      translation: string;
+      note?: string;
+    }>;
+    grammar?: string;
+  };
 }
 
 function LogEntry({
   entry,
   showFrench,
 }: {
-  entry: (typeof mockLog)[0];
+  entry: GameLogEntry;
   showFrench: boolean;
 }) {
-  const isPlayerAction = entry.actorName === "You";
+  const isPlayerAction = entry.actorType === "character";
   const isRoll = entry.type === "roll";
   const isDialogue = entry.type === "dialogue";
 
   return (
     <div className={`group ${isPlayerAction ? "pl-8" : ""}`}>
       {/* Actor name */}
-      {!isPlayerAction && (
+      {!isPlayerAction && entry.actorName && (
         <div className="mb-1 flex items-center gap-2">
           <span className="text-sm font-medium text-[var(--foreground-secondary)]">
             {entry.actorName}
@@ -257,19 +395,22 @@ function LogEntry({
               <div>
                 <div className="text-sm font-medium">{entry.contentEn}</div>
                 <div className="text-xs text-[var(--foreground-muted)]">
-                  {entry.roll.dice} vs DC {entry.roll.dc}
+                  {entry.roll.dice}
+                  {entry.roll.dc && ` vs DC ${entry.roll.dc}`}
                 </div>
               </div>
             </div>
-            <span
-              className={`ml-auto px-2 py-1 rounded text-xs font-medium ${
-                entry.roll.success
-                  ? "bg-[var(--accent-green)]/20 text-[var(--accent-green)]"
-                  : "bg-[var(--accent-red)]/20 text-[var(--accent-red)]"
-              }`}
-            >
-              {entry.roll.success ? "Success" : "Failure"}
-            </span>
+            {entry.roll.success !== undefined && (
+              <span
+                className={`ml-auto px-2 py-1 rounded text-xs font-medium ${
+                  entry.roll.success
+                    ? "bg-[var(--accent-green)]/20 text-[var(--accent-green)]"
+                    : "bg-[var(--accent-red)]/20 text-[var(--accent-red)]"
+                }`}
+              >
+                {entry.roll.success ? "Success" : "Failure"}
+              </span>
+            )}
           </div>
         )}
 
@@ -279,7 +420,7 @@ function LogEntry({
             <p className="text-[var(--foreground)] leading-relaxed">
               {entry.contentEn}
             </p>
-            {showFrench && (
+            {showFrench && entry.contentFr && (
               <p className="text-[var(--accent-blue)] text-sm leading-relaxed">
                 {entry.contentFr}
               </p>
@@ -288,23 +429,25 @@ function LogEntry({
         )}
 
         {/* Vocabulary annotations */}
-        {entry.annotations?.vocabulary && entry.annotations.vocabulary.length > 0 && showFrench && (
-          <div className="mt-3 pt-3 border-t border-[var(--border)]">
-            <div className="flex flex-wrap gap-2">
-              {entry.annotations.vocabulary.map((v, i) => (
-                <span
-                  key={i}
-                  className="inline-flex items-center gap-1 px-2 py-1 rounded bg-[var(--background-tertiary)] text-xs"
-                  title={v.note}
-                >
-                  <span className="text-[var(--accent-blue)]">{v.word}</span>
-                  <span className="text-[var(--foreground-muted)]">=</span>
-                  <span>{v.translation}</span>
-                </span>
-              ))}
+        {entry.annotations?.vocabulary &&
+          entry.annotations.vocabulary.length > 0 &&
+          showFrench && (
+            <div className="mt-3 pt-3 border-t border-[var(--border)]">
+              <div className="flex flex-wrap gap-2">
+                {entry.annotations.vocabulary.map((v, i) => (
+                  <span
+                    key={i}
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded bg-[var(--background-tertiary)] text-xs"
+                    title={v.note}
+                  >
+                    <span className="text-[var(--accent-blue)]">{v.word}</span>
+                    <span className="text-[var(--foreground-muted)]">=</span>
+                    <span>{v.translation}</span>
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
       </div>
 
       {/* Action buttons (on hover) */}
@@ -339,9 +482,46 @@ function QuickAction({ label, labelFr }: { label: string; labelFr: string }) {
   );
 }
 
-function CharacterSidebar() {
+function GameSidebar({ campaignId }: { campaignId: Id<"campaigns"> }) {
+  const { currentCharacter, gameState } = useGame();
+
+  // Get current location details
+  const currentLocation = useQuery(
+    api.game.travel.getCurrentLocation,
+    gameState.sessionId ? { sessionId: gameState.sessionId } : "skip"
+  );
+
+  // Get relationships for current character
+  const relationships = useQuery(
+    api.relationships.getForCharacter,
+    currentCharacter?._id ? { characterId: currentCharacter._id } : "skip"
+  );
+
   return (
     <div className="p-4 space-y-6">
+      {/* Online Players */}
+      {gameState.onlinePlayers.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <Users className="h-4 w-4 text-[var(--foreground-muted)]" />
+            <span className="text-sm font-medium">Online Players</span>
+          </div>
+          <div className="rounded-lg bg-[var(--card)] p-3 space-y-2">
+            {gameState.onlinePlayers.map((player) => (
+              <div key={player.userId} className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-[var(--accent-green)]" />
+                <span className="text-sm">{player.displayName}</span>
+                {player.character && (
+                  <span className="text-xs text-[var(--foreground-muted)]">
+                    ({player.character.name})
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Location */}
       <div>
         <div className="flex items-center gap-2 mb-2">
@@ -349,99 +529,102 @@ function CharacterSidebar() {
           <span className="text-sm font-medium">Location</span>
         </div>
         <div className="rounded-lg bg-[var(--card)] p-3">
-          <h3 className="font-medium">Old Montreal</h3>
-          <p className="text-xs text-[var(--accent-blue)]">Vieux-Montréal</p>
-          <p className="text-xs text-[var(--foreground-secondary)] mt-1">
-            Historic district, narrow cobblestone streets
-          </p>
+          {currentLocation ? (
+            <>
+              <h3 className="font-medium">{currentLocation.name}</h3>
+              <p className="text-xs text-[var(--accent-blue)]">
+                {currentLocation.nameFr}
+              </p>
+              <p className="text-xs text-[var(--foreground-secondary)] mt-1 line-clamp-2">
+                {currentLocation.description}
+              </p>
+              {currentLocation.npcs && currentLocation.npcs.length > 0 && (
+                <div className="mt-2 pt-2 border-t border-[var(--border)]">
+                  <p className="text-xs text-[var(--foreground-muted)]">
+                    {currentLocation.npcs.length} character(s) here
+                  </p>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <h3 className="font-medium">Unknown Location</h3>
+              <p className="text-xs text-[var(--foreground-secondary)] mt-1">
+                Open the map to explore
+              </p>
+            </>
+          )}
         </div>
       </div>
 
       {/* Character */}
-      <div>
-        <div className="flex items-center gap-2 mb-2">
-          <Users className="h-4 w-4 text-[var(--foreground-muted)]" />
-          <span className="text-sm font-medium">Character</span>
-        </div>
-        <div className="rounded-lg bg-[var(--card)] p-3">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="h-12 w-12 rounded-full bg-[var(--accent-purple)] flex items-center justify-center text-white font-bold">
-              A
-            </div>
-            <div>
-              <h3 className="font-medium">Alex Dubois</h3>
-              <p className="text-xs text-[var(--foreground-secondary)]">
-                Level 3 Investigator
-              </p>
-            </div>
+      {currentCharacter && (
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <Users className="h-4 w-4 text-[var(--foreground-muted)]" />
+            <span className="text-sm font-medium">Character</span>
           </div>
+          <div className="rounded-lg bg-[var(--card)] p-3">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="h-12 w-12 rounded-full bg-[var(--accent-purple)] flex items-center justify-center text-white font-bold">
+                {currentCharacter.name[0]}
+              </div>
+              <div>
+                <h3 className="font-medium">{currentCharacter.name}</h3>
+                <p className="text-xs text-[var(--foreground-secondary)]">
+                  Level {/* TODO: Add level */} Character
+                </p>
+              </div>
+            </div>
 
-          {/* HP Bar */}
-          <div className="mb-3">
-            <div className="flex justify-between text-xs mb-1">
-              <span className="text-[var(--accent-red)]">HP</span>
-              <span>24/24</span>
-            </div>
-            <div className="h-2 rounded-full hp-bar-bg">
-              <div className="h-full rounded-full hp-bar" style={{ width: "100%" }} />
-            </div>
-          </div>
-
-          {/* XP Bar */}
-          <div className="mb-3">
-            <div className="flex justify-between text-xs mb-1">
-              <span className="text-[var(--accent-blue)]">XP</span>
-              <span>650/900</span>
-            </div>
-            <div className="h-2 rounded-full bg-[var(--background-tertiary)]">
-              <div className="h-full rounded-full xp-bar" style={{ width: "72%" }} />
-            </div>
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-2 text-center text-xs">
-            <div className="rounded bg-[var(--background-tertiary)] p-2">
-              <div className="font-medium">STR</div>
-              <div className="text-[var(--foreground-secondary)]">10</div>
-            </div>
-            <div className="rounded bg-[var(--background-tertiary)] p-2">
-              <div className="font-medium">DEX</div>
-              <div className="text-[var(--foreground-secondary)]">14</div>
-            </div>
-            <div className="rounded bg-[var(--background-tertiary)] p-2">
-              <div className="font-medium">CON</div>
-              <div className="text-[var(--foreground-secondary)]">12</div>
-            </div>
-            <div className="rounded bg-[var(--background-tertiary)] p-2">
-              <div className="font-medium">INT</div>
-              <div className="text-[var(--foreground-secondary)]">16</div>
-            </div>
-            <div className="rounded bg-[var(--background-tertiary)] p-2">
-              <div className="font-medium">WIS</div>
-              <div className="text-[var(--foreground-secondary)]">13</div>
-            </div>
-            <div className="rounded bg-[var(--background-tertiary)] p-2">
-              <div className="font-medium">CHA</div>
-              <div className="text-[var(--foreground-secondary)]">15</div>
+            {/* HP Bar */}
+            <div className="mb-3">
+              <div className="flex justify-between text-xs mb-1">
+                <span className="text-[var(--accent-red)]">HP</span>
+                <span>
+                  {currentCharacter.hp}/{currentCharacter.maxHp}
+                </span>
+              </div>
+              <div className="h-2 rounded-full bg-[var(--background-tertiary)]">
+                <div
+                  className="h-full rounded-full bg-[var(--accent-red)]"
+                  style={{
+                    width: `${(currentCharacter.hp / currentCharacter.maxHp) * 100}%`,
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Relationships */}
-      <div>
-        <div className="flex items-center gap-2 mb-2">
-          <Heart className="h-4 w-4 text-[var(--foreground-muted)]" />
-          <span className="text-sm font-medium">Relationships</span>
+      {relationships && relationships.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <Heart className="h-4 w-4 text-[var(--foreground-muted)]" />
+            <span className="text-sm font-medium">Relationships</span>
+          </div>
+          <div className="rounded-lg bg-[var(--card)] p-3 space-y-3">
+            {relationships.map((rel) => (
+              <RelationshipEntry
+                key={rel._id}
+                name={rel.npc?.name ?? "Unknown"}
+                affinity={rel.affinity}
+                trust={rel.trust}
+                attraction={rel.attraction}
+              />
+            ))}
+          </div>
         </div>
-        <div className="rounded-lg bg-[var(--card)] p-3 space-y-3">
-          <RelationshipEntry
-            name="Mysterious Woman"
-            affinity={0}
-            trust={5}
-            attraction={15}
-          />
-        </div>
+      )}
+
+      {/* Game Mode Indicator */}
+      <div className="rounded-lg bg-[var(--background-tertiary)] p-3 text-center">
+        <span className="text-xs text-[var(--foreground-muted)]">Mode: </span>
+        <span className="text-xs font-medium capitalize">
+          {gameState.currentMode}
+        </span>
       </div>
     </div>
   );
@@ -462,7 +645,6 @@ function RelationshipEntry({
     <div>
       <div className="flex items-center justify-between mb-2">
         <span className="text-sm font-medium">{name}</span>
-        <span className="text-xs text-[var(--foreground-muted)]">Just met</span>
       </div>
       <div className="space-y-1 text-xs">
         <div className="flex items-center gap-2">
