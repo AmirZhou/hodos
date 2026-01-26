@@ -512,9 +512,23 @@ function LogEntry({
   );
 }
 
-function QuickAction({ label, labelFr }: { label: string; labelFr: string }) {
+function QuickAction({
+  label,
+  labelFr,
+  onClick,
+  disabled,
+}: {
+  label: string;
+  labelFr: string;
+  onClick: (label: string, labelFr: string) => void;
+  disabled?: boolean;
+}) {
   return (
-    <button className="group px-3 py-1.5 rounded-full border border-[var(--border)] bg-[var(--card)] hover:border-[var(--accent-gold)] hover:bg-[var(--accent-gold)]/10 transition-colors text-sm">
+    <button
+      className="group px-3 py-1.5 rounded-full border border-[var(--border)] bg-[var(--card)] hover:border-[var(--accent-gold)] hover:bg-[var(--accent-gold)]/10 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+      onClick={() => onClick(label, labelFr)}
+      disabled={disabled}
+    >
       <span>{label}</span>
       <span className="hidden group-hover:inline text-[var(--accent-blue)] ml-1">
         / {labelFr}
