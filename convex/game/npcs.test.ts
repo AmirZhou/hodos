@@ -17,7 +17,7 @@ describe("extractNPCsFromResponse", () => {
 
   it("returns empty array when no dialogue", () => {
     const response = {
-      narration: { en: "The room is dark", fr: "La pièce est sombre" },
+      npcDialogue: undefined,
     };
 
     const npcs = extractNPCsFromResponse(response);
