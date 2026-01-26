@@ -12,8 +12,48 @@ import { api } from "../../../../../convex/_generated/api";
 import { useAuth } from "@/components/providers/auth-provider";
 
 export default function NewCampaignPage() {
+  const router = useRouter();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const createCampaign = useMutation(api.campaigns.create);
+
   const [campaignName, setCampaignName] = useState("");
   const [setting, setSetting] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Redirect to login if not authenticated
+  if (!authLoading && !isAuthenticated) {
+    router.push("/login");
+    return null;
+  }
+
+  const handleCreate = async () => {
+    if (!user?._id) {
+      setError("You must be logged in to create a campaign");
+      return;
+    }
+
+    if (!campaignName.trim()) {
+      setError("Please enter a campaign name");
+      return;
+    }
+
+    setIsCreating(true);
+    setError(null);
+
+    try {
+      const result = await createCampaign({
+        userId: user._id,
+        name: campaignName.trim(),
+      });
+      router.push(`/campaigns/${result.campaignId}`);
+    } catch (err) {
+      console.error("Failed to create campaign:", err);
+      setError("Failed to create campaign. Please try again.");
+    } finally {
+      setIsCreating(false);
+    }
+  };
 
   const settings = [
     {
