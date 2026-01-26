@@ -54,10 +54,40 @@ const combatState = v.object({
   lastTurnStartedAt: v.number(),
 });
 
+// Enhanced scene participant with role, consent, and comfort tracking
+const sceneParticipant = v.object({
+  entityId: v.string(),
+  entityType: v.union(v.literal("character"), v.literal("npc")),
+  role: v.union(
+    v.literal("dominant"),
+    v.literal("submissive"),
+    v.literal("switch"),
+    v.literal("observer")
+  ),
+  consentGiven: v.boolean(),
+  limits: v.array(v.string()),
+  currentComfort: v.number(), // 0-100
+  safewordUsed: v.optional(
+    v.union(v.literal("yellow"), v.literal("red"))
+  ),
+});
+
 const sceneState = v.object({
-  participants: v.array(v.string()),
+  participants: v.array(sceneParticipant),
+  phase: v.union(
+    v.literal("negotiation"),
+    v.literal("active"),
+    v.literal("aftercare"),
+    v.literal("ended")
+  ),
   intensity: v.number(), // 0-100
-  safewordUsed: v.boolean(),
+  peakIntensity: v.number(),
+  mood: v.string(),
+  currentActorIndex: v.number(),
+  negotiatedActivities: v.array(v.string()),
+  usedSafeword: v.boolean(),
+  startedAt: v.number(),
+  lastActionAt: v.number(),
 });
 
 const dynamicType = v.object({
