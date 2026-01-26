@@ -1,16 +1,17 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Home, Compass, ScrollText, Users, Plus } from "lucide-react";
+import { Home, Compass, ScrollText, Swords, Plus, LogIn, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/components/providers/auth-provider";
 
 const navItems = [
   { icon: Home, label: "Home", href: "/" },
   { icon: Compass, label: "Discover", href: "/discover" },
   { icon: Plus, label: "Create", href: "/campaigns/new", isCreate: true },
   { icon: ScrollText, label: "Campaigns", href: "/campaigns" },
-  { icon: Users, label: "Profile", href: "/profile" },
+  { icon: Swords, label: "Characters", href: "/characters" },
 ];
 
 export function MobileNav() {
