@@ -20,6 +20,7 @@ import type * as game_session from "../game/session.js";
 import type * as game_streaming from "../game/streaming.js";
 import type * as game_travel from "../game/travel.js";
 import type * as gameLog from "../gameLog.js";
+import type * as http from "../http.js";
 import type * as npcs from "../npcs.js";
 import type * as presence from "../presence.js";
 import type * as relationships from "../relationships.js";
@@ -44,6 +45,7 @@ declare const fullApi: ApiFromModules<{
   "game/streaming": typeof game_streaming;
   "game/travel": typeof game_travel;
   gameLog: typeof gameLog;
+  http: typeof http;
   npcs: typeof npcs;
   presence: typeof presence;
   relationships: typeof relationships;
