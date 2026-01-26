@@ -5,8 +5,50 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, Swords, Clock, Users } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useQuery } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
+import { useAuth } from "@/components/providers/auth-provider";
+
+function formatLastPlayed(timestamp: number): string {
+  const now = Date.now();
+  const diffMs = now - timestamp;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return "Just now";
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  return `${diffDays}d ago`;
+}
+
+function getStatusColor(status: string): string {
+  switch (status) {
+    case "active": return "bg-[var(--accent-green)]";
+    case "lobby": return "bg-[var(--accent-gold)]";
+    case "paused": return "bg-[var(--accent-yellow)]";
+    default: return "bg-[var(--foreground-muted)]";
+  }
+}
 
 export default function CampaignsPage() {
+  const router = useRouter();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+
+  const campaigns = useQuery(
+    api.campaigns.list,
+    user?._id ? { userId: user._id } : "skip"
+  );
+
+  // Redirect to login if not authenticated
+  if (!authLoading && !isAuthenticated) {
+    router.push("/login");
+    return null;
+  }
+
+  const isLoading = authLoading || campaigns === undefined;
+
   return (
     <div className="min-h-screen">
       {/* Header */}
