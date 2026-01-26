@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, use, useCallback } from "react";
 import { useQuery, useAction, useMutation } from "convex/react";
+import Link from "next/link";
 import { api } from "../../../../../convex/_generated/api";
 import { Id } from "../../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
