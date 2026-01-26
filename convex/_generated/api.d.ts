@@ -14,6 +14,7 @@ import type * as characters from "../characters.js";
 import type * as dice from "../dice.js";
 import type * as game_actions from "../game/actions.js";
 import type * as game_log from "../game/log.js";
+import type * as game_session from "../game/session.js";
 import type * as gameLog from "../gameLog.js";
 import type * as users from "../users.js";
 
@@ -30,6 +31,7 @@ declare const fullApi: ApiFromModules<{
   dice: typeof dice;
   "game/actions": typeof game_actions;
   "game/log": typeof game_log;
+  "game/session": typeof game_session;
   gameLog: typeof gameLog;
   users: typeof users;
 }>;
