@@ -322,10 +322,10 @@ function ExplorationView({ showFrench }: { showFrench: boolean }) {
         <div className="mx-auto max-w-3xl">
           {/* Quick Actions */}
           <div className="mb-3 flex flex-wrap gap-2">
-            <QuickAction label="Look around" labelFr="Regarder autour" />
-            <QuickAction label="Talk to..." labelFr="Parler à..." />
-            <QuickAction label="Investigate" labelFr="Enquêter" />
-            <QuickAction label="Rest" labelFr="Se reposer" />
+            <QuickAction label="Look around" labelFr="Regarder autour" onClick={handleQuickAction} disabled={isSubmitting} />
+            <QuickAction label="Talk to..." labelFr="Parler à..." onClick={handleQuickAction} disabled={isSubmitting} />
+            <QuickAction label="Investigate" labelFr="Enquêter" onClick={handleQuickAction} disabled={isSubmitting} />
+            <QuickAction label="Rest" labelFr="Se reposer" onClick={handleQuickAction} disabled={isSubmitting} />
           </div>
 
           {/* Input */}
