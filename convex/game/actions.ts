@@ -189,7 +189,7 @@ async function executeAction(
     // Get narrative for the roll outcome
     const rollNarration = await ctx.runAction(api.ai.dm.narrateRollOutcome, {
       rollType: roll.type,
-      skill: roll.skill,
+      skill: roll.skill ?? undefined,
       rollResult: checkResult.naturalRoll,
       modifier: checkResult.modifier,
       total: checkResult.total,
