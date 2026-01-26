@@ -30,9 +30,10 @@ import {
 export default function GameplayPage({
   params,
 }: {
-  params: { campaignId: string };
+  params: Promise<{ campaignId: string }>;
 }) {
-  const campaignId = params.campaignId as Id<"campaigns">;
+  const { campaignId: campaignIdParam } = use(params);
+  const campaignId = campaignIdParam as Id<"campaigns">;
 
   return (
     <GameProvider campaignId={campaignId}>
