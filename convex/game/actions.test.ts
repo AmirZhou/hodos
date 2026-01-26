@@ -64,3 +64,123 @@ describe("sanitizeVocabulary", () => {
     ]);
   });
 });
+
+describe("sanitizeLinguisticAnalysis", () => {
+  it("sanitizes complete linguistic analysis", () => {
+    const input = {
+      grammar: ["Present tense used", "Feminine agreement"],
+      vocabulary: [
+        {
+          word: "lumière",
+          translation: "light",
+          partOfSpeech: "noun",
+          usage: "feminine noun",
+          extraField: "should be removed",
+        },
+      ],
+      usageNotes: ["Formal register"],
+      extraField: "should be removed",
+    };
+
+    const result = sanitizeLinguisticAnalysis(input);
+
+    expect(result).toEqual({
+      grammar: ["Present tense used", "Feminine agreement"],
+      vocabulary: [
+        {
+          word: "lumière",
+          translation: "light",
+          partOfSpeech: "noun",
+          usage: "feminine noun",
+        },
+      ],
+      usageNotes: ["Formal register"],
+    });
+  });
+
+  it("returns undefined for undefined input", () => {
+    const result = sanitizeLinguisticAnalysis(undefined);
+    expect(result).toBeUndefined();
+  });
+
+  it("returns undefined for empty analysis", () => {
+    const input = {
+      grammar: [],
+      vocabulary: [],
+      usageNotes: [],
+    };
+
+    const result = sanitizeLinguisticAnalysis(input);
+    expect(result).toBeUndefined();
+  });
+
+  it("handles missing fields gracefully", () => {
+    const input = {
+      grammar: ["A grammar note"],
+    };
+
+    const result = sanitizeLinguisticAnalysis(input);
+
+    expect(result).toEqual({
+      grammar: ["A grammar note"],
+      vocabulary: [],
+      usageNotes: [],
+    });
+  });
+
+  it("handles vocabulary without optional usage field", () => {
+    const input = {
+      grammar: [],
+      vocabulary: [
+        {
+          word: "bonjour",
+          translation: "hello",
+          partOfSpeech: "interjection",
+        },
+      ],
+      usageNotes: [],
+    };
+
+    const result = sanitizeLinguisticAnalysis(input);
+
+    expect(result).toEqual({
+      grammar: [],
+      vocabulary: [
+        {
+          word: "bonjour",
+          translation: "hello",
+          partOfSpeech: "interjection",
+        },
+      ],
+      usageNotes: [],
+    });
+  });
+
+  it("converts non-string values to strings", () => {
+    const input = {
+      grammar: [123, true, "valid"],
+      vocabulary: [
+        {
+          word: 456,
+          translation: null,
+          partOfSpeech: undefined,
+        },
+      ],
+      usageNotes: [false, "note"],
+    };
+
+    const result = sanitizeLinguisticAnalysis(input as any);
+
+    expect(result).toEqual({
+      grammar: ["123", "true", "valid"],
+      vocabulary: [
+        {
+          word: "456",
+          translation: "null",
+          partOfSpeech: "unknown",
+        },
+      ],
+      usageNotes: ["false", "note"],
+    });
+  });
+});
