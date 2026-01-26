@@ -291,6 +291,7 @@ async function executeAction(
         annotations: {
           vocabulary: sanitizeVocabulary(response.vocabularyHighlights),
         },
+        linguisticAnalysis: sanitizeLinguisticAnalysis(response.linguisticAnalysis),
       });
     }
   }
