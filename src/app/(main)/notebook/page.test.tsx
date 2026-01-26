@@ -113,12 +113,16 @@ describe("NotebookPage", () => {
       },
     ];
 
-    mockUseQuery
-      .mockReturnValueOnce(mockEntries) // getAll
-      .mockReturnValueOnce(0); // getDueCount
+    // Mock returns same data on every call
+    mockUseQuery.mockImplementation(() => mockEntries);
 
     render(<NotebookPage />);
 
+    // Both entries visible initially
+    expect(screen.getByText("La lumière vacille")).toBeInTheDocument();
+    expect(screen.getByText("Le soleil brille")).toBeInTheDocument();
+
+    // Filter by search
     const searchInput = screen.getByPlaceholderText(/search/i);
     fireEvent.change(searchInput, { target: { value: "lumière" } });
 
