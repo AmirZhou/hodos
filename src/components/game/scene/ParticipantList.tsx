@@ -162,10 +162,11 @@ export function ParticipantList({
 
               {/* Warning if comfort is low */}
               {phase === "active" && comfortPercent < 40 && (
-                <AlertTriangle
-                  className="h-4 w-4 text-[var(--accent-gold)] flex-shrink-0"
-                  title="Comfort is getting low - consider checking in"
-                />
+                <span title="Comfort is getting low - consider checking in">
+                  <AlertTriangle
+                    className="h-4 w-4 text-[var(--accent-gold)] flex-shrink-0"
+                  />
+                </span>
               )}
             </div>
           );
