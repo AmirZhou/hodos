@@ -687,6 +687,15 @@ export default function NewCharacterPage() {
                 </p>
               </CardContent>
             </Card>
+
+            {/* Error Message */}
+            {error && (
+              <Card className="bg-[var(--accent-red)]/10 border-[var(--accent-red)]/30">
+                <CardContent className="py-4">
+                  <p className="text-sm text-[var(--accent-red)]">{error}</p>
+                </CardContent>
+              </Card>
+            )}
           </div>
         )}
       </div>
