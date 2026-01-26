@@ -458,4 +458,19 @@ export default defineSchema({
   })
     .index("by_user", ["userId"])
     .index("by_user_and_next_review", ["userId", "nextReviewAt"]),
+
+  // ============ STREAMING SESSIONS ============
+  streamingSessions: defineTable({
+    campaignId: v.id("campaigns"),
+    type: v.union(v.literal("narration"), v.literal("dialogue")),
+    chunks: v.array(
+      v.object({
+        index: v.number(),
+        text: v.string(),
+        isFinal: v.boolean(),
+      })
+    ),
+    isComplete: v.boolean(),
+    createdAt: v.number(),
+  }).index("by_campaign", ["campaignId"]),
 });
