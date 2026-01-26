@@ -245,9 +245,49 @@ function GameModeRouter({
 }
 
 function ExplorationView({ showFrench }: { showFrench: boolean }) {
-  const { gameState } = useGame();
+  const { gameState, currentCharacter, campaign } = useGame();
   const [input, setInput] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const logEndRef = useRef<HTMLDivElement>(null);
+
+  const submitAction = useAction(api.game.actions.submitAction);
+  const submitQuickAction = useAction(api.game.actions.submitQuickAction);
+
+  const handleSubmit = async (text: string) => {
+    if (!text.trim() || !currentCharacter || !campaign || isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      await submitAction({
+        campaignId: campaign._id,
+        characterId: currentCharacter._id,
+        input: text.trim(),
+      });
+      setInput("");
+    } catch (error) {
+      console.error("Failed to submit action:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleQuickAction = async (label: string, labelFr: string) => {
+    if (!currentCharacter || !campaign || isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      await submitQuickAction({
+        campaignId: campaign._id,
+        characterId: currentCharacter._id,
+        actionType: label.toLowerCase().replace(/\s+/g, "_"),
+        actionText: { en: label, fr: labelFr },
+      });
+    } catch (error) {
+      console.error("Failed to submit quick action:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   // Scroll to bottom when log updates
   useEffect(() => {
