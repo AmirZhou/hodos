@@ -282,14 +282,16 @@ export function LocationGraph({
                 <div>
                   <h4 className="text-sm font-medium mb-2">Connected to:</h4>
                   <div className="flex flex-wrap gap-1">
-                    {selectedDetails.connectedLocations.map((conn) => (
-                      <span
-                        key={conn.id}
-                        className="text-xs px-2 py-1 rounded bg-[var(--background-tertiary)]"
-                      >
-                        {conn.isDiscovered ? conn.name : "???"}
-                      </span>
-                    ))}
+                    {selectedDetails.connectedLocations
+                      .filter((conn): conn is NonNullable<typeof conn> => conn !== null)
+                      .map((conn) => (
+                        <span
+                          key={conn.id}
+                          className="text-xs px-2 py-1 rounded bg-[var(--background-tertiary)]"
+                        >
+                          {conn.isDiscovered ? conn.name : "???"}
+                        </span>
+                      ))}
                   </div>
                 </div>
               )}
