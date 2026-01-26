@@ -161,6 +161,15 @@ export default function NewCampaignPage() {
             </CardContent>
           </Card>
 
+          {/* Error Message */}
+          {error && (
+            <Card className="bg-[var(--accent-red)]/10 border-[var(--accent-red)]/30">
+              <CardContent className="py-4">
+                <p className="text-sm text-[var(--accent-red)]">{error}</p>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Submit */}
           <div className="flex gap-4">
             <Link href="/campaigns" className="flex-1">
@@ -170,9 +179,10 @@ export default function NewCampaignPage() {
             </Link>
             <Button
               className="flex-1"
-              disabled={!campaignName || !setting}
+              disabled={!campaignName.trim() || isCreating}
+              onClick={handleCreate}
             >
-              Create Campaign
+              {isCreating ? "Creating..." : "Create Campaign"}
             </Button>
           </div>
         </div>
