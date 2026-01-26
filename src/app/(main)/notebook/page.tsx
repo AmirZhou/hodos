@@ -5,6 +5,7 @@ import { useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/components/providers/auth-provider";
 import {
   BookOpen,
   Search,
@@ -20,8 +21,8 @@ export default function NotebookPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
-  // TODO: Get userId from auth context
-  const userId = null;
+  const { user, isLoading: authLoading } = useAuth();
+  const userId = user?._id ?? null;
 
   // For now, show a placeholder that doesn't require auth
   const entries = useQuery(
