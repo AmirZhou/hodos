@@ -2,27 +2,46 @@
 
 import { useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
+import { Id } from "../../../../convex/_generated/dataModel";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useRouter } from "next/navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Swords, Heart, Plus } from "lucide-react";
 import Link from "next/link";
 
+interface CharacterInfo {
+  _id: Id<"characters">;
+  name: string;
+  level: number;
+  class?: string;
+  hp: number;
+  maxHp: number;
+  xp: number;
+  campaignName: string;
+  campaignId: Id<"campaigns">;
+}
+
 export default function CharactersPage() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+
+  const campaigns = useQuery(
+    api.campaigns.list,
+    user?._id ? { userId: user._id } : "skip"
+  );
+
+  // Get all characters for campaigns where user has a character
+  const characters = useQuery(
+    api.characters.listByUser,
+    user?._id ? { userId: user._id } : "skip"
+  );
 
   // Redirect to login if not authenticated
   if (!authLoading && !isAuthenticated) {
     router.push("/login");
     return null;
   }
-
-  const campaigns = useQuery(
-    api.campaigns.listByUser,
-    user?._id ? { userId: user._id } : "skip"
-  );
 
   if (authLoading || !user) {
     return (
@@ -32,16 +51,21 @@ export default function CharactersPage() {
     );
   }
 
-  // Get characters from all campaigns
-  const allCharacters = campaigns?.flatMap((campaign) =>
-    campaign.members
-      ?.filter((m) => m.userId === user._id && m.character)
-      .map((m) => ({
-        ...m.character!,
-        campaignName: campaign.name,
-        campaignId: campaign._id,
-      })) || []
-  ) || [];
+  // Combine character data with campaign names
+  const allCharacters: CharacterInfo[] = (characters || []).map((char) => {
+    const campaign = campaigns?.find((c) => c._id === char.campaignId);
+    return {
+      _id: char._id,
+      name: char.name,
+      level: char.level,
+      class: char.class,
+      hp: char.hp,
+      maxHp: char.maxHp,
+      xp: char.xp,
+      campaignName: campaign?.name || "Unknown Campaign",
+      campaignId: char.campaignId,
+    };
+  });
 
   return (
     <div className="min-h-screen pb-24">
