@@ -292,7 +292,15 @@ function GameModeRouter({
   );
 }
 
-function ExplorationView({ showFrench }: { showFrench: boolean }) {
+function ExplorationView({
+  showFrench,
+  onSaveEntry,
+  savedEntries,
+}: {
+  showFrench: boolean;
+  onSaveEntry: (entry: GameLogEntry) => void;
+  savedEntries: Set<string>;
+}) {
   const { gameState, currentCharacter, campaign } = useGame();
   const [input, setInput] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
