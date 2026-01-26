@@ -50,11 +50,46 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
     gameState,
     isLoading,
     startSession,
+    userId,
   } = useGame();
 
   const [showFrench, setShowFrench] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showMap, setShowMap] = useState(false);
+  const [savedEntries, setSavedEntries] = useState<Set<string>>(new Set());
+
+  const saveToNotebook = useMutation(api.notebook.save);
+
+  const handleSaveEntry = useCallback(
+    async (entry: GameLogEntry) => {
+      if (!userId || !entry.linguisticAnalysis) return;
+
+      try {
+        await saveToNotebook({
+          userId,
+          frenchText: entry.contentFr || "",
+          englishText: entry.contentEn,
+          grammarNotes: entry.linguisticAnalysis.grammar,
+          vocabularyItems: entry.linguisticAnalysis.vocabulary.map((v) => ({
+            word: v.word,
+            translation: v.translation,
+            partOfSpeech: v.partOfSpeech,
+          })),
+          usageNote: entry.linguisticAnalysis.usageNotes.join(" "),
+          gameLogId: entry._id,
+          campaignId,
+          sceneSummary: entry.actorName
+            ? `${entry.actorName}: ${entry.contentEn.slice(0, 100)}`
+            : entry.contentEn.slice(0, 100),
+          tags: [],
+        });
+        setSavedEntries((prev) => new Set(prev).add(entry._id));
+      } catch (error) {
+        console.error("Failed to save to notebook:", error);
+      }
+    },
+    [userId, campaignId, saveToNotebook]
+  );
 
   // Loading state
   if (isLoading) {
