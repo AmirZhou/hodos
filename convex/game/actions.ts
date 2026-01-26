@@ -385,6 +385,7 @@ async function executeAction(
     roll: rollResult,
     suggestedActions: response.suggestedActions,
     vocabularyHighlights: sanitizeVocabulary(response.vocabularyHighlights),
+    linguisticAnalysis: sanitizeLinguisticAnalysis(response.linguisticAnalysis),
   };
 }
 
