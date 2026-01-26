@@ -10,6 +10,7 @@ import { GameProvider, useGame } from "@/components/game/engine";
 import { CombatView } from "@/components/game/combat";
 import { SceneView, SafewordButton } from "@/components/game/scene";
 import { LocationGraph } from "@/components/game/map";
+import { AnalysisPanel } from "@/components/learning";
 import {
   Send,
   Mic,
