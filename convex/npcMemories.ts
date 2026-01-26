@@ -83,7 +83,7 @@ export function addKeyMomentToMemory(
 
 export function updateEmotionalStateInMemory(
   memory: NpcMemoryData,
-  newState: EmotionalState
+  newState: EmotionalStateInput
 ): NpcMemoryData {
   return {
     ...memory,
