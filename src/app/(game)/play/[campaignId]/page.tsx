@@ -226,9 +226,11 @@ function GameHeader({
         <Button variant="ghost" size="icon" onClick={onToggleMap}>
           <Map className="h-5 w-5" />
         </Button>
-        <Button variant="ghost" size="icon">
-          <BookOpen className="h-5 w-5" />
-        </Button>
+        <Link href="/notebook">
+          <Button variant="ghost" size="icon" title="Notebook">
+            <BookOpen className="h-5 w-5" />
+          </Button>
+        </Link>
         <Button
           variant="ghost"
           size="icon"
