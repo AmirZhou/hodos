@@ -1,26 +1,117 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Dark theme inspired by fables.gg */
+  --background: #0f1419;
+  --background-secondary: #1a2332;
+  --background-tertiary: #242f3d;
+  --foreground: #e7e9ea;
+  --foreground-secondary: #8b98a5;
+  --foreground-muted: #6e7681;
+
+  /* Accent colors */
+  --accent-gold: #d4a853;
+  --accent-gold-hover: #e5bd6b;
+  --accent-blue: #4a9eff;
+  --accent-red: #f85149;
+  --accent-green: #56d364;
+  --accent-purple: #a371f7;
+
+  /* Borders */
+  --border: #30363d;
+  --border-hover: #484f58;
+
+  /* Cards */
+  --card: #161b22;
+  --card-hover: #1c2128;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-background-secondary: var(--background-secondary);
+  --color-background-tertiary: var(--background-tertiary);
   --color-foreground: var(--foreground);
+  --color-foreground-secondary: var(--foreground-secondary);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-accent-gold: var(--accent-gold);
+  --color-accent-gold-hover: var(--accent-gold-hover);
+  --color-accent-blue: var(--accent-blue);
+  --color-accent-red: var(--accent-red);
+  --color-accent-green: var(--accent-green);
+  --color-accent-purple: var(--accent-purple);
+  --color-border: var(--border);
+  --color-border-hover: var(--border-hover);
+  --color-card: var(--card);
+  --color-card-hover: var(--card-hover);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  min-height: 100vh;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-hover);
+}
+
+/* Selection */
+::selection {
+  background: var(--accent-gold);
+  color: var(--background);
+}
+
+/* Focus styles */
+:focus-visible {
+  outline: 2px solid var(--accent-gold);
+  outline-offset: 2px;
+}
+
+/* Bilingual text styling */
+.text-fr {
+  color: var(--accent-blue);
+}
+
+.text-en {
+  color: var(--foreground-secondary);
+}
+
+/* HP bar colors */
+.hp-bar {
+  background: linear-gradient(90deg, var(--accent-red) 0%, #ff6b6b 100%);
+}
+
+.hp-bar-bg {
+  background: var(--background-tertiary);
+}
+
+/* XP bar colors */
+.xp-bar {
+  background: linear-gradient(90deg, var(--accent-blue) 0%, #6bb3ff 100%);
 }
