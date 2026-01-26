@@ -27,7 +27,7 @@ export default function CampaignDetailPage() {
   const campaignId = params.campaignId as Id<"campaigns">;
   const [copied, setCopied] = useState(false);
 
-  const campaign = useQuery(api.campaigns.get, { campaignId });
+  const campaign = useQuery(api.campaigns.get, { id: campaignId });
   const characters = useQuery(api.characters.listByCampaign, { campaignId });
 
   // Redirect to login if not authenticated
