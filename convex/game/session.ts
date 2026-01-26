@@ -81,162 +81,37 @@ export const updateLastAction = mutation({
   },
 });
 
-export const startCombat = mutation({
+export const updateLocation = mutation({
   args: {
     sessionId: v.id("gameSessions"),
-    participants: v.array(
-      v.object({
-        id: v.string(),
-        type: v.union(v.literal("character"), v.literal("npc")),
-        initiative: v.number(),
-      })
-    ),
+    locationId: v.id("locations"),
   },
   handler: async (ctx, args) => {
-    // Sort by initiative
-    const turnOrder = [...args.participants].sort(
-      (a, b) => b.initiative - a.initiative
-    );
-
     await ctx.db.patch(args.sessionId, {
-      mode: "combat",
-      combat: {
-        turnOrder,
-        currentTurnIndex: 0,
-        round: 1,
-      },
+      locationId: args.locationId,
       lastActionAt: Date.now(),
     });
   },
 });
 
-export const nextTurn = mutation({
-  args: {
-    sessionId: v.id("gameSessions"),
-  },
-  handler: async (ctx, args) => {
-    const session = await ctx.db.get(args.sessionId);
-    if (!session || !session.combat) {
-      throw new Error("No active combat");
-    }
-
-    let nextIndex = session.combat.currentTurnIndex + 1;
-    let round = session.combat.round;
-
-    if (nextIndex >= session.combat.turnOrder.length) {
-      nextIndex = 0;
-      round += 1;
-    }
-
-    await ctx.db.patch(args.sessionId, {
-      combat: {
-        ...session.combat,
-        currentTurnIndex: nextIndex,
-        round,
-      },
-      lastActionAt: Date.now(),
-    });
-
-    return {
-      currentTurn: session.combat.turnOrder[nextIndex],
-      round,
-    };
-  },
-});
-
-export const endCombat = mutation({
+export const pause = mutation({
   args: {
     sessionId: v.id("gameSessions"),
   },
   handler: async (ctx, args) => {
     await ctx.db.patch(args.sessionId, {
-      mode: "exploration",
-      combat: undefined,
-      lastActionAt: Date.now(),
+      status: "paused",
     });
   },
 });
 
-export const startScene = mutation({
-  args: {
-    sessionId: v.id("gameSessions"),
-    participants: v.array(v.string()),
-  },
-  handler: async (ctx, args) => {
-    await ctx.db.patch(args.sessionId, {
-      mode: "scene",
-      scene: {
-        participants: args.participants,
-        intensity: 0,
-        safewordUsed: false,
-      },
-      lastActionAt: Date.now(),
-    });
-  },
-});
-
-export const updateSceneIntensity = mutation({
-  args: {
-    sessionId: v.id("gameSessions"),
-    intensity: v.number(),
-  },
-  handler: async (ctx, args) => {
-    const session = await ctx.db.get(args.sessionId);
-    if (!session || !session.scene) {
-      throw new Error("No active scene");
-    }
-
-    await ctx.db.patch(args.sessionId, {
-      scene: {
-        ...session.scene,
-        intensity: Math.max(0, Math.min(100, args.intensity)),
-      },
-      lastActionAt: Date.now(),
-    });
-  },
-});
-
-export const useSafeword = mutation({
-  args: {
-    sessionId: v.id("gameSessions"),
-    level: v.union(v.literal("yellow"), v.literal("red")),
-  },
-  handler: async (ctx, args) => {
-    const session = await ctx.db.get(args.sessionId);
-    if (!session || !session.scene) {
-      throw new Error("No active scene");
-    }
-
-    if (args.level === "red") {
-      // RED = full stop, end scene immediately
-      await ctx.db.patch(args.sessionId, {
-        mode: "exploration",
-        scene: undefined,
-        lastActionAt: Date.now(),
-      });
-      return { ended: true };
-    } else {
-      // YELLOW = pause, mark that safeword was used
-      await ctx.db.patch(args.sessionId, {
-        scene: {
-          ...session.scene,
-          safewordUsed: true,
-        },
-        lastActionAt: Date.now(),
-      });
-      return { ended: false };
-    }
-  },
-});
-
-export const endScene = mutation({
+export const resume = mutation({
   args: {
     sessionId: v.id("gameSessions"),
   },
   handler: async (ctx, args) => {
     await ctx.db.patch(args.sessionId, {
-      mode: "exploration",
-      scene: undefined,
+      status: "active",
       lastActionAt: Date.now(),
     });
   },
