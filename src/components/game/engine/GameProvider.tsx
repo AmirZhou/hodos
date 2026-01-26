@@ -68,7 +68,7 @@ export function GameProvider({ children, campaignId }: GameProviderProps) {
 
   const character = useQuery(
     api.characters.get,
-    membership?.characterId ? { id: membership.characterId } : "skip"
+    membership?.characterId ? { characterId: membership.characterId } : "skip"
   );
 
   // Game state subscription
