@@ -53,7 +53,7 @@ export default function CharactersPage() {
 
   // Combine character data with campaign names
   const allCharacters: CharacterInfo[] = (characters || []).map((char) => {
-    const campaign = campaigns?.find((c) => c._id === char.campaignId);
+    const campaign = campaigns?.find((c) => c !== null && c._id === char.campaignId);
     return {
       _id: char._id,
       name: char.name,
