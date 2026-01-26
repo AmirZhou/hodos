@@ -8,6 +8,16 @@ vi.mock("convex/react", () => ({
   useMutation: vi.fn(() => vi.fn()),
 }));
 
+// Mock useAuth
+const mockUserId = "test-user-id";
+vi.mock("@/components/providers/auth-provider", () => ({
+  useAuth: () => ({
+    user: { _id: mockUserId },
+    isLoading: false,
+    isAuthenticated: true,
+  }),
+}));
+
 import NotebookPage from "./page";
 
 describe("NotebookPage", () => {
