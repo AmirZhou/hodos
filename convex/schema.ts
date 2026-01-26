@@ -526,4 +526,48 @@ export default defineSchema({
     .index("by_user_and_review", ["userId", "nextReviewDate"])
     .index("by_game_log", ["gameLogId"])
     .index("by_campaign", ["campaignId"]),
+
+  // ============ NPC MEMORIES ============
+  npcMemories: defineTable({
+    npcId: v.id("npcs"),
+    characterId: v.id("characters"), // Memories are per-NPC per-character
+
+    // Key moments (5-10 max, pruned by significance)
+    keyMoments: v.array(
+      v.object({
+        date: v.number(),
+        summary: v.string(),
+        emotionalImpact: v.number(), // -10 to +10
+        tags: v.array(v.string()), // e.g., "first_meeting", "trust_building"
+      })
+    ),
+
+    // Emotional summary
+    emotionalState: v.object({
+      currentMood: v.string(),
+      feelingsTowardCharacter: v.string(),
+      trustLevel: v.number(), // 0-100
+      attractionLevel: v.number(), // 0-100
+      lastUpdated: v.number(),
+    }),
+
+    // Relationship status
+    relationshipStatus: v.object({
+      type: v.union(
+        v.literal("stranger"),
+        v.literal("acquaintance"),
+        v.literal("friend"),
+        v.literal("intimate"),
+        v.literal("rival")
+      ),
+      dynamicEstablished: v.boolean(), // BDSM dynamic agreed
+      sharedSecrets: v.array(v.string()),
+    }),
+
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_npc", ["npcId"])
+    .index("by_character", ["characterId"])
+    .index("by_npc_and_character", ["npcId", "characterId"]),
 });

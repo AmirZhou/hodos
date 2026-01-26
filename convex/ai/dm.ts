@@ -1,8 +1,48 @@
 import { v } from "convex/values";
 import { action, internalAction } from "../_generated/server";
 import { internal } from "../_generated/api";
+import type { NpcMemoryData } from "../npcMemories";
 
 const DEEPSEEK_API_URL = "https://api.deepseek.com/chat/completions";
+
+// Helper to format NPC memory for AI prompt
+export function formatNpcMemoryForPrompt(
+  memory: NpcMemoryData | undefined
+): string {
+  if (!memory) return "";
+
+  const lines: string[] = [];
+
+  // Emotional state
+  lines.push(`  Current Mood: ${memory.emotionalState.currentMood}`);
+  lines.push(`  Feelings: ${memory.emotionalState.feelingsTowardCharacter}`);
+  lines.push(`  Trust: ${memory.emotionalState.trustLevel}/100`);
+  lines.push(`  Attraction: ${memory.emotionalState.attractionLevel}/100`);
+
+  // Relationship status
+  lines.push(`  Relationship Type: ${memory.relationshipStatus.type}`);
+  lines.push(
+    `  Dynamic Established: ${memory.relationshipStatus.dynamicEstablished ? "Yes" : "No"}`
+  );
+
+  // Shared secrets
+  if (memory.relationshipStatus.sharedSecrets.length > 0) {
+    lines.push(`  Shared Secrets:`);
+    memory.relationshipStatus.sharedSecrets.forEach((secret) => {
+      lines.push(`    - ${secret}`);
+    });
+  }
+
+  // Key moments
+  if (memory.keyMoments.length > 0) {
+    lines.push(`  Key Memories:`);
+    memory.keyMoments.forEach((moment) => {
+      lines.push(`    - ${moment.summary} (impact: ${moment.emotionalImpact})`);
+    });
+  }
+
+  return lines.join("\n");
+}
 
 const DM_SYSTEM_PROMPT = `You are an expert AI Dungeon Master for an adult TTRPG game. You run immersive campaigns using D&D 5e-style mechanics.
 
@@ -175,6 +215,36 @@ export const processPlayerInput = action({
               attraction: v.number(),
             })
           ),
+          memory: v.optional(
+            v.object({
+              keyMoments: v.array(
+                v.object({
+                  date: v.number(),
+                  summary: v.string(),
+                  emotionalImpact: v.number(),
+                  tags: v.array(v.string()),
+                })
+              ),
+              emotionalState: v.object({
+                currentMood: v.string(),
+                feelingsTowardCharacter: v.string(),
+                trustLevel: v.number(),
+                attractionLevel: v.number(),
+                lastUpdated: v.optional(v.number()),
+              }),
+              relationshipStatus: v.object({
+                type: v.union(
+                  v.literal("stranger"),
+                  v.literal("acquaintance"),
+                  v.literal("friend"),
+                  v.literal("intimate"),
+                  v.literal("rival")
+                ),
+                dynamicEstablished: v.boolean(),
+                sharedSecrets: v.array(v.string()),
+              }),
+            })
+          ),
         })
       ),
       characterStats: v.object({
@@ -214,7 +284,8 @@ ${args.context.nearbyNpcs
   .map(
     (npc) => `- ${npc.name}: ${npc.description}
   Personality: ${npc.personality}
-  ${npc.relationshipWithPlayer ? `Relationship: Affinity ${npc.relationshipWithPlayer.affinity}, Trust ${npc.relationshipWithPlayer.trust}, Attraction ${npc.relationshipWithPlayer.attraction}` : ""}`
+  ${npc.relationshipWithPlayer ? `Relationship: Affinity ${npc.relationshipWithPlayer.affinity}, Trust ${npc.relationshipWithPlayer.trust}, Attraction ${npc.relationshipWithPlayer.attraction}` : ""}
+${npc.memory ? formatNpcMemoryForPrompt(npc.memory) : ""}`
   )
   .join("\n")}
 
