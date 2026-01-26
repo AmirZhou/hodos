@@ -336,21 +336,21 @@ function ExplorationView({ showFrench }: { showFrench: boolean }) {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 className="pr-20"
+                disabled={isSubmitting}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" && input.trim()) {
-                    // TODO: Submit action to AI DM
-                    setInput("");
+                  if (e.key === "Enter" && input.trim() && !isSubmitting) {
+                    handleSubmit(input);
                   }
                 }}
               />
               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
-                <Button variant="ghost" size="icon" className="h-7 w-7">
+                <Button variant="ghost" size="icon" className="h-7 w-7" disabled={isSubmitting}>
                   <Mic className="h-4 w-4" />
                 </Button>
               </div>
             </div>
-            <Button disabled={!input.trim()}>
-              <Send className="h-4 w-4" />
+            <Button disabled={!input.trim() || isSubmitting} onClick={() => handleSubmit(input)}>
+              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </Button>
           </div>
 
