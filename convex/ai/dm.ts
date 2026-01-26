@@ -230,7 +230,7 @@ export const processPlayerInput = action({
                 feelingsTowardCharacter: v.string(),
                 trustLevel: v.number(),
                 attractionLevel: v.number(),
-                lastUpdated: v.optional(v.number()),
+                lastUpdated: v.number(),
               }),
               relationshipStatus: v.object({
                 type: v.union(
