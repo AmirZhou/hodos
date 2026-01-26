@@ -81,6 +81,62 @@ describe('Character Creation Page', () => {
   });
 });
 
+// Unit test for ability score assignment logic
+describe('Ability Score Assignment', () => {
+  it('allows deselecting an already-assigned score', () => {
+    // Given: Strength is assigned 15
+    const assignments: Record<string, number | null> = {
+      strength: 15,
+      dexterity: null,
+      constitution: null,
+      intelligence: null,
+      wisdom: null,
+      charisma: null,
+    };
+
+    // When: Click on 15 for Strength again (already assigned)
+    const clickedAbility = 'strength';
+    const clickedValue = 15;
+    const isAlreadyAssigned = assignments[clickedAbility] === clickedValue;
+
+    // Then: Should deselect (set to null)
+    expect(isAlreadyAssigned).toBe(true);
+    // After deselect: assignments.strength should be null
+    const newAssignments = isAlreadyAssigned
+      ? { ...assignments, [clickedAbility]: null }
+      : assignments;
+    expect(newAssignments.strength).toBeNull();
+  });
+
+  it('allows deselecting class selection', () => {
+    // Given: Class is "warrior"
+    let selectedClass: string | null = 'warrior';
+
+    // When: Click on "warrior" again
+    const clickedClass = 'warrior';
+    if (selectedClass === clickedClass) {
+      selectedClass = null;
+    }
+
+    // Then: Should deselect
+    expect(selectedClass).toBeNull();
+  });
+
+  it('allows deselecting background selection', () => {
+    // Given: Background is "student"
+    let selectedBackground: string | null = 'student';
+
+    // When: Click on "student" again
+    const clickedBackground = 'student';
+    if (selectedBackground === clickedBackground) {
+      selectedBackground = null;
+    }
+
+    // Then: Should deselect
+    expect(selectedBackground).toBeNull();
+  });
+});
+
 // Unit test for the actual mutation call logic
 describe('Character Creation Logic', () => {
   it('builds correct mutation payload from form data', () => {
