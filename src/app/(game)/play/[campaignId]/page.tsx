@@ -385,6 +385,16 @@ interface GameLogEntry {
     }>;
     grammar?: string;
   };
+  linguisticAnalysis?: {
+    grammar: string[];
+    vocabulary: Array<{
+      word: string;
+      translation: string;
+      partOfSpeech: string;
+      usage?: string;
+    }>;
+    usageNotes: string[];
+  };
 }
 
 function LogEntry({
