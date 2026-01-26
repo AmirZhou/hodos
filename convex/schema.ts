@@ -28,16 +28,30 @@ const intimacyProfile = v.object({
   trustThreshold: v.number(), // 0-100
 });
 
+// Enhanced combatant state with position and action tracking
+const combatantState = v.object({
+  entityId: v.string(),
+  entityType: v.union(v.literal("character"), v.literal("npc")),
+  initiative: v.number(),
+  position: v.object({ x: v.number(), y: v.number() }),
+  hasAction: v.boolean(),
+  hasBonusAction: v.boolean(),
+  hasReaction: v.boolean(),
+  movementRemaining: v.number(),
+  turnStartedAt: v.optional(v.number()),
+});
+
 const combatState = v.object({
-  turnOrder: v.array(
-    v.object({
-      id: v.string(),
-      type: v.union(v.literal("character"), v.literal("npc")),
-      initiative: v.number(),
-    })
-  ),
+  combatants: v.array(combatantState),
   currentTurnIndex: v.number(),
   round: v.number(),
+  phase: v.union(
+    v.literal("rolling_initiative"),
+    v.literal("in_progress"),
+    v.literal("ending")
+  ),
+  turnTimeoutMs: v.number(),
+  lastTurnStartedAt: v.number(),
 });
 
 const sceneState = v.object({
