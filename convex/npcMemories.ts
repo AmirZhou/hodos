@@ -15,7 +15,7 @@ export interface EmotionalState {
   feelingsTowardCharacter: string;
   trustLevel: number;
   attractionLevel: number;
-  lastUpdated?: number;
+  lastUpdated: number;
 }
 
 export interface RelationshipStatus {
