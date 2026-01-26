@@ -16,6 +16,7 @@ import type * as game_actions from "../game/actions.js";
 import type * as game_log from "../game/log.js";
 import type * as game_session from "../game/session.js";
 import type * as gameLog from "../gameLog.js";
+import type * as npcs from "../npcs.js";
 import type * as users from "../users.js";
 
 import type {
@@ -33,6 +34,7 @@ declare const fullApi: ApiFromModules<{
   "game/log": typeof game_log;
   "game/session": typeof game_session;
   gameLog: typeof gameLog;
+  npcs: typeof npcs;
   users: typeof users;
 }>;
 
