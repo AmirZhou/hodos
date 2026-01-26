@@ -80,7 +80,7 @@ export function sanitizeVocabulary(
 
 // Sanitize linguistic analysis from AI response
 export function sanitizeLinguisticAnalysis(
-  analysis: Record<string, unknown> | undefined
+  analysis: LinguisticAnalysis | Record<string, unknown> | undefined
 ): LinguisticAnalysis | undefined {
   if (!analysis) return undefined;
 
