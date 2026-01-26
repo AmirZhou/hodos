@@ -94,7 +94,7 @@ const condition = v.object({
 export default defineSchema({
   // ============ USERS & AUTH ============
   users: defineTable({
-    clerkId: v.string(),
+    clerkId: v.optional(v.string()), // Optional - for Clerk integration later
     email: v.string(),
     displayName: v.string(),
     avatarUrl: v.optional(v.string()),
@@ -110,7 +110,9 @@ export default defineSchema({
       ),
     }),
     createdAt: v.number(),
-  }).index("by_clerk_id", ["clerkId"]),
+  })
+    .index("by_clerk_id", ["clerkId"])
+    .index("by_email", ["email"]),
 
   // ============ CAMPAIGNS ============
   campaigns: defineTable({
