@@ -41,6 +41,20 @@ export const add = mutation({
         grammar: v.optional(v.string()),
       })
     ),
+    linguisticAnalysis: v.optional(
+      v.object({
+        grammar: v.array(v.string()),
+        vocabulary: v.array(
+          v.object({
+            word: v.string(),
+            translation: v.string(),
+            partOfSpeech: v.string(),
+            usage: v.optional(v.string()),
+          })
+        ),
+        usageNotes: v.array(v.string()),
+      })
+    ),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("gameLog", {
