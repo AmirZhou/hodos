@@ -76,24 +76,59 @@ export default function HomePage() {
             </Link>
           </div>
 
-          {/* Empty state */}
-          <Card className="border-dashed">
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <div className="h-12 w-12 rounded-full bg-[var(--background-tertiary)] flex items-center justify-center mb-4">
-                <Swords className="h-6 w-6 text-[var(--foreground-muted)]" />
-              </div>
-              <h3 className="font-medium mb-1">No campaigns yet</h3>
-              <p className="text-sm text-[var(--foreground-secondary)] mb-4">
-                Start your first adventure
-              </p>
-              <Link href="/campaigns/new">
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Campaign
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
+          {!isAuthenticated || recentCampaigns.length === 0 ? (
+            <Card className="border-dashed">
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <div className="h-12 w-12 rounded-full bg-[var(--background-tertiary)] flex items-center justify-center mb-4">
+                  <Swords className="h-6 w-6 text-[var(--foreground-muted)]" />
+                </div>
+                <h3 className="font-medium mb-1">No campaigns yet</h3>
+                <p className="text-sm text-[var(--foreground-secondary)] mb-4">
+                  Start your first adventure
+                </p>
+                <Link href="/campaigns/new">
+                  <Button>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create Campaign
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {recentCampaigns.map((campaign) => (
+                <Link key={campaign._id} href={`/campaigns/${campaign._id}`}>
+                  <Card className="overflow-hidden cursor-pointer hover:border-[var(--accent-gold)] transition-colors h-full">
+                    <div className="aspect-video bg-[var(--background-tertiary)] relative">
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Swords className="h-10 w-10 text-[var(--foreground-muted)]" />
+                      </div>
+                      <div className={`absolute top-2 right-2 px-2 py-1 rounded text-xs text-white ${
+                        campaign.status === "active" ? "bg-[var(--accent-green)]" :
+                        campaign.status === "lobby" ? "bg-[var(--accent-gold)]" :
+                        "bg-[var(--foreground-muted)]"
+                      }`}>
+                        {campaign.status === "lobby" ? "Lobby" : campaign.status === "active" ? "Active" : campaign.status}
+                      </div>
+                    </div>
+                    <CardContent className="p-4">
+                      <h3 className="font-medium mb-2 truncate">{campaign.name}</h3>
+                      <div className="flex items-center gap-3 text-xs text-[var(--foreground-muted)]">
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {formatLastPlayed(campaign.lastPlayedAt)}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Users className="h-3 w-3" />
+                          {campaign.memberCount}
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
