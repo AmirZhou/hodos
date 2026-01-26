@@ -2,10 +2,38 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Play, Users, Swords, Heart, BookOpen } from "lucide-react";
+import { Plus, Play, Users, Swords, Heart, BookOpen, Clock } from "lucide-react";
 import Link from "next/link";
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
+import { useAuth } from "@/components/providers/auth-provider";
+
+function formatLastPlayed(timestamp: number): string {
+  const now = Date.now();
+  const diffMs = now - timestamp;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return "Just now";
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  return `${diffDays}d ago`;
+}
 
 export default function HomePage() {
+  const { user, isAuthenticated } = useAuth();
+
+  const campaigns = useQuery(
+    api.campaigns.list,
+    user?._id ? { userId: user._id } : "skip"
+  );
+
+  // Get up to 4 most recent campaigns
+  const recentCampaigns = campaigns
+    ?.filter((c): c is NonNullable<typeof c> => c !== null)
+    .sort((a, b) => b.lastPlayedAt - a.lastPlayedAt)
+    .slice(0, 4) || [];
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
