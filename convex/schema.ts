@@ -420,6 +420,9 @@ export default defineSchema({
       })
     ),
 
+    // Enhanced French learning analysis
+    linguisticAnalysis: v.optional(linguisticAnalysis),
+
     createdAt: v.number(),
   })
     .index("by_campaign", ["campaignId"])
