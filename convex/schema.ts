@@ -312,20 +312,9 @@ export default defineSchema({
     classFeatures: v.array(v.string()),
 
     // Inventory & Equipment
-    inventory: v.array(equipmentItem),
-    equipped: v.object({
-      head: v.optional(equipmentItem),
-      chest: v.optional(equipmentItem),
-      hands: v.optional(equipmentItem),
-      boots: v.optional(equipmentItem),
-      cloak: v.optional(equipmentItem),
-      ring1: v.optional(equipmentItem),
-      ring2: v.optional(equipmentItem),
-      necklace: v.optional(equipmentItem),
-      mainHand: v.optional(equipmentItem),
-      offHand: v.optional(equipmentItem),
-      book: v.optional(equipmentItem),
-    }),
+    // TODO: Restore strict validators after migration
+    inventory: v.any(),
+    equipped: v.any(),
 
     // Conditions & Status
     conditions: v.array(condition),
