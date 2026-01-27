@@ -783,6 +783,7 @@ function GameSidebar({ campaignId, onNpcClick }: { campaignId: Id<"campaigns">; 
                 affinity={rel.affinity}
                 trust={rel.trust}
                 attraction={rel.attraction}
+                onClick={onNpcClick ? () => onNpcClick(rel.npcId) : undefined}
               />
             ))}
           </div>
