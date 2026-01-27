@@ -20,39 +20,47 @@ interface LinguisticAnalysis {
 interface AnalysisPanelProps {
   analysis: LinguisticAnalysis | undefined;
   defaultExpanded?: boolean;
+  alwaysExpanded?: boolean;
+  isSaved?: boolean;
   onSave?: () => void;
 }
 
 export function AnalysisPanel({
   analysis,
   defaultExpanded = false,
+  alwaysExpanded = false,
+  isSaved = false,
   onSave,
 }: AnalysisPanelProps) {
-  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded || alwaysExpanded);
 
   if (!analysis) {
     return null;
   }
 
-  return (
-    <div className="mt-2 border border-[var(--border)] rounded-lg overflow-hidden">
-      {/* Toggle Button */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between px-3 py-2 bg-[var(--background-tertiary)] hover:bg-[var(--background-secondary)] transition-colors text-sm"
-      >
-        <span className="text-[var(--foreground-secondary)]">
-          {isExpanded ? "Hide Analysis" : "Show Analysis"}
-        </span>
-        {isExpanded ? (
-          <ChevronUp className="h-4 w-4 text-[var(--foreground-muted)]" />
-        ) : (
-          <ChevronDown className="h-4 w-4 text-[var(--foreground-muted)]" />
-        )}
-      </button>
+  const showContent = alwaysExpanded || isExpanded;
 
-      {/* Expanded Content */}
-      {isExpanded && (
+  return (
+    <div className={`${alwaysExpanded ? "" : "mt-2"} border border-[var(--border)] rounded-lg overflow-hidden`}>
+      {/* Toggle Button - hidden in alwaysExpanded mode */}
+      {!alwaysExpanded && (
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="w-full flex items-center justify-between px-3 py-2 bg-[var(--background-tertiary)] hover:bg-[var(--background-secondary)] transition-colors text-sm"
+        >
+          <span className="text-[var(--foreground-secondary)]">
+            {isExpanded ? "Hide Analysis" : "Show Analysis"}
+          </span>
+          {isExpanded ? (
+            <ChevronUp className="h-4 w-4 text-[var(--foreground-muted)]" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-[var(--foreground-muted)]" />
+          )}
+        </button>
+      )}
+
+      {/* Content */}
+      {showContent && (
         <div className="p-3 space-y-4 bg-[var(--background-secondary)]">
           {/* Grammar Section */}
           {analysis.grammar.length > 0 && (
@@ -84,7 +92,7 @@ export function AnalysisPanel({
                 {analysis.vocabulary.map((item, i) => (
                   <div
                     key={i}
-                    className="flex items-baseline gap-2 text-sm"
+                    className="flex items-baseline gap-2 text-sm flex-wrap"
                   >
                     <span className="font-medium text-[var(--accent-blue)]">
                       {item.word}
@@ -127,7 +135,11 @@ export function AnalysisPanel({
           )}
 
           {/* Actions */}
-          {onSave && (
+          {isSaved ? (
+            <div className="pt-2 border-t border-[var(--border)]">
+              <span className="text-xs text-[var(--accent-green)]">Saved</span>
+            </div>
+          ) : onSave ? (
             <div className="pt-2 border-t border-[var(--border)] flex gap-2">
               <Button
                 variant="outline"
@@ -139,7 +151,7 @@ export function AnalysisPanel({
                 Save to Notebook
               </Button>
             </div>
-          )}
+          ) : null}
         </div>
       )}
     </div>
