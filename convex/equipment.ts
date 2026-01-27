@@ -135,7 +135,7 @@ export const addItemToInventory = mutation({
     if (!itemData) throw new Error("Unknown item: " + args.itemId);
 
     await ctx.db.patch(args.characterId, {
-      inventory: [...character.inventory, itemToDoc(itemData)],
+      inventory: [...(character.inventory as unknown[]), itemToDoc(itemData)],
     });
   },
 });
