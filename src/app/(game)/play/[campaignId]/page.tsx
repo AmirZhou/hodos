@@ -784,7 +784,7 @@ function EquipmentSlotPopover({
         {item ? (
           <div className="px-4 py-3 border-b border-[var(--border)]">
             <div className="flex items-center gap-2 mb-1">
-              {(() => { const Icon = SIDEBAR_SLOT_ICONS[slot] || Scroll; return <Icon className="h-5 w-5" style={{ color: getRarityColor(item.rarity as never) }} />; })()}
+              {(() => { const Icon = SIDEBAR_SLOT_ICONS[slot] || Scroll; return <div style={{ color: getRarityColor(item.rarity as never) }}><Icon className="h-5 w-5" /></div>; })()}
               <span className="font-medium text-sm" style={{ color: getRarityColor(item.rarity as never) }}>{item.name}</span>
             </div>
             <p className="text-[10px] text-[var(--foreground-muted)] capitalize mb-2">{item.rarity}</p>
