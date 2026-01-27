@@ -95,6 +95,14 @@ export default function NewCampaignPage() {
       icon: Heart,
       seedScenario: "bdsm-dungeon",
     },
+    {
+      id: "servant-serving",
+      name: "Devoted Servant",
+      nameFr: "Serviteur dévoué",
+      description: "Your personal servant is already kneeling at your feet, mid-service — an established dynamic you command",
+      icon: Crown,
+      seedScenario: "servant-serving",
+    },
   ];
 
   return (
