@@ -67,13 +67,15 @@ export const equipItem = mutation({
     const character = await ctx.db.get(args.characterId);
     if (!character) throw new Error("Character not found");
 
-    const inventoryIndex = character.inventory.findIndex(
+    const inventory = character.inventory as Array<{ id: string; type: string; [k: string]: unknown }>;
+    const inventoryIndex = inventory.findIndex(
       (i) => i.id === args.itemId
     );
     if (inventoryIndex === -1) throw new Error("Item not in inventory");
 
-    const item = character.inventory[inventoryIndex];
-    const slot = (args.targetSlot as EquipedSlot) || getSlotForItem(item.type, character.equipped);
+    const item = inventory[inventoryIndex];
+    const equipped = character.equipped as Record<string, unknown>;
+    const slot = (args.targetSlot as EquipedSlot) || getSlotForItem(item.type, equipped);
     if (!slot) throw new Error("No valid slot for item type: " + item.type);
 
     const newInventory = [...character.inventory];
