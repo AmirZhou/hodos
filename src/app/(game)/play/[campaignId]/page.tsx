@@ -499,11 +499,13 @@ function LogEntry({
   showFrench,
   onSave,
   isSaved,
+  onNpcNameClick,
 }: {
   entry: GameLogEntry;
   showFrench: boolean;
   onSave?: () => void;
   isSaved?: boolean;
+  onNpcNameClick?: () => void;
 }) {
   const isPlayerAction = entry.actorType === "character";
   const isRoll = entry.type === "roll";
