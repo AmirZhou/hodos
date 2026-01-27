@@ -409,7 +409,7 @@ async function seedServantServing(ctx: MutationCtx, campaignId: Id<"campaigns">,
 
   await ctx.db.insert("gameLog", {
     campaignId, sessionId, type: "system",
-    contentEn: "Quick actions: [Run your fingers through his hair] [Tell him to speak] [Guide his mouth higher] [Take the wine] [Give him a new order] [Praise his work] [Use the riding crop]",
+    contentEn: "Quick actions: [Run your fingers through her hair] [Tell her to speak] [Guide her mouth higher] [Take the wine] [Give her a new order] [Praise her work] [Use the riding crop]",
     contentFr: "Actions rapides : [Passer vos doigts dans ses cheveux] [Lui dire de parler] [Guider sa bouche plus haut] [Prendre le vin] [Lui donner un nouvel ordre] [Louer son travail] [Utiliser la cravache]",
     createdAt: now + 3,
   });
