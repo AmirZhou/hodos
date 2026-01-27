@@ -304,13 +304,130 @@ async function seedFootFetishSpa(ctx: MutationCtx, campaignId: Id<"campaigns">, 
   return { locationId, sessionId };
 }
 
+// ─── Scenario: Servant Already Serving ──────────────────────────
+
+async function seedServantServing(ctx: MutationCtx, campaignId: Id<"campaigns">, characterId: Id<"characters">, character: { inventory: any[] }) {
+  const now = Date.now();
+
+  const locationId = await ctx.db.insert("locations", {
+    campaignId,
+    name: "Your Private Chambers",
+    nameFr: "Vos Appartements Privés",
+    description:
+      "Your personal quarters — spacious, warm, and richly appointed. A large canopy bed dominates the room, its curtains half-drawn. A velvet chaise longue sits near the fireplace, where embers glow low. The floor is covered in thick rugs. A side table holds wine, fruit, and oil. Your servant kneels at your feet, already attending to you — bare-chested, collar gleaming, hands working devotedly at the task you gave him.",
+    descriptionFr:
+      "Vos appartements personnels — spacieux, chaleureux et richement meublés. Un grand lit à baldaquin domine la pièce, ses rideaux à demi tirés. Une chaise longue en velours se trouve près de la cheminée, où les braises rougeoient doucement. Le sol est couvert d'épais tapis. Une table d'appoint porte du vin, des fruits et de l'huile. Votre serviteur est agenouillé à vos pieds, déjà en train de vous servir — torse nu, collier brillant, les mains travaillant dévotement à la tâche que vous lui avez confiée.",
+    connectedTo: [],
+    isDiscovered: true,
+    properties: { type: "bedroom", lighting: "firelight", mood: "intimate", privacy: "private" },
+  });
+
+  const etienneId = await ctx.db.insert("npcs", {
+    campaignId,
+    name: "Étienne",
+    pronouns: "he/him",
+    description:
+      "A beautiful young man with olive skin, dark curly hair falling across his forehead, and deep brown eyes that stay lowered unless given permission to look up. He wears only fitted dark trousers and a polished leather collar with your initials engraved on the clasp. His body is lean and well-kept — he takes pride in presenting himself for you. He is currently kneeling, massaging your feet with warm oil, occasionally pressing his lips to your ankle.",
+    descriptionFr:
+      "Un beau jeune homme à la peau olivâtre, aux cheveux bruns bouclés tombant sur son front, et aux yeux bruns profonds qui restent baissés sauf permission de regarder. Il ne porte qu'un pantalon sombre ajusté et un collier de cuir poli gravé de vos initiales sur le fermoir. Son corps est mince et soigné — il est fier de se présenter pour vous. Il est actuellement agenouillé, massant vos pieds avec de l'huile chaude, pressant occasionnellement ses lèvres contre votre cheville.",
+    personality:
+      "Utterly devoted and already deep in service headspace. Étienne lives to anticipate your needs. He speaks softly, moves gracefully, and radiates quiet adoration. He has been yours for months and knows your preferences intimately — where you like to be touched, how firm, when to be silent and when to whisper praise. He is happiest when serving and craves your approval.",
+    level: 4, hp: 26, maxHp: 26, ac: 11,
+    abilities: { strength: 11, dexterity: 16, constitution: 13, intelligence: 14, wisdom: 12, charisma: 16 },
+    isAlive: true, conditions: [], memories: [
+      "Has served you faithfully for several months",
+      "Knows your preferred foot massage pressure and technique",
+      "Was recently praised for his devotion — still glowing from it",
+      "Loves when you run your fingers through his hair",
+    ], autoCreated: false, firstMetAt: now - 86400000 * 90, currentLocationId: locationId,
+    intimacyProfile: {
+      orientation: "submissive",
+      roleIdentity: { power: 10, action: 20, sensation: 75, service: 95, flexibility: 25 },
+      kinks: {
+        service: 3, "foot worship": 3, "body worship": 3, collaring: 3, massage: 3,
+        pampering: 3, "power exchange": 3, praise: 3, "sensation play": 2, aftercare: 3,
+      },
+      aftercareNeed: 80, trustThreshold: 20,
+    },
+  });
+
+  // Established relationship — high trust, deep bond
+  await ctx.db.insert("relationships", {
+    campaignId, characterId, npcId: etienneId,
+    affinity: 75, trust: 85, attraction: 70, tension: 40, intimacy: 65,
+    history: [
+      "Étienne entered your service three months ago",
+      "He earned his collar after proving his devotion",
+      "You established a daily service ritual together",
+      "He worships your feet every evening without needing to be asked",
+    ],
+    flags: { collared: true, established_dynamic: true },
+    dynamic: {
+      type: "ongoing",
+      protocolLevel: 3,
+      roles: { character: "dominant", npc: "submissive" },
+    },
+  });
+
+  // Items — things a master/mistress would have at hand
+  const items = resolveItems([
+    "ring_blue_03",   // Ring of Binding
+    "neck_blue_02",   // Collar of Devotion
+    "boots_green_03", // Heels of Confidence
+    "main_white_06",  // Riding Crop
+    "off_green_02",   // Restraint Kit
+    "book_green_01",  // Tome of Sensual Arts
+  ]);
+  await ctx.db.patch(characterId, {
+    inventory: [...character.inventory, ...items] as typeof character.inventory,
+  });
+
+  const sessionId = await ctx.db.insert("gameSessions", {
+    campaignId, status: "active", mode: "exploration", locationId, startedAt: now, lastActionAt: now,
+  });
+
+  await ctx.db.insert("gameLog", {
+    campaignId, sessionId, type: "system",
+    contentEn: "You are in your private chambers. Étienne is already serving you.",
+    contentFr: "Vous êtes dans vos appartements privés. Étienne est déjà en train de vous servir.",
+    createdAt: now,
+  });
+
+  await ctx.db.insert("gameLog", {
+    campaignId, sessionId, type: "narration", actorType: "dm",
+    contentEn: "The fire crackles softly as Étienne kneels before you, warm oil glistening on his hands. He works your feet with practiced devotion — thumbs pressing into the arch, fingers tracing each toe, lips brushing your ankle between strokes. His collar catches the firelight. He has not spoken — he knows you prefer silence during this ritual, unless you invite him to speak. The wine on the side table is already poured. The evening is yours to command.",
+    contentFr: "Le feu crépite doucement tandis qu'Étienne s'agenouille devant vous, l'huile chaude brillant sur ses mains. Il masse vos pieds avec une dévotion exercée — les pouces pressant la voûte plantaire, les doigts traçant chaque orteil, les lèvres effleurant votre cheville entre les caresses. Son collier capte la lueur du feu. Il n'a pas parlé — il sait que vous préférez le silence pendant ce rituel, à moins que vous ne l'invitiez à parler. Le vin sur la table d'appoint est déjà versé. La soirée est vôtre à commander.",
+    createdAt: now + 1,
+  });
+
+  await ctx.db.insert("gameLog", {
+    campaignId, sessionId, type: "narration", actorType: "dm",
+    contentEn: "Étienne glances up briefly — a flicker of adoration in his dark eyes — then lowers his gaze again, pressing a slow kiss to the top of your foot before continuing his work.",
+    contentFr: "Étienne lève brièvement les yeux — une lueur d'adoration dans ses yeux sombres — puis baisse de nouveau le regard, déposant un lent baiser sur le dessus de votre pied avant de reprendre son travail.",
+    createdAt: now + 2,
+  });
+
+  await ctx.db.insert("gameLog", {
+    campaignId, sessionId, type: "system",
+    contentEn: "Quick actions: [Run your fingers through his hair] [Tell him to speak] [Guide his mouth higher] [Take the wine] [Give him a new order] [Praise his work] [Use the riding crop]",
+    contentFr: "Actions rapides : [Passer vos doigts dans ses cheveux] [Lui dire de parler] [Guider sa bouche plus haut] [Prendre le vin] [Lui donner un nouvel ordre] [Louer son travail] [Utiliser la cravache]",
+    createdAt: now + 3,
+  });
+
+  return { locationId, sessionId };
+}
+
 // ─── Main mutation ─────────────────────────────────────────────
 
 export const seedTestScenario = mutation({
   args: {
     campaignId: v.id("campaigns"),
     characterId: v.id("characters"),
-    scenario: v.optional(v.union(v.literal("bdsm-dungeon"), v.literal("foot-fetish-spa"))),
+    scenario: v.optional(v.union(
+      v.literal("bdsm-dungeon"),
+      v.literal("foot-fetish-spa"),
+      v.literal("servant-serving"),
+    )),
   },
   handler: async (ctx, args) => {
     const { campaignId, characterId } = args;
@@ -331,6 +448,8 @@ export const seedTestScenario = mutation({
         return await seedBdsmDungeon(ctx, campaignId, characterId, freshCharacter);
       case "foot-fetish-spa":
         return await seedFootFetishSpa(ctx, campaignId, characterId, freshCharacter);
+      case "servant-serving":
+        return await seedServantServing(ctx, campaignId, characterId, freshCharacter);
       default:
         throw new Error(`Unknown scenario: ${scenario}`);
     }
