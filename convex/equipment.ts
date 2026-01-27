@@ -13,8 +13,8 @@ export const migrateEquippedSlots = mutation({
       const equipped = character.equipped as Record<string, unknown>;
       if ("accessories" in equipped || "armor" in equipped) {
         await ctx.db.patch(character._id, {
-          equipped: {},
-          inventory: [],
+          equipped: {} as typeof character.equipped,
+          inventory: [] as typeof character.inventory,
         });
         migrated++;
       }
@@ -37,22 +37,18 @@ function itemToDoc(item: EquipmentItem) {
   };
 }
 
+type EquipDoc = ReturnType<typeof itemToDoc>;
+
 function getSlotForItem(itemType: string, equipped: Record<string, unknown>): EquipedSlot | null {
   if (itemType === "ring") {
     if (!equipped.ring1) return "ring1";
     if (!equipped.ring2) return "ring2";
-    return "ring1"; // Replace ring1 by default
+    return "ring1";
   }
   const slotMap: Record<string, EquipedSlot> = {
-    head: "head",
-    chest: "chest",
-    hands: "hands",
-    boots: "boots",
-    cloak: "cloak",
-    necklace: "necklace",
-    mainHand: "mainHand",
-    offHand: "offHand",
-    book: "book",
+    head: "head", chest: "chest", hands: "hands", boots: "boots",
+    cloak: "cloak", necklace: "necklace", mainHand: "mainHand",
+    offHand: "offHand", book: "book",
   };
   return slotMap[itemType] || null;
 }
@@ -67,32 +63,33 @@ export const equipItem = mutation({
     const character = await ctx.db.get(args.characterId);
     if (!character) throw new Error("Character not found");
 
-    const inventory = character.inventory as Array<{ id: string; type: string; [k: string]: unknown }>;
-    const inventoryIndex = inventory.findIndex(
+    const inventoryIndex = character.inventory.findIndex(
       (i) => i.id === args.itemId
     );
     if (inventoryIndex === -1) throw new Error("Item not in inventory");
 
-    const item = inventory[inventoryIndex];
-    const equipped = character.equipped as Record<string, unknown>;
-    const slot = (args.targetSlot as EquipedSlot) || getSlotForItem(item.type, equipped);
+    const item = character.inventory[inventoryIndex];
+    const slot = (args.targetSlot as EquipedSlot) || getSlotForItem(
+      item.type,
+      character.equipped as Record<string, unknown>
+    );
     if (!slot) throw new Error("No valid slot for item type: " + item.type);
 
-    const newInventory = [...inventory] as unknown[];
+    const newInventory = [...character.inventory];
     newInventory.splice(inventoryIndex, 1);
 
     // Unequip existing item in slot
-    const existingItem = equipped[slot];
+    const existingItem = character.equipped[slot as keyof typeof character.equipped];
     if (existingItem) {
-      newInventory.push(existingItem as never);
+      newInventory.push(existingItem);
     }
 
     await ctx.db.patch(args.characterId, {
       inventory: newInventory,
       equipped: {
-        ...equipped,
+        ...character.equipped,
         [slot]: item,
-      },
+      } as typeof character.equipped,
     });
   },
 });
@@ -106,18 +103,16 @@ export const unequipItem = mutation({
     const character = await ctx.db.get(args.characterId);
     if (!character) throw new Error("Character not found");
 
-    const equipped = character.equipped as Record<string, unknown>;
-    const inventory = character.inventory as unknown[];
-    const slot = args.slot;
-    const item = equipped[slot];
+    const slot = args.slot as keyof typeof character.equipped;
+    const item = character.equipped[slot];
     if (!item) throw new Error("No item in slot: " + args.slot);
 
     await ctx.db.patch(args.characterId, {
-      inventory: [...inventory, item],
+      inventory: [...character.inventory, item],
       equipped: {
-        ...equipped,
+        ...character.equipped,
         [slot]: undefined,
-      },
+      } as typeof character.equipped,
     });
   },
 });
@@ -134,8 +129,9 @@ export const addItemToInventory = mutation({
     const itemData = getItemById(args.itemId);
     if (!itemData) throw new Error("Unknown item: " + args.itemId);
 
+    const doc = itemToDoc(itemData);
     await ctx.db.patch(args.characterId, {
-      inventory: [...(character.inventory as unknown[]), itemToDoc(itemData)],
+      inventory: [...character.inventory, doc] as typeof character.inventory,
     });
   },
 });
@@ -149,12 +145,11 @@ export const removeItemFromInventory = mutation({
     const character = await ctx.db.get(args.characterId);
     if (!character) throw new Error("Character not found");
 
-    const inv = character.inventory as unknown[];
-    if (args.inventoryIndex < 0 || args.inventoryIndex >= inv.length) {
+    if (args.inventoryIndex < 0 || args.inventoryIndex >= character.inventory.length) {
       throw new Error("Invalid inventory index");
     }
 
-    const newInventory = [...inv];
+    const newInventory = [...character.inventory];
     newInventory.splice(args.inventoryIndex, 1);
 
     await ctx.db.patch(args.characterId, { inventory: newInventory });
@@ -227,7 +222,7 @@ export const giveStartingGear = mutation({
     const className = (args.className || "default").toLowerCase();
     const gear = CLASS_STARTING_GEAR[className] || CLASS_STARTING_GEAR.default;
 
-    const equipped: Record<string, ReturnType<typeof itemToDoc>> = {};
+    const equipped: Record<string, EquipDoc> = {};
     for (const [slot, itemId] of Object.entries(gear.equip)) {
       const item = getItemById(itemId);
       if (item) {
@@ -235,14 +230,14 @@ export const giveStartingGear = mutation({
       }
     }
 
-    const inventory = gear.inventory
+    const inventoryItems = gear.inventory
       .map((id) => getItemById(id))
       .filter((i): i is EquipmentItem => i !== undefined)
       .map(itemToDoc);
 
     await ctx.db.patch(args.characterId, {
-      equipped: { ...(character.equipped as Record<string, unknown>), ...equipped },
-      inventory: [...(character.inventory as unknown[]), ...inventory],
+      equipped: { ...character.equipped, ...equipped } as typeof character.equipped,
+      inventory: [...character.inventory, ...inventoryItems] as typeof character.inventory,
     });
   },
 });
