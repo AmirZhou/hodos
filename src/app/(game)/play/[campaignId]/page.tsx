@@ -267,11 +267,13 @@ function GameModeRouter({
   characterId,
   onSaveEntry,
   savedEntries,
+  onNpcNameClick,
 }: {
   showFrench: boolean;
   characterId?: Id<"characters">;
   onSaveEntry: (entry: GameLogEntry) => void;
   savedEntries: Set<string>;
+  onNpcNameClick?: (npcId: Id<"npcs">) => void;
 }) {
   const { gameState } = useGame();
 
