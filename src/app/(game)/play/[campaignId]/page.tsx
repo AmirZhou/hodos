@@ -186,7 +186,7 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
                 onClick={async () => {
                   setSeeding(true);
                   try {
-                    await seedScenario({
+                    await seedMutation({
                       campaignId,
                       characterId: currentCharacter._id,
                       scenario: selectedScenario,
