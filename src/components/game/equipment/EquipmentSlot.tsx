@@ -71,10 +71,9 @@ export function EquipmentSlotComponent({ slot, item, onClick, size = "md" }: Equ
         }}
         title={item ? item.name : getSlotLabel(slot)}
       >
-        <Icon
-          className={iconSize}
-          style={{ color: item ? nameColor : "var(--foreground-muted)" }}
-        />
+        <div style={{ color: item ? nameColor : "var(--foreground-muted)" }}>
+          <Icon className={iconSize} />
+        </div>
         {size === "md" && (
           <span
             className="text-[9px] leading-tight text-center px-0.5 truncate w-full"
