@@ -336,7 +336,7 @@ function ExplorationView({
     api.relationships.getForCharacter,
     currentCharacter?._id ? { characterId: currentCharacter._id } : "skip"
   );
-  const npcNameToId = new Map<string, Id<"npcs">>();
+  const npcNameToId: Record<string, Id<"npcs">> = {};
   if (relationships) {
     for (const rel of relationships) {
       if (rel.npc?.name) {
