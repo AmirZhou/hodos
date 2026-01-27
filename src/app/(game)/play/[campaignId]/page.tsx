@@ -404,8 +404,8 @@ function ExplorationView({
                 showFrench={showFrench}
                 onSave={() => onSaveEntry(entry)}
                 isSaved={savedEntries.has(entry._id)}
-                onNpcNameClick={onNpcNameClick && entry.actorType === "npc" && entry.actorName && npcNameToId.has(entry.actorName)
-                  ? () => onNpcNameClick(npcNameToId.get(entry.actorName!)!)
+                onNpcNameClick={onNpcNameClick && entry.actorType === "npc" && entry.actorName && npcNameToId[entry.actorName]
+                  ? () => onNpcNameClick(npcNameToId[entry.actorName!])
                   : undefined}
               />
             ))
