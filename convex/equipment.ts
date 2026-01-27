@@ -3,6 +3,26 @@ import { mutation, query } from "./_generated/server";
 import { getItemById } from "./data/equipmentItems";
 import type { EquipmentItem, EquipedSlot } from "./data/equipmentItems";
 
+// One-time migration: convert old equipped shape to new 11-slot system
+export const migrateEquippedSlots = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const characters = await ctx.db.query("characters").collect();
+    let migrated = 0;
+    for (const character of characters) {
+      const equipped = character.equipped as Record<string, unknown>;
+      if ("accessories" in equipped || "armor" in equipped) {
+        await ctx.db.patch(character._id, {
+          equipped: {},
+          inventory: [],
+        });
+        migrated++;
+      }
+    }
+    return { migrated, total: characters.length };
+  },
+});
+
 function itemToDoc(item: EquipmentItem) {
   return {
     id: item.id,
