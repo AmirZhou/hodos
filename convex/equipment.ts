@@ -78,11 +78,11 @@ export const equipItem = mutation({
     const slot = (args.targetSlot as EquipedSlot) || getSlotForItem(item.type, equipped);
     if (!slot) throw new Error("No valid slot for item type: " + item.type);
 
-    const newInventory = [...character.inventory];
+    const newInventory = [...inventory];
     newInventory.splice(inventoryIndex, 1);
 
     // Unequip existing item in slot
-    const existingItem = character.equipped[slot as keyof typeof character.equipped];
+    const existingItem = equipped[slot];
     if (existingItem) {
       newInventory.push(existingItem);
     }
@@ -90,7 +90,7 @@ export const equipItem = mutation({
     await ctx.db.patch(args.characterId, {
       inventory: newInventory,
       equipped: {
-        ...character.equipped,
+        ...equipped,
         [slot]: item,
       },
     });
