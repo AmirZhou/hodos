@@ -264,8 +264,8 @@ describe("dice utilities", () => {
 
       const result = makeSavingThrow(14, 2, true, 15, false, false);
 
-      expect(result.total).toBe(16); // 11 + 2 (mod) + 3 (wait, prof is 2)
-      // Actually: 11 + 2 (ability mod) + 2 (proficiency) = 15
+      // 11 (roll) + 2 (ability mod for 14) + 2 (proficiency) = 15
+      expect(result.total).toBe(15);
       expect(result.success).toBe(true);
     });
 
