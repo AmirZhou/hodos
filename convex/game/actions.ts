@@ -3,6 +3,7 @@ import { action } from "../_generated/server";
 import { api } from "../_generated/api";
 import { Id, Doc } from "../_generated/dataModel";
 import * as dice from "../dice";
+import { validateItemGrants } from "./itemGrants";
 
 // Type definitions for the response
 interface LinguisticAnalysis {
