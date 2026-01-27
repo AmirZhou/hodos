@@ -820,7 +820,7 @@ function EquipmentSlotPopover({
                     onClick={async () => { await equipItem({ characterId, itemId: inv.id, targetSlot: slot }); onClose(); }}
                     className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-[var(--background-tertiary)] transition-colors text-left"
                   >
-                    {(() => { const I = SIDEBAR_SLOT_ICONS[inv.type] || Scroll; return <I className="h-4 w-4 shrink-0" style={{ color: rc }} />; })()}
+                    {(() => { const I = SIDEBAR_SLOT_ICONS[inv.type] || Scroll; return <div className="shrink-0" style={{ color: rc }}><I className="h-4 w-4" /></div>; })()}
                     <div className="min-w-0 flex-1">
                       <span className="text-xs font-medium block truncate" style={{ color: rc }}>{inv.name}</span>
                       <span className="text-[10px] text-[var(--foreground-muted)] capitalize">{inv.rarity}</span>
