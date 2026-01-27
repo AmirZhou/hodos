@@ -171,6 +171,16 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
         </aside>
       )}
 
+      {/* NPC Interaction Modal */}
+      {selectedNpcId && currentCharacter && (
+        <NpcInteractionModal
+          npcId={selectedNpcId}
+          characterId={currentCharacter._id}
+          campaignId={campaignId}
+          onClose={() => setSelectedNpcId(null)}
+        />
+      )}
+
       {/* Global Safeword Button (always visible during scene) */}
       {gameState.isInScene && (
         <SafewordButton
