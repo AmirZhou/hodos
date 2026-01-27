@@ -442,6 +442,12 @@ export default defineSchema({
 
     locationId: v.optional(v.id("locations")),
 
+    suggestedActions: v.optional(v.array(v.object({
+      en: v.string(),
+      fr: v.string(),
+      type: v.string(),
+    }))),
+
     startedAt: v.number(),
     lastActionAt: v.number(),
   }).index("by_campaign", ["campaignId"]),
