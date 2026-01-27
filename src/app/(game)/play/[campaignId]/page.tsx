@@ -738,80 +738,104 @@ const SIDEBAR_SLOT_ICONS: Record<string, React.ComponentType<{ className?: strin
   necklace: Gem, mainHand: Sword, offHand: Shield, book: BookOpen,
 };
 
-// Paper-doll slot positions: left column, right column
-const DOLL_LEFT_SLOTS = ["head", "chest", "hands", "boots", "cloak"];
-const DOLL_RIGHT_SLOTS = ["mainHand", "offHand", "necklace", "ring1", "ring2", "book"];
+// Slot-to-item-type mapping for filtering inventory items that can go in a slot
+const SLOT_ITEM_TYPES: Record<string, string[]> = {
+  head: ["head"], chest: ["chest"], hands: ["hands"], boots: ["boots"],
+  cloak: ["cloak"], mainHand: ["mainHand"], offHand: ["offHand"],
+  ring1: ["ring"], ring2: ["ring"], necklace: ["necklace"], book: ["book"],
+};
 
-function DollSlot({ slot, item }: {
+type EquipSlotItem = { name: string; rarity: string; type: string; stats: Record<string, unknown>; id?: string; description?: string };
+
+function EquipmentSlotPopover({
+  slot,
+  item,
+  characterId,
+  onClose,
+}: {
   slot: string;
-  item: { name: string; rarity: string; type: string; stats: Record<string, unknown> } | null;
+  item: EquipSlotItem | null;
+  characterId: Id<"characters">;
+  onClose: () => void;
 }) {
-  const Icon = SIDEBAR_SLOT_ICONS[slot] || Scroll;
-  if (!item) {
-    return (
-      <div className="w-10 h-10 rounded-md border border-[var(--border)] bg-[var(--background-tertiary)] flex items-center justify-center opacity-40" title={getSlotLabel(slot as never)}>
-        <Icon className="h-4 w-4 text-[var(--foreground-muted)]" />
-      </div>
-    );
-  }
-  const rarityColor = getRarityColor(item.rarity as never);
-  const borderColor = RARITY_BORDER_COLORS[item.rarity as keyof typeof RARITY_BORDER_COLORS];
-  const bgColor = RARITY_BG_COLORS[item.rarity as keyof typeof RARITY_BG_COLORS];
-  return (
-    <div
-      className="w-10 h-10 rounded-md border flex items-center justify-center transition-all hover:brightness-125 cursor-pointer"
-      style={{ borderColor, background: `linear-gradient(135deg, ${bgColor}, rgba(0,0,0,0.4))` }}
-      title={`${item.name} (${item.rarity})`}
-    >
-      <Icon className="h-4 w-4" style={{ color: rarityColor }} />
-    </div>
-  );
-}
+  const inventory = useQuery(api.equipment.getInventory, { characterId });
+  const equipItem = useMutation(api.equipment.equipItem);
+  const unequipItem = useMutation(api.equipment.unequipItem);
 
-function PaperDoll({ equippedSlots }: {
-  equippedSlots: { slot: string; item: { name: string; rarity: string; type: string; stats: Record<string, unknown> } | null }[];
-}) {
-  const getItem = (slot: string) => equippedSlots.find(s => s.slot === slot)?.item ?? null;
+  const compatibleItems = (inventory ?? []).filter((inv: any) => {
+    const types = SLOT_ITEM_TYPES[slot] || [];
+    return types.includes(inv.type);
+  });
 
   return (
-    <div className="flex items-stretch gap-1.5">
-      {/* Left slots */}
-      <div className="flex flex-col gap-1.5 justify-center">
-        {DOLL_LEFT_SLOTS.map(slot => (
-          <DollSlot key={slot} slot={slot} item={getItem(slot)} />
-        ))}
-      </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/60" />
+      <div
+        className="relative z-10 w-72 rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-2xl overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="px-4 py-3 border-b border-[var(--border)] flex items-center justify-between">
+          <span className="text-sm font-medium">{getSlotLabel(slot as never)}</span>
+          <button onClick={onClose} className="text-[var(--foreground-muted)] hover:text-[var(--foreground)] text-lg leading-none">&times;</button>
+        </div>
 
-      {/* Center: character silhouette */}
-      <div className="flex-1 min-h-[230px] rounded-lg border border-[var(--border)] bg-[var(--background-tertiary)] flex items-center justify-center relative overflow-hidden">
-        {/* Silhouette placeholder */}
-        <svg viewBox="0 0 100 200" className="h-full max-h-[200px] opacity-20" fill="currentColor">
-          {/* Head */}
-          <circle cx="50" cy="30" r="18" />
-          {/* Neck */}
-          <rect x="44" y="48" width="12" height="8" rx="2" />
-          {/* Torso */}
-          <path d="M30 56 L70 56 L68 120 L32 120 Z" />
-          {/* Left arm */}
-          <path d="M30 56 L18 60 L12 100 L20 102 L26 72 L30 70 Z" />
-          {/* Right arm */}
-          <path d="M70 56 L82 60 L88 100 L80 102 L74 72 L70 70 Z" />
-          {/* Left leg */}
-          <path d="M32 120 L38 120 L40 180 L28 182 L26 130 Z" />
-          {/* Right leg */}
-          <path d="M62 120 L68 120 L74 130 L72 182 L60 180 Z" />
-          {/* Boots */}
-          <ellipse cx="34" cy="186" rx="12" ry="6" />
-          <ellipse cx="66" cy="186" rx="12" ry="6" />
-        </svg>
-        <span className="absolute bottom-2 text-[9px] text-[var(--foreground-muted)] opacity-50">Character Doll</span>
-      </div>
+        {/* Current item details */}
+        {item ? (
+          <div className="px-4 py-3 border-b border-[var(--border)]">
+            <div className="flex items-center gap-2 mb-1">
+              {(() => { const Icon = SIDEBAR_SLOT_ICONS[slot] || Scroll; return <Icon className="h-5 w-5" style={{ color: getRarityColor(item.rarity as never) }} />; })()}
+              <span className="font-medium text-sm" style={{ color: getRarityColor(item.rarity as never) }}>{item.name}</span>
+            </div>
+            <p className="text-[10px] text-[var(--foreground-muted)] capitalize mb-2">{item.rarity}</p>
+            {/* Stats */}
+            <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-[var(--foreground-secondary)]">
+              {Object.entries(item.stats).filter(([,v]) => v !== undefined && v !== null).map(([k, v]) => (
+                <span key={k}>{formatStatValue(k, v as number)}</span>
+              ))}
+            </div>
+            <button
+              onClick={async () => { await unequipItem({ characterId, slot }); onClose(); }}
+              className="mt-3 w-full py-1.5 rounded-lg text-xs font-medium bg-[var(--accent-red)]/20 text-[var(--accent-red)] hover:bg-[var(--accent-red)]/30 transition-colors"
+            >
+              Unequip
+            </button>
+          </div>
+        ) : (
+          <div className="px-4 py-3 border-b border-[var(--border)]">
+            <p className="text-xs text-[var(--foreground-muted)] italic">Empty slot</p>
+          </div>
+        )}
 
-      {/* Right slots */}
-      <div className="flex flex-col gap-1.5 justify-center">
-        {DOLL_RIGHT_SLOTS.map(slot => (
-          <DollSlot key={slot} slot={slot} item={getItem(slot)} />
-        ))}
+        {/* Equippable items from inventory */}
+        {compatibleItems.length > 0 && (
+          <div className="px-4 py-2">
+            <p className="text-[10px] text-[var(--foreground-muted)] mb-2 uppercase tracking-wide">Equip from inventory</p>
+            <div className="space-y-1.5 max-h-40 overflow-y-auto">
+              {compatibleItems.map((inv: any) => {
+                const rc = getRarityColor(inv.rarity);
+                return (
+                  <button
+                    key={inv.id}
+                    onClick={async () => { await equipItem({ characterId, itemId: inv.id, targetSlot: slot }); onClose(); }}
+                    className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-[var(--background-tertiary)] transition-colors text-left"
+                  >
+                    {(() => { const I = SIDEBAR_SLOT_ICONS[inv.type] || Scroll; return <I className="h-4 w-4 shrink-0" style={{ color: rc }} />; })()}
+                    <div className="min-w-0 flex-1">
+                      <span className="text-xs font-medium block truncate" style={{ color: rc }}>{inv.name}</span>
+                      <span className="text-[10px] text-[var(--foreground-muted)] capitalize">{inv.rarity}</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+        {compatibleItems.length === 0 && !item && (
+          <div className="px-4 py-3">
+            <p className="text-xs text-[var(--foreground-muted)]">No items available for this slot</p>
+          </div>
+        )}
       </div>
     </div>
   );
