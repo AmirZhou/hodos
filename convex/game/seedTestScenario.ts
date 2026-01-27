@@ -314,7 +314,7 @@ async function seedServantServing(ctx: MutationCtx, campaignId: Id<"campaigns">,
     name: "Your Private Chambers",
     nameFr: "Vos Appartements Privés",
     description:
-      "Your personal quarters — spacious, warm, and richly appointed. A large canopy bed dominates the room, its curtains half-drawn. A velvet chaise longue sits near the fireplace, where embers glow low. The floor is covered in thick rugs. A side table holds wine, fruit, and oil. Your servant kneels at your feet, already attending to you — bare-chested, collar gleaming, hands working devotedly at the task you gave him.",
+      "Your personal quarters — spacious, warm, and richly appointed. A large canopy bed dominates the room, its curtains half-drawn. A velvet chaise longue sits near the fireplace, where embers glow low. The floor is covered in thick rugs. A side table holds wine, fruit, and oil. Your servant kneels at your feet, already attending to you — collar gleaming, hands working devotedly at the task you gave her.",
     descriptionFr:
       "Vos appartements personnels — spacieux, chaleureux et richement meublés. Un grand lit à baldaquin domine la pièce, ses rideaux à demi tirés. Une chaise longue en velours se trouve près de la cheminée, où les braises rougeoient doucement. Le sol est couvert d'épais tapis. Une table d'appoint porte du vin, des fruits et de l'huile. Votre serviteur est agenouillé à vos pieds, déjà en train de vous servir — torse nu, collier brillant, les mains travaillant dévotement à la tâche que vous lui avez confiée.",
     connectedTo: [],
