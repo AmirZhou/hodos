@@ -141,6 +141,56 @@ const item = v.object({
   properties: v.record(v.string(), v.any()),
 });
 
+const equipmentItem = v.object({
+  id: v.string(),
+  name: v.string(),
+  nameFr: v.string(),
+  description: v.string(),
+  type: v.union(
+    v.literal("head"), v.literal("chest"), v.literal("hands"),
+    v.literal("boots"), v.literal("cloak"), v.literal("ring"),
+    v.literal("necklace"), v.literal("mainHand"), v.literal("offHand"),
+    v.literal("book")
+  ),
+  rarity: v.union(
+    v.literal("mundane"), v.literal("common"), v.literal("uncommon"),
+    v.literal("rare"), v.literal("epic"), v.literal("legendary")
+  ),
+  stats: v.object({
+    ac: v.optional(v.number()),
+    hp: v.optional(v.number()),
+    speed: v.optional(v.number()),
+    damage: v.optional(v.string()),
+    strength: v.optional(v.number()),
+    dexterity: v.optional(v.number()),
+    constitution: v.optional(v.number()),
+    intelligence: v.optional(v.number()),
+    wisdom: v.optional(v.number()),
+    charisma: v.optional(v.number()),
+  }),
+  specialAttributes: v.optional(v.object({
+    critChance: v.optional(v.number()),
+    damageBonus: v.optional(v.number()),
+    spellPower: v.optional(v.number()),
+    healingPower: v.optional(v.number()),
+    stealthBonus: v.optional(v.number()),
+    perceptionBonus: v.optional(v.number()),
+    persuasionBonus: v.optional(v.number()),
+    xpBonus: v.optional(v.number()),
+    seduction: v.optional(v.number()),
+    intimidation: v.optional(v.number()),
+    submission: v.optional(v.number()),
+    bondageArts: v.optional(v.number()),
+    sensationMastery: v.optional(v.number()),
+    trustBuilding: v.optional(v.number()),
+    aftercarePower: v.optional(v.number()),
+    painThreshold: v.optional(v.number()),
+    allure: v.optional(v.number()),
+    commandPresence: v.optional(v.number()),
+  })),
+  passive: v.optional(v.string()),
+});
+
 // Grid data for tactical combat maps
 const gridCell = v.object({
   x: v.number(),
