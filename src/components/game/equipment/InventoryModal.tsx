@@ -164,7 +164,7 @@ export function InventoryModal({ characterId, onClose }: InventoryModalProps) {
                       className="w-10 h-10 rounded-lg flex items-center justify-center"
                       style={{ background: `linear-gradient(135deg, ${bgColor}, transparent)` }}
                     >
-                      <Icon className="h-5 w-5" style={{ color: rarityColor }} />
+                      <div style={{ color: rarityColor }}><Icon className="h-5 w-5" /></div>
                     </div>
                     <span className="text-xs text-center truncate w-full font-medium" style={{ color: rarityColor }}>
                       {item.name}
