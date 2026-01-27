@@ -94,6 +94,9 @@ Always respond in this JSON structure:
     "flags": { "flagName": true/false },
     "relationshipChanges": { "npcName": { "affinity": +/-number, "trust": +/-number } }
   },
+  "itemsGranted": [
+    { "itemId": "item_id_from_catalog", "source": "loot|gift|found|reward", "reason": "Short description of how/why item was acquired" }
+  ],
   "vocabularyHighlights": [
     { "word": "French word", "translation": "English meaning", "note": "Usage context" }
   ],
