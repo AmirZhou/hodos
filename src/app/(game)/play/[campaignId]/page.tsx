@@ -145,6 +145,32 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
             <Play className="h-5 w-5" />
             Start Session
           </Button>
+          {currentCharacter && (
+            <Button
+              variant="outline"
+              size="lg"
+              className="gap-2"
+              disabled={seeding}
+              onClick={async () => {
+                setSeeding(true);
+                try {
+                  await seedScenario({
+                    campaignId,
+                    characterId: currentCharacter._id,
+                  });
+                } finally {
+                  setSeeding(false);
+                }
+              }}
+            >
+              {seeding ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <Zap className="h-5 w-5" />
+              )}
+              Seed Test Scenario
+            </Button>
+          )}
         </div>
       </div>
     );
