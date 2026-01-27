@@ -32,7 +32,7 @@ const mainNav: NavItem[] = [
 ];
 
 const secondaryNav: NavItem[] = [
-  { icon: BookOpen, label: "Learn French", href: "/learn" },
+  { icon: BookOpen, label: "Learn French", href: "/notebook" },
   { icon: Settings, label: "Settings", href: "/settings" },
   { icon: HelpCircle, label: "Help", href: "/help" },
 ];
