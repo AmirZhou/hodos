@@ -743,6 +743,19 @@ function GameSidebar({ campaignId }: { campaignId: Id<"campaigns"> }) {
         </div>
       )}
 
+      {/* Equipment */}
+      {currentCharacter && (
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <BookOpen className="h-4 w-4 text-[var(--foreground-muted)]" />
+            <span className="text-sm font-medium">Equipment</span>
+          </div>
+          <div className="rounded-lg bg-[var(--card)] p-3">
+            <EquipmentPanel characterId={currentCharacter._id} />
+          </div>
+        </div>
+      )}
+
       {/* Relationships */}
       {relationships && relationships.length > 0 && (
         <div>
