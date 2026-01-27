@@ -928,7 +928,7 @@ function GameSidebar({
                         className="w-8 h-8 rounded flex items-center justify-center"
                         style={{ background: `linear-gradient(135deg, ${bgColor}, transparent)` }}
                       >
-                        <Icon className="h-4 w-4" style={{ color: rarityColor }} />
+                        <div style={{ color: rarityColor }}><Icon className="h-4 w-4" /></div>
                       </div>
                       <span className="text-[9px] truncate w-full text-center font-medium" style={{ color: rarityColor }}>{item.name}</span>
                       {keyStat && <span className="text-[8px] text-[var(--foreground-muted)]">{keyStat}</span>}
