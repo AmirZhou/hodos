@@ -356,10 +356,10 @@ async function seedServantServing(ctx: MutationCtx, campaignId: Id<"campaigns">,
     campaignId, characterId, npcId: etienneId,
     affinity: 75, trust: 85, attraction: 70, tension: 40, intimacy: 65,
     history: [
-      "Étienne entered your service three months ago",
-      "He earned his collar after proving his devotion",
+      "Élise entered your service three months ago",
+      "She earned her collar after proving her devotion",
       "You established a daily service ritual together",
-      "He worships your feet every evening without needing to be asked",
+      "She worships your feet every evening without needing to be asked",
     ],
     flags: { collared: true, established_dynamic: true },
     dynamic: {
