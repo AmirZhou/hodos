@@ -155,6 +155,18 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
     );
   }
 
+  // Auto-seeding in progress
+  if (seeding) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[var(--background)]">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-[var(--accent-gold)]" />
+          <p className="text-[var(--foreground-secondary)]">Preparing scenario...</p>
+        </div>
+      </div>
+    );
+  }
+
   // No active session - show start button
   if (!gameState.hasActiveSession) {
     return (
