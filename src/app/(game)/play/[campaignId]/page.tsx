@@ -390,7 +390,7 @@ function ExplorationView({
     <>
       {/* Game Log */}
       <div className="flex-1 overflow-y-auto p-4 lg:p-6">
-        <div className="mx-auto max-w-3xl space-y-6">
+        <div className="mx-auto max-w-5xl space-y-6">
           {gameState.gameLog.length === 0 ? (
             <div className="text-center py-12 text-[var(--foreground-muted)]">
               <p>The adventure begins...</p>
