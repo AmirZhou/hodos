@@ -31,15 +31,16 @@ export const getOrCreate = mutation({
     descriptionFr: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    // Check if NPC already exists
-    const existing = await ctx.db
+    // Check if NPC already exists (fuzzy match on normalized name)
+    const { findMatchingNpc } = await import("./npcNameResolver");
+    const campaignNpcs = await ctx.db
       .query("npcs")
       .withIndex("by_campaign", (q) => q.eq("campaignId", args.campaignId))
-      .filter((q) => q.eq(q.field("name"), args.name))
-      .first();
+      .collect();
 
-    if (existing) {
-      return existing._id;
+    const matchId = findMatchingNpc(args.name, campaignNpcs);
+    if (matchId) {
+      return matchId;
     }
 
     // Create new NPC with default values
