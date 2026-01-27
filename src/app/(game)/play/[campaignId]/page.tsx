@@ -209,6 +209,22 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
         />
       )}
 
+      {/* Inventory Modal */}
+      {showInventory && currentCharacter && (
+        <InventoryModal
+          characterId={currentCharacter._id}
+          onClose={() => setShowInventory(false)}
+        />
+      )}
+
+      {/* Character Sheet Modal */}
+      {showCharSheet && currentCharacter && (
+        <CharacterSheetModal
+          characterId={currentCharacter._id}
+          onClose={() => setShowCharSheet(false)}
+        />
+      )}
+
       {/* Global Safeword Button (always visible during scene) */}
       {gameState.isInScene && (
         <SafewordButton
