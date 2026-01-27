@@ -128,6 +128,16 @@ export const getAll = query({
   },
 });
 
+// Get a single notebook entry by ID
+export const getById = query({
+  args: {
+    id: v.id("notebook"),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.id);
+  },
+});
+
 // Get entries due for review
 export const getDueForReview = query({
   args: {
