@@ -33,6 +33,7 @@ interface DMResponse {
     flags?: Record<string, boolean>;
     relationshipChanges?: Record<string, { affinity?: number; trust?: number; attraction?: number }>;
   };
+  itemsGranted?: Array<{ itemId: string; source: string; reason: string }>;
   vocabularyHighlights?: Array<{ word: string; translation: string; note?: string }>;
   linguisticAnalysis?: LinguisticAnalysis;
 }
