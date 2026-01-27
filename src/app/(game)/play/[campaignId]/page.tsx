@@ -510,26 +510,10 @@ function LogEntry({
   const isPlayerAction = entry.actorType === "character";
   const isRoll = entry.type === "roll";
   const isDialogue = entry.type === "dialogue";
+  const hasAnalysis = showFrench && !!entry.linguisticAnalysis;
 
-  return (
-    <div className={`group ${isPlayerAction ? "pl-8" : ""}`}>
-      {/* Actor name */}
-      {!isPlayerAction && entry.actorName && (
-        <div className="mb-1 flex items-center gap-2">
-          <span
-            className={`text-sm font-medium text-[var(--foreground-secondary)] ${onNpcNameClick ? "cursor-pointer hover:text-[var(--accent-gold)] hover:underline" : ""}`}
-            onClick={onNpcNameClick}
-          >
-            {entry.actorName}
-          </span>
-          {entry.type === "narration" && (
-            <span className="text-xs text-[var(--foreground-muted)]">
-              Narration
-            </span>
-          )}
-        </div>
-      )}
-
+  const contentBlock = (
+    <>
       {/* Content */}
       <div
         className={`rounded-lg p-4 ${
@@ -608,19 +592,6 @@ function LogEntry({
           )}
       </div>
 
-      {/* French Learning Analysis Panel */}
-      {showFrench && entry.linguisticAnalysis && (
-        <AnalysisPanel
-          analysis={entry.linguisticAnalysis}
-          onSave={!isSaved ? onSave : undefined}
-        />
-      )}
-      {isSaved && showFrench && entry.linguisticAnalysis && (
-        <div className="mt-1 text-xs text-[var(--accent-green)]">
-          ✓ Saved to notebook
-        </div>
-      )}
-
       {/* Action buttons (on hover) */}
       {!isPlayerAction && !isRoll && (
         <div className="mt-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -636,6 +607,57 @@ function LogEntry({
           <Button variant="ghost" size="icon" className="h-7 w-7">
             <Edit3 className="h-3 w-3" />
           </Button>
+        </div>
+      )}
+    </>
+  );
+
+  return (
+    <div className={`group ${isPlayerAction ? "pl-8" : ""}`}>
+      {/* Actor name */}
+      {!isPlayerAction && entry.actorName && (
+        <div className="mb-1 flex items-center gap-2">
+          <span
+            className={`text-sm font-medium text-[var(--foreground-secondary)] ${onNpcNameClick ? "cursor-pointer hover:text-[var(--accent-gold)] hover:underline" : ""}`}
+            onClick={onNpcNameClick}
+          >
+            {entry.actorName}
+          </span>
+          {entry.type === "narration" && (
+            <span className="text-xs text-[var(--foreground-muted)]">
+              Narration
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Side-by-side layout when analysis exists, otherwise just content */}
+      {hasAnalysis ? (
+        <div className="flex gap-4 items-start">
+          <div className="flex-1 min-w-0">
+            {contentBlock}
+          </div>
+          <div className="w-72 flex-shrink-0 hidden xl:block">
+            <AnalysisPanel
+              analysis={entry.linguisticAnalysis}
+              alwaysExpanded
+              onSave={!isSaved ? onSave : undefined}
+              isSaved={isSaved}
+            />
+          </div>
+        </div>
+      ) : (
+        contentBlock
+      )}
+
+      {/* Fallback: show analysis below on smaller screens */}
+      {hasAnalysis && (
+        <div className="xl:hidden">
+          <AnalysisPanel
+            analysis={entry.linguisticAnalysis}
+            onSave={!isSaved ? onSave : undefined}
+            isSaved={isSaved}
+          />
         </div>
       )}
     </div>
