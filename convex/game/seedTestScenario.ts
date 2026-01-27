@@ -417,6 +417,164 @@ async function seedServantServing(ctx: MutationCtx, campaignId: Id<"campaigns">,
   return { locationId, sessionId };
 }
 
+// ─── Scenario: Mid-Scene Intense ────────────────────────────────
+
+async function seedMidScene(ctx: MutationCtx, campaignId: Id<"campaigns">, characterId: Id<"characters">, character: { inventory: any[] }) {
+  const now = Date.now();
+
+  const locationId = await ctx.db.insert("locations", {
+    campaignId,
+    name: "The Moonlit Suite",
+    nameFr: "La Suite au Clair de Lune",
+    description:
+      "A lavish bedroom suite on the top floor of a private estate. Moonlight pours through tall arched windows, casting silver across tangled silk sheets. The bed is large and disheveled — pillows scattered, the duvet half on the floor. Candles on the nightstand have burned low, wax pooling on brass. The air is hot, thick with the scent of sweat, perfume, and arousal. Clothes are strewn across the floor — your shirt draped over a chair, her dress in a heap by the door.",
+    descriptionFr:
+      "Une suite somptueuse au dernier étage d'un domaine privé. Le clair de lune se déverse par de hautes fenêtres en arc, projetant de l'argent sur des draps de soie emmêlés. Le lit est grand et défait — oreillers éparpillés, la couette à moitié par terre. Les bougies sur la table de nuit ont brûlé bas, la cire s'accumulant sur le laiton. L'air est chaud, chargé de sueur, de parfum et de désir. Les vêtements sont éparpillés sur le sol — votre chemise drapée sur une chaise, sa robe en tas près de la porte.",
+    connectedTo: [],
+    isDiscovered: true,
+    properties: { type: "bedroom", lighting: "moonlight", mood: "passionate", privacy: "private" },
+  });
+
+  const sofiaId = await ctx.db.insert("npcs", {
+    campaignId,
+    name: "Sofia",
+    pronouns: "she/her",
+    description:
+      "A stunning woman with dark olive skin, wild black hair fanned across the pillows, and flushed cheeks. Her body glistens with a light sheen of sweat. She is naked beneath you, legs wrapped around your waist, her nails digging lightly into your back. Her lips are parted, eyes half-closed, breath coming in short gasps. A thin gold chain around her neck catches the moonlight with every movement.",
+    descriptionFr:
+      "Une femme magnifique à la peau olive foncée, aux cheveux noirs sauvages étalés sur les oreillers, et aux joues rougies. Son corps brille d'une fine couche de sueur. Elle est nue sous vous, les jambes enroulées autour de votre taille, ses ongles s'enfonçant légèrement dans votre dos. Ses lèvres sont entrouvertes, les yeux mi-clos, le souffle court et haletant. Une fine chaîne en or autour de son cou capte le clair de lune à chaque mouvement.",
+    personality:
+      "Passionate, vocal, and fully present. Sofia is lost in the moment — she holds nothing back. She moans openly, whispers your name, tells you exactly what she wants. Between waves of intensity she is tender, stroking your face, pulling you close for deep kisses. She has been building toward this for weeks and is savoring every second.",
+    level: 4, hp: 28, maxHp: 28, ac: 10,
+    abilities: { strength: 11, dexterity: 14, constitution: 13, intelligence: 15, wisdom: 13, charisma: 18 },
+    isAlive: true, conditions: [], memories: [
+      "You met at a masquerade ball three weeks ago",
+      "The tension between you has been building since that first dance",
+      "She kissed you first, pulling you behind a curtain at the governor's gala",
+      "Tonight she invited you to her private suite — you both knew what that meant",
+      "You undressed each other slowly, kissing every inch of exposed skin",
+      "She gasped when you first entered her and pulled you deeper",
+    ], autoCreated: false, firstMetAt: now - 86400000 * 21, currentLocationId: locationId,
+    intimacyProfile: {
+      orientation: "switch",
+      roleIdentity: { power: 45, action: 65, sensation: 85, service: 40, flexibility: 80 },
+      kinks: {
+        "sensation play": 3, "body worship": 3, "role play": 2, teasing: 3,
+        praise: 3, biting: 2, "hair pulling": 2, aftercare: 3,
+      },
+      aftercareNeed: 70, trustThreshold: 30,
+    },
+  });
+
+  // Deep established attraction, high intimacy — this has been building
+  await ctx.db.insert("relationships", {
+    campaignId, characterId, npcId: sofiaId,
+    affinity: 65, trust: 60, attraction: 90, tension: 85, intimacy: 75,
+    history: [
+      "Met at a masquerade ball — instant chemistry",
+      "Danced together all night, couldn't stop talking",
+      "Shared a stolen kiss at the governor's gala",
+      "Several charged encounters since — lingering touches, whispered promises",
+      "Tonight she finally invited you to her suite",
+      "You are currently making love",
+    ],
+    flags: { first_kiss: true, first_intimate: true },
+  });
+
+  // Session in scene mode with active scene state
+  const sessionId = await ctx.db.insert("gameSessions", {
+    campaignId,
+    status: "active",
+    mode: "scene",
+    locationId,
+    scene: {
+      participants: [
+        {
+          entityId: characterId,
+          entityType: "character",
+          role: "switch",
+          consentGiven: true,
+          limits: [],
+          currentComfort: 90,
+        },
+        {
+          entityId: sofiaId,
+          entityType: "npc",
+          role: "switch",
+          consentGiven: true,
+          limits: [],
+          currentComfort: 92,
+        },
+      ],
+      phase: "active",
+      intensity: 78,
+      peakIntensity: 78,
+      mood: "passionate",
+      currentActorIndex: 0,
+      negotiatedActivities: ["kissing", "oral", "penetration", "biting", "hair pulling", "dirty talk"],
+      usedSafeword: false,
+      startedAt: now - 1200000, // started 20 min ago
+      lastActionAt: now,
+    },
+    startedAt: now - 1800000,
+    lastActionAt: now,
+    suggestedActions: [
+      { en: "Thrust deeper", fr: "Pousser plus profondément", type: "intimate" },
+      { en: "Kiss her neck", fr: "Embrasser son cou", type: "intimate" },
+      { en: "Pull her hair gently", fr: "Tirer doucement ses cheveux", type: "intimate" },
+      { en: "Whisper in her ear", fr: "Murmurer à son oreille", type: "intimate" },
+      { en: "Slow down and tease", fr: "Ralentir et la taquiner", type: "intimate" },
+      { en: "Flip her on top", fr: "La mettre au-dessus", type: "intimate" },
+      { en: "Tell her she's beautiful", fr: "Lui dire qu'elle est belle", type: "intimate" },
+    ],
+  });
+
+  // Build the log: show a history of how the scene got here
+  await ctx.db.insert("gameLog", {
+    campaignId, sessionId, type: "system",
+    contentEn: "Scene in progress — The Moonlit Suite. Intensity: High.",
+    contentFr: "Scene en cours — La Suite au Clair de Lune. Intensite : Elevee.",
+    createdAt: now - 1200000,
+  });
+
+  await ctx.db.insert("gameLog", {
+    campaignId, sessionId, type: "narration", actorType: "dm",
+    contentEn: "She pulled you through the door before it even closed, her mouth on yours, hands pulling at your shirt. You stumbled together toward the bed, undressing each other between kisses — buttons, clasps, fabric falling away. By the time the back of her knees hit the mattress, there was nothing between you.",
+    contentFr: "Elle vous a tire a travers la porte avant meme qu'elle ne se ferme, sa bouche sur la votre, ses mains tirant sur votre chemise. Vous avez trebuche ensemble vers le lit, vous deshabillant mutuellement entre les baisers — boutons, agrafes, tissu tombant. Quand l'arriere de ses genoux a touche le matelas, il n'y avait plus rien entre vous.",
+    createdAt: now - 1100000,
+  });
+
+  await ctx.db.insert("gameLog", {
+    campaignId, sessionId, type: "dialogue", actorType: "npc", actorId: sofiaId, actorName: "Sofia",
+    contentEn: "I've wanted this... I've wanted you... since that first night...",
+    contentFr: "J'ai voulu cela... je t'ai voulu... depuis cette premiere nuit...",
+    createdAt: now - 1000000,
+  });
+
+  await ctx.db.insert("gameLog", {
+    campaignId, sessionId, type: "narration", actorType: "dm",
+    contentEn: "You took your time exploring her — kissing down her throat, across her collarbone, lower. She arched into you, fingers threading through your hair, guiding without rushing. When you finally came together, she cried out softly and pulled you close, her legs wrapping tight around you.",
+    contentFr: "Vous avez pris votre temps pour l'explorer — embrassant le long de sa gorge, sur sa clavicule, plus bas. Elle s'est cambree vers vous, ses doigts se glissant dans vos cheveux, guidant sans presser. Quand vous vous etes enfin rejoints, elle a pousse un cri doux et vous a attire contre elle, ses jambes s'enroulant fermement autour de vous.",
+    createdAt: now - 600000,
+  });
+
+  await ctx.db.insert("gameLog", {
+    campaignId, sessionId, type: "narration", actorType: "dm",
+    contentEn: "Now — twenty minutes in — the rhythm has found itself. Deep, steady, building. Her hips rise to meet yours with every thrust. The sheets are tangled around your legs. Her nails trace lines down your back. She pulls you down for a kiss, biting your lower lip, whispering something breathless against your mouth. The moonlight paints her body in silver and shadow. You can feel her getting close.",
+    contentFr: "Maintenant — vingt minutes plus tard — le rythme s'est trouve. Profond, regulier, montant. Ses hanches se levent a la rencontre des votres a chaque poussee. Les draps sont emmeles autour de vos jambes. Ses ongles tracent des lignes le long de votre dos. Elle vous attire pour un baiser, mordant votre levre inferieure, murmurant quelque chose d'essouffle contre votre bouche. Le clair de lune peint son corps d'argent et d'ombre. Vous sentez qu'elle approche.",
+    createdAt: now - 10000,
+  });
+
+  await ctx.db.insert("gameLog", {
+    campaignId, sessionId, type: "dialogue", actorType: "npc", actorId: sofiaId, actorName: "Sofia",
+    contentEn: "Don't stop... right there... god, right there...",
+    contentFr: "N'arrete pas... juste la... mon dieu, juste la...",
+    createdAt: now,
+  });
+
+  return { locationId, sessionId };
+}
+
 // ─── Main mutation ─────────────────────────────────────────────
 
 export const seedTestScenario = mutation({
@@ -427,6 +585,7 @@ export const seedTestScenario = mutation({
       v.literal("bdsm-dungeon"),
       v.literal("foot-fetish-spa"),
       v.literal("servant-serving"),
+      v.literal("mid-scene"),
     )),
   },
   handler: async (ctx, args) => {
@@ -450,6 +609,8 @@ export const seedTestScenario = mutation({
         return await seedFootFetishSpa(ctx, campaignId, characterId, freshCharacter);
       case "servant-serving":
         return await seedServantServing(ctx, campaignId, characterId, freshCharacter);
+      case "mid-scene":
+        return await seedMidScene(ctx, campaignId, characterId, freshCharacter);
       default:
         throw new Error(`Unknown scenario: ${scenario}`);
     }
