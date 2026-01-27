@@ -78,6 +78,7 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
 
   const seedScenario = useMutation(api.game.seedTestScenario.seedTestScenario);
   const [seeding, setSeeding] = useState(false);
+  const [selectedScenario, setSelectedScenario] = useState<"bdsm-dungeon" | "foot-fetish-spa">("foot-fetish-spa");
 
   const [showFrench, setShowFrench] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
