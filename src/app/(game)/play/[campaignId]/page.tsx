@@ -639,7 +639,7 @@ function QuickAction({
   );
 }
 
-function GameSidebar({ campaignId }: { campaignId: Id<"campaigns"> }) {
+function GameSidebar({ campaignId, onNpcClick }: { campaignId: Id<"campaigns">; onNpcClick?: (npcId: Id<"npcs">) => void }) {
   const { currentCharacter, gameState } = useGame();
 
   // Get current location details
