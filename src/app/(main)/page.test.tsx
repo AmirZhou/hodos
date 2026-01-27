@@ -76,8 +76,8 @@ describe('Home Page', () => {
     });
 
     it('has link to browse/discover campaigns', () => {
-      const browseLink = '/discover';
-      expect(browseLink).toBe('/discover');
+      const browseLink = '/campaigns';
+      expect(browseLink).toBe('/campaigns');
     });
   });
 });
