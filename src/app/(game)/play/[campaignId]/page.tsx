@@ -331,6 +331,20 @@ function ExplorationView({
   const submitAction = useAction(api.game.actions.submitAction);
   const submitQuickAction = useAction(api.game.actions.submitQuickAction);
 
+  // Build NPC name→ID map for clickable NPC names in log
+  const relationships = useQuery(
+    api.relationships.getForCharacter,
+    currentCharacter?._id ? { characterId: currentCharacter._id } : "skip"
+  );
+  const npcNameToId = new Map<string, Id<"npcs">>();
+  if (relationships) {
+    for (const rel of relationships) {
+      if (rel.npc?.name) {
+        npcNameToId.set(rel.npc.name, rel.npcId);
+      }
+    }
+  }
+
   const handleSubmit = async (text: string) => {
     if (!text.trim() || !currentCharacter || !campaign || isSubmitting) return;
 
