@@ -260,6 +260,8 @@ export const processPlayerInput = action({
           wisdom: v.number(),
           charisma: v.number(),
         }),
+        equipped: v.optional(v.string()),
+        inventoryCount: v.optional(v.number()),
       }),
       sessionMode: v.string(),
     }),
