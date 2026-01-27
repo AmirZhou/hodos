@@ -280,6 +280,8 @@ export const processPlayerInput = action({
 - Character: ${args.context.characterStats.name} (Level ${args.context.characterStats.level})
 - HP: ${args.context.characterStats.hp}/${args.context.characterStats.maxHp}
 - Stats: STR ${args.context.characterStats.abilities.strength}, DEX ${args.context.characterStats.abilities.dexterity}, CON ${args.context.characterStats.abilities.constitution}, INT ${args.context.characterStats.abilities.intelligence}, WIS ${args.context.characterStats.abilities.wisdom}, CHA ${args.context.characterStats.abilities.charisma}
+${args.context.characterStats.equipped ? `- Equipment: ${args.context.characterStats.equipped}` : ""}
+${args.context.characterStats.inventoryCount !== undefined ? `- Inventory items: ${args.context.characterStats.inventoryCount}` : ""}
 
 ## Nearby NPCs
 ${args.context.nearbyNpcs
