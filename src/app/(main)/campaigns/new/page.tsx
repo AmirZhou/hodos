@@ -103,6 +103,14 @@ export default function NewCampaignPage() {
       icon: Crown,
       seedScenario: "servant-serving",
     },
+    {
+      id: "mid-scene",
+      name: "In Medias Res",
+      nameFr: "En pleine action",
+      description: "You're already deep in an intense, passionate encounter — pick up right in the heat of the moment",
+      icon: Flame,
+      seedScenario: "mid-scene",
+    },
   ];
 
   return (
