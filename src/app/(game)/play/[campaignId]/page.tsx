@@ -709,8 +709,57 @@ function QuickAction({
   );
 }
 
-function GameSidebar({ campaignId, onNpcClick }: { campaignId: Id<"campaigns">; onNpcClick?: (npcId: Id<"npcs">) => void }) {
+const SIDEBAR_SLOT_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  head: Crown, chest: Shirt, hands: Hand, boots: Footprints,
+  cloak: Shield, ring1: CircleDot, ring2: CircleDot, ring: CircleDot,
+  necklace: Gem, mainHand: Sword, offHand: Shield, book: BookOpen,
+};
+
+const ABILITY_LABELS_SHORT = ["STR", "DEX", "CON", "INT", "WIS", "CHA"] as const;
+const ABILITY_KEYS = ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"] as const;
+
+function abilityMod(score: number): number {
+  return Math.floor((score - 10) / 2);
+}
+
+function modStr(mod: number): string {
+  return mod >= 0 ? `+${mod}` : `${mod}`;
+}
+
+function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string | number }) {
+  return (
+    <div className="rounded-lg bg-[var(--background-tertiary)] p-2 text-center">
+      <div className="flex justify-center mb-0.5 text-[var(--accent-blue)]">{icon}</div>
+      <div className="text-sm font-bold">{value}</div>
+      <div className="text-[9px] text-[var(--foreground-muted)]">{label}</div>
+    </div>
+  );
+}
+
+function AbilityCard({ label, score }: { label: string; score: number }) {
+  const mod = abilityMod(score);
+  return (
+    <div className="rounded-lg bg-[var(--background-tertiary)] p-1.5 text-center">
+      <div className="text-[9px] text-[var(--foreground-muted)]">{label}</div>
+      <div className="text-sm font-bold">{score}</div>
+      <div className="text-[10px] text-[var(--accent-gold)]">{modStr(mod)}</div>
+    </div>
+  );
+}
+
+function GameSidebar({
+  campaignId,
+  onNpcClick,
+  onOpenCharSheet,
+  onOpenInventory,
+}: {
+  campaignId: Id<"campaigns">;
+  onNpcClick?: (npcId: Id<"npcs">) => void;
+  onOpenCharSheet?: () => void;
+  onOpenInventory?: () => void;
+}) {
   const { currentCharacter, gameState } = useGame();
+  const [equipExpanded, setEquipExpanded] = useState(true);
 
   // Get current location details
   const currentLocation = useQuery(
@@ -724,119 +773,181 @@ function GameSidebar({ campaignId, onNpcClick }: { campaignId: Id<"campaigns">; 
     currentCharacter?._id ? { characterId: currentCharacter._id } : "skip"
   );
 
+  // Get equipment
+  const equipment = useQuery(
+    api.equipment.getEquipment,
+    currentCharacter?._id ? { characterId: currentCharacter._id } : "skip"
+  );
+
+  const character = currentCharacter;
+
+  // Compute bars
+  const hpPct = character ? Math.max(0, (character.hp / character.maxHp) * 100) : 0;
+  const xpNeeded = character ? character.level * 1000 : 1000;
+  const xpPct = character ? Math.min(100, (character.xp / xpNeeded) * 100) : 0;
+
+  // Build equipped items list
+  const equippedSlots: { slot: string; item: { name: string; rarity: string; type: string; stats: Record<string, unknown> } | null }[] = [];
+  if (equipment) {
+    const eq = equipment as Record<string, { name?: string; rarity?: string; type?: string; stats?: Record<string, unknown> } | null>;
+    const slotOrder = ["head", "chest", "hands", "boots", "cloak", "mainHand", "offHand", "ring1", "ring2", "necklace", "book"];
+    for (const slot of slotOrder) {
+      const val = eq[slot];
+      equippedSlots.push({
+        slot,
+        item: val && val.name ? { name: val.name, rarity: val.rarity ?? "common", type: val.type ?? slot, stats: (val.stats ?? {}) as Record<string, unknown> } : null,
+      });
+    }
+  }
+
   return (
-    <div className="p-4 space-y-6">
-      {/* Online Players */}
-      {gameState.onlinePlayers.length > 0 && (
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <Users className="h-4 w-4 text-[var(--foreground-muted)]" />
-            <span className="text-sm font-medium">Online Players</span>
+    <div className="p-4 space-y-4 h-full">
+      {/* Character Header Card */}
+      {character && (
+        <div
+          onClick={onOpenCharSheet}
+          className="cursor-pointer rounded-xl bg-[var(--card)] p-4 hover:bg-[var(--background-tertiary)] transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="h-14 w-14 rounded-full border-2 border-[var(--accent-gold)] bg-[var(--background-tertiary)] flex items-center justify-center text-xl font-bold text-[var(--accent-gold)]">
+              {character.name[0]}
+            </div>
+            <div>
+              <h2 className="font-bold">{character.name}</h2>
+              <p className="text-xs text-[var(--foreground-secondary)]">
+                Level {character.level} {character.class || "Character"}
+              </p>
+            </div>
           </div>
-          <div className="rounded-lg bg-[var(--card)] p-3 space-y-2">
-            {gameState.onlinePlayers.map((player) => (
-              <div key={player.userId} className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-[var(--accent-green)]" />
-                <span className="text-sm">{player.displayName}</span>
-                {player.character && (
-                  <span className="text-xs text-[var(--foreground-muted)]">
-                    ({player.character.name})
-                  </span>
-                )}
-              </div>
+
+          {/* HP Bar */}
+          <div className="mt-3">
+            <div className="flex justify-between text-xs mb-1">
+              <span className="text-[var(--accent-red)] flex items-center gap-1">
+                <Heart className="h-3 w-3" /> HP: {character.hp}/{character.maxHp}
+              </span>
+            </div>
+            <div className="h-2 rounded-full bg-[var(--background-tertiary)]">
+              <div className="h-full rounded-full bg-[var(--accent-red)] transition-all" style={{ width: `${hpPct}%` }} />
+            </div>
+          </div>
+
+          {/* XP Bar */}
+          <div className="mt-2">
+            <div className="flex justify-between text-xs mb-1">
+              <span className="text-[var(--accent-green)]">XP: {character.xp}</span>
+              <span className="text-[var(--foreground-muted)] text-[10px]">{xpNeeded - character.xp} until level {character.level + 1}</span>
+            </div>
+            <div className="h-1.5 rounded-full bg-[var(--background-tertiary)]">
+              <div className="h-full rounded-full bg-[var(--accent-green)] transition-all" style={{ width: `${xpPct}%` }} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Stats Grid */}
+      {character && (
+        <div className="rounded-xl bg-[var(--card)] p-3">
+          <div className="grid grid-cols-3 gap-2 mb-2">
+            <StatCard icon={<Shield className="h-3.5 w-3.5" />} label="AC" value={character.ac} />
+            <StatCard icon={<Zap className="h-3.5 w-3.5" />} label="Speed" value={`${character.speed}ft`} />
+            <StatCard icon={<Target className="h-3.5 w-3.5" />} label="PB" value={`+${character.proficiencyBonus}`} />
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {ABILITY_KEYS.map((key, i) => (
+              <AbilityCard key={key} label={ABILITY_LABELS_SHORT[i]} score={character.abilities[key]} />
             ))}
           </div>
         </div>
       )}
 
+      {/* Equipment Section */}
+      {character && equipment && (
+        <div className="rounded-xl bg-[var(--card)] overflow-hidden">
+          <button
+            onClick={() => setEquipExpanded(!equipExpanded)}
+            className="w-full flex items-center justify-between p-3 hover:bg-[var(--background-tertiary)] transition-colors"
+          >
+            <span className="text-sm font-medium">Equipment</span>
+            {equipExpanded ? <ChevronUp className="h-4 w-4 text-[var(--foreground-muted)]" /> : <ChevronDown className="h-4 w-4 text-[var(--foreground-muted)]" />}
+          </button>
+          {equipExpanded && (
+            <div className="px-3 pb-3">
+              <div className="grid grid-cols-3 gap-2">
+                {equippedSlots.map(({ slot, item }) => {
+                  const Icon = SIDEBAR_SLOT_ICONS[slot] || Scroll;
+                  if (!item) {
+                    return (
+                      <div key={slot} className="rounded-lg border border-[var(--border)] bg-[var(--background-tertiary)] p-2 flex flex-col items-center gap-1 opacity-40">
+                        <Icon className="h-5 w-5 text-[var(--foreground-muted)]" />
+                        <span className="text-[9px] text-[var(--foreground-muted)] truncate w-full text-center">{getSlotLabel(slot as never)}</span>
+                      </div>
+                    );
+                  }
+                  const rarityColor = getRarityColor(item.rarity as never);
+                  const borderColor = RARITY_BORDER_COLORS[item.rarity as keyof typeof RARITY_BORDER_COLORS];
+                  const bgColor = RARITY_BG_COLORS[item.rarity as keyof typeof RARITY_BG_COLORS];
+                  const keyStat = (() => {
+                    const s = item.stats;
+                    if ((item.type === "mainHand" || item.type === "offHand") && s.damage) return `${s.damage} dmg`;
+                    if (s.ac) return `+${s.ac} AC`;
+                    const first = Object.entries(s).find(([, v]) => v !== undefined);
+                    if (first) return formatStatValue(first[0], first[1] as number);
+                    return null;
+                  })();
+                  return (
+                    <div
+                      key={slot}
+                      className="rounded-lg border p-2 flex flex-col items-center gap-1 transition-all hover:brightness-110"
+                      style={{ borderColor, backgroundColor: "rgba(0,0,0,0.3)" }}
+                    >
+                      <div
+                        className="w-8 h-8 rounded flex items-center justify-center"
+                        style={{ background: `linear-gradient(135deg, ${bgColor}, transparent)` }}
+                      >
+                        <Icon className="h-4 w-4" style={{ color: rarityColor }} />
+                      </div>
+                      <span className="text-[9px] truncate w-full text-center font-medium" style={{ color: rarityColor }}>{item.name}</span>
+                      {keyStat && <span className="text-[8px] text-[var(--foreground-muted)]">{keyStat}</span>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          <button
+            onClick={onOpenInventory}
+            className="w-full py-2.5 border-t border-[var(--border)] flex items-center justify-center gap-2 text-sm hover:bg-[var(--background-tertiary)] transition-colors text-[var(--foreground-secondary)]"
+          >
+            <Package className="h-4 w-4" /> View Full Inventory
+          </button>
+        </div>
+      )}
+
       {/* Location */}
-      <div>
+      <div className="rounded-xl bg-[var(--card)] p-3">
         <div className="flex items-center gap-2 mb-2">
           <Map className="h-4 w-4 text-[var(--foreground-muted)]" />
           <span className="text-sm font-medium">Location</span>
         </div>
-        <div className="rounded-lg bg-[var(--card)] p-3">
-          {currentLocation ? (
-            <>
-              <h3 className="font-medium">{currentLocation.name}</h3>
-              <p className="text-xs text-[var(--accent-blue)]">
-                {currentLocation.nameFr}
-              </p>
-              <p className="text-xs text-[var(--foreground-secondary)] mt-1 line-clamp-2">
-                {currentLocation.description}
-              </p>
-              {currentLocation.npcs && currentLocation.npcs.length > 0 && (
-                <div className="mt-2 pt-2 border-t border-[var(--border)]">
-                  <p className="text-xs text-[var(--foreground-muted)]">
-                    {currentLocation.npcs.length} character(s) here
-                  </p>
-                </div>
-              )}
-            </>
-          ) : (
-            <>
-              <h3 className="font-medium">Unknown Location</h3>
-              <p className="text-xs text-[var(--foreground-secondary)] mt-1">
-                Open the map to explore
-              </p>
-            </>
-          )}
-        </div>
+        {currentLocation ? (
+          <>
+            <h3 className="font-medium">{currentLocation.name}</h3>
+            <p className="text-xs text-[var(--accent-blue)]">{currentLocation.nameFr}</p>
+            <p className="text-xs text-[var(--foreground-secondary)] mt-1 line-clamp-2">{currentLocation.description}</p>
+            {currentLocation.npcs && currentLocation.npcs.length > 0 && (
+              <div className="mt-2 pt-2 border-t border-[var(--border)]">
+                <p className="text-xs text-[var(--foreground-muted)]">{currentLocation.npcs.length} character(s) here</p>
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            <h3 className="font-medium">Unknown Location</h3>
+            <p className="text-xs text-[var(--foreground-secondary)] mt-1">Open the map to explore</p>
+          </>
+        )}
       </div>
-
-      {/* Character */}
-      {currentCharacter && (
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <Users className="h-4 w-4 text-[var(--foreground-muted)]" />
-            <span className="text-sm font-medium">Character</span>
-          </div>
-          <div className="rounded-lg bg-[var(--card)] p-3">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="h-12 w-12 rounded-full bg-[var(--accent-purple)] flex items-center justify-center text-white font-bold">
-                {currentCharacter.name[0]}
-              </div>
-              <div>
-                <h3 className="font-medium">{currentCharacter.name}</h3>
-                <p className="text-xs text-[var(--foreground-secondary)]">
-                  Level {/* TODO: Add level */} Character
-                </p>
-              </div>
-            </div>
-
-            {/* HP Bar */}
-            <div className="mb-3">
-              <div className="flex justify-between text-xs mb-1">
-                <span className="text-[var(--accent-red)]">HP</span>
-                <span>
-                  {currentCharacter.hp}/{currentCharacter.maxHp}
-                </span>
-              </div>
-              <div className="h-2 rounded-full bg-[var(--background-tertiary)]">
-                <div
-                  className="h-full rounded-full bg-[var(--accent-red)]"
-                  style={{
-                    width: `${(currentCharacter.hp / currentCharacter.maxHp) * 100}%`,
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Equipment */}
-      {currentCharacter && (
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <BookOpen className="h-4 w-4 text-[var(--foreground-muted)]" />
-            <span className="text-sm font-medium">Equipment</span>
-          </div>
-          <div className="rounded-lg bg-[var(--card)] p-3">
-            <EquipmentPanel characterId={currentCharacter._id} />
-          </div>
-        </div>
-      )}
 
       {/* Relationships */}
       {relationships && relationships.length > 0 && (
@@ -845,7 +956,7 @@ function GameSidebar({ campaignId, onNpcClick }: { campaignId: Id<"campaigns">; 
             <Heart className="h-4 w-4 text-[var(--foreground-muted)]" />
             <span className="text-sm font-medium">Relationships</span>
           </div>
-          <div className="rounded-lg bg-[var(--card)] p-3 space-y-3">
+          <div className="rounded-xl bg-[var(--card)] p-3 space-y-3">
             {relationships.map((rel) => (
               <RelationshipEntry
                 key={rel._id}
@@ -861,11 +972,9 @@ function GameSidebar({ campaignId, onNpcClick }: { campaignId: Id<"campaigns">; 
       )}
 
       {/* Game Mode Indicator */}
-      <div className="rounded-lg bg-[var(--background-tertiary)] p-3 text-center">
+      <div className="rounded-xl bg-[var(--background-tertiary)] p-3 text-center">
         <span className="text-xs text-[var(--foreground-muted)]">Mode: </span>
-        <span className="text-xs font-medium capitalize">
-          {gameState.currentMode}
-        </span>
+        <span className="text-xs font-medium capitalize">{gameState.currentMode}</span>
       </div>
     </div>
   );
