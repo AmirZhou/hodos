@@ -3,7 +3,6 @@
 import { cn } from "@/lib/utils";
 import {
   Home,
-  Compass,
   ScrollText,
   Plus,
   Settings,
