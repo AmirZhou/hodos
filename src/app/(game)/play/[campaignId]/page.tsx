@@ -79,7 +79,7 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
   const seedMutation = useMutation(api.game.seedTestScenario.seedTestScenario);
   const [seeding, setSeeding] = useState(false);
   const [seeded, setSeeded] = useState(false);
-  const [selectedScenario, setSelectedScenario] = useState<"bdsm-dungeon" | "foot-fetish-spa" | "servant-serving">("foot-fetish-spa");
+  const [selectedScenario, setSelectedScenario] = useState<"bdsm-dungeon" | "foot-fetish-spa" | "servant-serving" | "mid-scene">("foot-fetish-spa");
 
   // Auto-seed if campaign has a seedScenario and no active session yet
   useEffect(() => {
@@ -94,7 +94,7 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
       seedMutation({
         campaignId,
         characterId: currentCharacter._id,
-        scenario: campaign.seedScenario as "bdsm-dungeon" | "foot-fetish-spa" | "servant-serving",
+        scenario: campaign.seedScenario as "bdsm-dungeon" | "foot-fetish-spa" | "servant-serving" | "mid-scene",
       })
         .then(() => setSeeded(true))
         .catch((err) => console.error("Auto-seed failed:", err))
