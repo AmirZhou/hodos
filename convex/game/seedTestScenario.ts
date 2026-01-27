@@ -388,8 +388,8 @@ async function seedServantServing(ctx: MutationCtx, campaignId: Id<"campaigns">,
 
   await ctx.db.insert("gameLog", {
     campaignId, sessionId, type: "system",
-    contentEn: "You are in your private chambers. Étienne is already serving you.",
-    contentFr: "Vous êtes dans vos appartements privés. Étienne est déjà en train de vous servir.",
+    contentEn: "You are in your private chambers. Élise is already serving you.",
+    contentFr: "Vous êtes dans vos appartements privés. Élise est déjà en train de vous servir.",
     createdAt: now,
   });
 
