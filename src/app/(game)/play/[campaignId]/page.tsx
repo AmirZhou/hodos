@@ -76,6 +76,9 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
     userId,
   } = useGame();
 
+  const seedScenario = useMutation(api.game.seedTestScenario.seedTestScenario);
+  const [seeding, setSeeding] = useState(false);
+
   const [showFrench, setShowFrench] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showMap, setShowMap] = useState(false);

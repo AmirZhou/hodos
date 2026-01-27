@@ -22,6 +22,7 @@ import type * as game_log from "../game/log.js";
 import type * as game_npcNameResolver from "../game/npcNameResolver.js";
 import type * as game_npcs from "../game/npcs.js";
 import type * as game_scene from "../game/scene.js";
+import type * as game_seedTestScenario from "../game/seedTestScenario.js";
 import type * as game_session from "../game/session.js";
 import type * as game_streaming from "../game/streaming.js";
 import type * as game_travel from "../game/travel.js";
@@ -55,6 +56,7 @@ declare const fullApi: ApiFromModules<{
   "game/npcNameResolver": typeof game_npcNameResolver;
   "game/npcs": typeof game_npcs;
   "game/scene": typeof game_scene;
+  "game/seedTestScenario": typeof game_seedTestScenario;
   "game/session": typeof game_session;
   "game/streaming": typeof game_streaming;
   "game/travel": typeof game_travel;
