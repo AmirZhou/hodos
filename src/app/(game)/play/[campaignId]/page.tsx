@@ -806,14 +806,16 @@ function RelationshipEntry({
   affinity,
   trust,
   attraction,
+  onClick,
 }: {
   name: string;
   affinity: number;
   trust: number;
   attraction: number;
+  onClick?: () => void;
 }) {
   return (
-    <div>
+    <div className={onClick ? "cursor-pointer hover:bg-[var(--background-tertiary)] rounded-lg p-1 -m-1 transition-colors" : ""} onClick={onClick}>
       <div className="flex items-center justify-between mb-2">
         <span className="text-sm font-medium">{name}</span>
       </div>
