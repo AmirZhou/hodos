@@ -220,6 +220,19 @@ function NotebookEntryCard({ entry }: { entry: NotebookEntry }) {
           {entry.englishText}
         </p>
 
+        {/* Grammar Notes Preview */}
+        {entry.grammarNotes.length > 0 && (
+          <div className="mb-3 text-sm text-[var(--foreground-secondary)]">
+            <span className="text-[var(--foreground-muted)]">Grammar:</span>{" "}
+            {entry.grammarNotes[0]}
+            {entry.grammarNotes.length > 1 && (
+              <span className="text-[var(--foreground-muted)]">
+                {" "}(+{entry.grammarNotes.length - 1} more)
+              </span>
+            )}
+          </div>
+        )}
+
         {/* Vocabulary Items */}
         {entry.vocabularyItems.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-3">
@@ -235,6 +248,16 @@ function NotebookEntryCard({ entry }: { entry: NotebookEntry }) {
                 <span>{item.translation}</span>
               </span>
             ))}
+          </div>
+        )}
+
+        {/* Usage Note Preview */}
+        {entry.usageNote && (
+          <div className="mb-3 text-sm text-[var(--foreground-secondary)]">
+            <span className="text-[var(--foreground-muted)]">Usage:</span>{" "}
+            {entry.usageNote.length > 100
+              ? entry.usageNote.slice(0, 100) + "..."
+              : entry.usageNote}
           </div>
         )}
 
