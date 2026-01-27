@@ -26,7 +26,6 @@ interface NavItem {
 
 const mainNav: NavItem[] = [
   { icon: Home, label: "Home", href: "/" },
-  { icon: Compass, label: "Discover", href: "/campaigns" },
   { icon: ScrollText, label: "Campaigns", href: "/campaigns" },
   { icon: Users, label: "Characters", href: "/characters" },
 ];
