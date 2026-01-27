@@ -516,7 +516,10 @@ function LogEntry({
       {/* Actor name */}
       {!isPlayerAction && entry.actorName && (
         <div className="mb-1 flex items-center gap-2">
-          <span className="text-sm font-medium text-[var(--foreground-secondary)]">
+          <span
+            className={`text-sm font-medium text-[var(--foreground-secondary)] ${onNpcNameClick ? "cursor-pointer hover:text-[var(--accent-gold)] hover:underline" : ""}`}
+            onClick={onNpcNameClick}
+          >
             {entry.actorName}
           </span>
           {entry.type === "narration" && (
