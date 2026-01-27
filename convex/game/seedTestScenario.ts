@@ -481,48 +481,20 @@ async function seedMidScene(ctx: MutationCtx, campaignId: Id<"campaigns">, chara
     flags: { first_kiss: true, first_intimate: true },
   });
 
-  // Session in scene mode with active scene state
+  // Use exploration mode — the AI DM handles intimate narrative in free text,
+  // which gives a much better experience than the turn-based scene UI
   const sessionId = await ctx.db.insert("gameSessions", {
     campaignId,
     status: "active",
-    mode: "scene",
+    mode: "exploration",
     locationId,
-    scene: {
-      participants: [
-        {
-          entityId: characterId,
-          entityType: "character",
-          role: "switch",
-          consentGiven: true,
-          limits: [],
-          currentComfort: 90,
-        },
-        {
-          entityId: sofiaId,
-          entityType: "npc",
-          role: "switch",
-          consentGiven: true,
-          limits: [],
-          currentComfort: 92,
-        },
-      ],
-      phase: "active",
-      intensity: 78,
-      peakIntensity: 78,
-      mood: "passionate",
-      currentActorIndex: 0,
-      negotiatedActivities: ["kissing", "oral", "penetration", "biting", "hair pulling", "dirty talk"],
-      usedSafeword: false,
-      startedAt: now - 1200000, // started 20 min ago
-      lastActionAt: now,
-    },
     startedAt: now - 1800000,
     lastActionAt: now,
     suggestedActions: [
-      { en: "Thrust deeper", fr: "Pousser plus profondément", type: "intimate" },
+      { en: "Thrust deeper", fr: "Pousser plus profondement", type: "intimate" },
       { en: "Kiss her neck", fr: "Embrasser son cou", type: "intimate" },
       { en: "Pull her hair gently", fr: "Tirer doucement ses cheveux", type: "intimate" },
-      { en: "Whisper in her ear", fr: "Murmurer à son oreille", type: "intimate" },
+      { en: "Whisper in her ear", fr: "Murmurer a son oreille", type: "intimate" },
       { en: "Slow down and tease", fr: "Ralentir et la taquiner", type: "intimate" },
       { en: "Flip her on top", fr: "La mettre au-dessus", type: "intimate" },
       { en: "Tell her she's beautiful", fr: "Lui dire qu'elle est belle", type: "intimate" },
