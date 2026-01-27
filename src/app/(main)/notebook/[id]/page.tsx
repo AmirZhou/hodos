@@ -164,15 +164,9 @@ export default function NotebookDetailPage({
             <h3 className="text-xs font-semibold text-[var(--foreground-muted)] uppercase tracking-wide mb-3">
               STORY CONTEXT
             </h3>
-            <p className="text-[var(--foreground-secondary)] mb-4">
+            <p className="text-[var(--foreground-secondary)]">
               {entry.sceneSummary}
             </p>
-            {entry.gameLogId && (
-              <StoryContextPanel
-                gameLogId={entry.gameLogId}
-                campaignId={entry.campaignId}
-              />
-            )}
           </div>
         )}
 
