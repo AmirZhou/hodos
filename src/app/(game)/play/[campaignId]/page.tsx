@@ -886,6 +886,7 @@ function GameSidebar({
 }) {
   const { currentCharacter, gameState } = useGame();
   const [equipExpanded, setEquipExpanded] = useState(true);
+  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
 
   // Get current location details
   const currentLocation = useQuery(
