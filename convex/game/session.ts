@@ -73,11 +73,18 @@ export const updateMode = mutation({
 export const updateLastAction = mutation({
   args: {
     sessionId: v.id("gameSessions"),
+    suggestedActions: v.optional(v.array(v.object({
+      en: v.string(),
+      fr: v.string(),
+      type: v.string(),
+    }))),
   },
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.sessionId, {
-      lastActionAt: Date.now(),
-    });
+    const patch: Record<string, unknown> = { lastActionAt: Date.now() };
+    if (args.suggestedActions) {
+      patch.suggestedActions = args.suggestedActions;
+    }
+    await ctx.db.patch(args.sessionId, patch);
   },
 });
 
