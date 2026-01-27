@@ -94,7 +94,7 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
       seedMutation({
         campaignId,
         characterId: currentCharacter._id,
-        scenario: campaign.seedScenario as "bdsm-dungeon" | "foot-fetish-spa",
+        scenario: campaign.seedScenario as "bdsm-dungeon" | "foot-fetish-spa" | "servant-serving",
       })
         .then(() => setSeeded(true))
         .catch((err) => console.error("Auto-seed failed:", err))
