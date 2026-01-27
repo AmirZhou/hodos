@@ -15,7 +15,6 @@ import {
   BookMarked,
 } from "lucide-react";
 import Link from "next/link";
-import { StoryContextPanel } from "@/components/learning";
 
 export default function NotebookDetailPage({
   params,
