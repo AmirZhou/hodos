@@ -402,8 +402,8 @@ async function seedServantServing(ctx: MutationCtx, campaignId: Id<"campaigns">,
 
   await ctx.db.insert("gameLog", {
     campaignId, sessionId, type: "narration", actorType: "dm",
-    contentEn: "Étienne glances up briefly — a flicker of adoration in his dark eyes — then lowers his gaze again, pressing a slow kiss to the top of your foot before continuing his work.",
-    contentFr: "Étienne lève brièvement les yeux — une lueur d'adoration dans ses yeux sombres — puis baisse de nouveau le regard, déposant un lent baiser sur le dessus de votre pied avant de reprendre son travail.",
+    contentEn: "Élise glances up briefly — a flicker of adoration in her dark eyes — then lowers her gaze again, pressing a slow kiss to the top of your foot before continuing her work.",
+    contentFr: "Élise lève brièvement les yeux — une lueur d'adoration dans ses yeux sombres — puis baisse de nouveau le regard, déposant un lent baiser sur le dessus de votre pied avant de reprendre son travail.",
     createdAt: now + 2,
   });
 
