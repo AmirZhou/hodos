@@ -147,30 +147,41 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
             Start Session
           </Button>
           {currentCharacter && (
-            <Button
-              variant="outline"
-              size="lg"
-              className="gap-2"
-              disabled={seeding}
-              onClick={async () => {
-                setSeeding(true);
-                try {
-                  await seedScenario({
-                    campaignId,
-                    characterId: currentCharacter._id,
-                  });
-                } finally {
-                  setSeeding(false);
-                }
-              }}
-            >
-              {seeding ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <Zap className="h-5 w-5" />
-              )}
-              Seed Test Scenario
-            </Button>
+            <div className="flex flex-col items-center gap-3">
+              <select
+                value={selectedScenario}
+                onChange={(e) => setSelectedScenario(e.target.value as typeof selectedScenario)}
+                className="rounded-md border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm"
+              >
+                <option value="foot-fetish-spa">Foot Fetish Spa</option>
+                <option value="bdsm-dungeon">BDSM Dungeon</option>
+              </select>
+              <Button
+                variant="outline"
+                size="lg"
+                className="gap-2"
+                disabled={seeding}
+                onClick={async () => {
+                  setSeeding(true);
+                  try {
+                    await seedScenario({
+                      campaignId,
+                      characterId: currentCharacter._id,
+                      scenario: selectedScenario,
+                    });
+                  } finally {
+                    setSeeding(false);
+                  }
+                }}
+              >
+                {seeding ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Zap className="h-5 w-5" />
+                )}
+                Seed Test Scenario
+              </Button>
+            </div>
           )}
         </div>
       </div>
