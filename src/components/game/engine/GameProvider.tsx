@@ -30,6 +30,21 @@ interface GameContextType {
     hp: number;
     maxHp: number;
     portrait?: string;
+    level: number;
+    xp: number;
+    ac: number;
+    speed: number;
+    proficiencyBonus: number;
+    class?: string;
+    background?: string;
+    abilities: {
+      strength: number;
+      dexterity: number;
+      constitution: number;
+      intelligence: number;
+      wisdom: number;
+      charisma: number;
+    };
   } | null;
 
   // Game state (from useGameState)
