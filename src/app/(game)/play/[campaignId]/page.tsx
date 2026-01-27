@@ -340,7 +340,7 @@ function ExplorationView({
   if (relationships) {
     for (const rel of relationships) {
       if (rel.npc?.name) {
-        npcNameToId.set(rel.npc.name, rel.npcId);
+        npcNameToId[rel.npc.name] = rel.npcId;
       }
     }
   }
