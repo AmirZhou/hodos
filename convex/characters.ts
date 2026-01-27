@@ -179,9 +179,7 @@ export const create = mutation({
       classFeatures: [],
 
       inventory: [],
-      equipped: {
-        accessories: [],
-      },
+      equipped: {},
 
       conditions: [],
       exhaustionLevel: 0,
