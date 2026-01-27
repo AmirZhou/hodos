@@ -81,6 +81,8 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
   const [showMap, setShowMap] = useState(false);
   const [savedEntries, setSavedEntries] = useState<Set<string>>(new Set());
   const [selectedNpcId, setSelectedNpcId] = useState<Id<"npcs"> | null>(null);
+  const [showInventory, setShowInventory] = useState(false);
+  const [showCharSheet, setShowCharSheet] = useState(false);
 
   const saveToNotebook = useMutation(api.notebook.save);
 
