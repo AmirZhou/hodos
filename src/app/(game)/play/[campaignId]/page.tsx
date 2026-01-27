@@ -167,7 +167,7 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
       {/* Right Sidebar - Character & World Info */}
       {sidebarOpen && (
         <aside className="hidden w-80 flex-shrink-0 border-l border-[var(--border)] bg-[var(--background-secondary)] lg:block overflow-y-auto">
-          <GameSidebar campaignId={campaignId} />
+          <GameSidebar campaignId={campaignId} onNpcClick={setSelectedNpcId} />
         </aside>
       )}
 
