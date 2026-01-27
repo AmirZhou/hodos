@@ -77,6 +77,22 @@ export default function NewCampaignPage() {
       description: "Define your own world with the AI DM",
       icon: Users,
     },
+    {
+      id: "foot-fetish-spa",
+      name: "Foot Fetish Spa",
+      nameFr: "Spa fétichiste des pieds",
+      description: "A private spa suite with two NPCs who share a love of feet — massage, worship, and pampering",
+      icon: Footprints,
+      seedScenario: "foot-fetish-spa",
+    },
+    {
+      id: "bdsm-dungeon",
+      name: "BDSM Dungeon",
+      nameFr: "Donjon BDSM",
+      description: "A velvet-draped dungeon with a dominant mistress and a submissive servant",
+      icon: Heart,
+      seedScenario: "bdsm-dungeon",
+    },
   ];
 
   return (
