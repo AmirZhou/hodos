@@ -19,12 +19,18 @@ const SLOT_DISPLAY: Record<EquipmentSlot, string> = {
   book: "BOOK",
 };
 
+/**
+ * Compact catalog: only IDs grouped by slot + rarity tier prefix.
+ * Keeps prompt tokens low (~170 IDs without names).
+ * Pattern: {slot}_{rarity}_{nn} e.g. boots_gray_01 = mundane boots #1
+ * Rarity prefixes: gray=mundane, white=common, green=uncommon, blue=rare, epic=epic, legendary=legendary
+ */
 export function getItemCatalogForPrompt(): string {
   const grouped: Record<string, string[]> = {};
   for (const item of ALL_ITEMS) {
     const slot = item.type;
     if (!grouped[slot]) grouped[slot] = [];
-    grouped[slot].push(`${item.id} (${item.name})`);
+    grouped[slot].push(item.id);
   }
 
   return SLOT_ORDER
