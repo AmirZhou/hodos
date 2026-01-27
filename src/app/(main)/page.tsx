@@ -56,7 +56,7 @@ export default function HomePage() {
                   Start Your Adventure
                 </Button>
               </Link>
-              <Link href="/discover">
+              <Link href="/campaigns">
                 <Button size="lg" variant="outline" className="w-full sm:w-auto">
                   Browse Campaigns
                 </Button>
