@@ -307,6 +307,7 @@ function GameModeRouter({
       showFrench={showFrench}
       onSaveEntry={onSaveEntry}
       savedEntries={savedEntries}
+      onNpcNameClick={onNpcNameClick}
     />
   );
 }
