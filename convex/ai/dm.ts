@@ -343,6 +343,20 @@ ${args.input}
       };
     }
 
+    // Sanitize object keys to ASCII-only (Convex requirement)
+    if (parsedResponse.worldStateChanges) {
+      const ws = parsedResponse.worldStateChanges;
+      if (ws.relationshipChanges) {
+        ws.relationshipChanges = sanitizeRecordKeys(ws.relationshipChanges);
+      }
+      if (ws.npcMood) {
+        ws.npcMood = sanitizeRecordKeys(ws.npcMood);
+      }
+      if (ws.flags) {
+        ws.flags = sanitizeRecordKeys(ws.flags);
+      }
+    }
+
     return {
       response: parsedResponse,
       usage,
