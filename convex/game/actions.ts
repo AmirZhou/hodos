@@ -383,9 +383,18 @@ async function executeAction(
     }
   }
 
-  // 11. Process item grants from DM
+  // 11. Process item grants from DM (validated)
   if (response.itemsGranted) {
-    for (const grant of response.itemsGranted) {
+    const { valid, warnings } = validateItemGrants(response.itemsGranted, {
+      characterLevel: character.level,
+      maxPerResponse: 3,
+    });
+
+    for (const w of warnings) {
+      console.warn("[ItemGrant]", w);
+    }
+
+    for (const grant of valid) {
       try {
         await ctx.runMutation(api.equipment.addItemToInventory, {
           characterId,
@@ -394,11 +403,11 @@ async function executeAction(
         await ctx.runMutation(api.game.log.add, {
           campaignId,
           type: "system",
-          contentEn: `Received: ${grant.reason}`,
-          contentFr: `Reçu: ${grant.reason}`,
+          contentEn: `Received item: ${grant.itemName} (${grant.reason})`,
+          contentFr: `Objet reçu : ${grant.itemName} (${grant.reason})`,
         });
-      } catch {
-        /* invalid item ID, skip silently */
+      } catch (e) {
+        console.warn("[ItemGrant] Failed to add item:", grant.itemId, e);
       }
     }
   }
