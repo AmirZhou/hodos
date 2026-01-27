@@ -311,8 +311,9 @@ async function executeAction(
 
     // Auto-create NPCs and relationships for any newly mentioned characters
     for (const npcName of npcNames) {
-      // Check if NPC already exists in our loaded list
-      const existingNpc = npcs.find((n: Doc<"npcs">) => n.name === npcName);
+      // Check if NPC already exists using fuzzy name matching
+      const matchId = findMatchingNpc(npcName, npcs);
+      const existingNpc = matchId ? npcs.find((n: Doc<"npcs">) => n._id === matchId) : null;
 
       if (!existingNpc) {
         // Auto-create the NPC
