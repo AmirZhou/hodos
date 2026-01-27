@@ -6,6 +6,19 @@ import { getItemCatalogForPrompt } from "../data/itemCatalog";
 
 const DEEPSEEK_API_URL = "https://api.deepseek.com/chat/completions";
 
+// Strip non-ASCII characters from object keys (Convex requires ASCII-only field names)
+function sanitizeKey(key: string): string {
+  return key.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\x20-\x7E]/g, "_");
+}
+
+function sanitizeRecordKeys<T>(record: Record<string, T>): Record<string, T> {
+  const result: Record<string, T> = {};
+  for (const [key, value] of Object.entries(record)) {
+    result[sanitizeKey(key)] = value;
+  }
+  return result;
+}
+
 // Helper to format NPC memory for AI prompt
 export function formatNpcMemoryForPrompt(
   memory: NpcMemoryData | undefined
