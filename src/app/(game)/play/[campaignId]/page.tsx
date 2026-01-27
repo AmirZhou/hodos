@@ -13,6 +13,7 @@ import { SceneView, SafewordButton } from "@/components/game/scene";
 import { LocationGraph } from "@/components/game/map";
 import { AnalysisPanel } from "@/components/learning";
 import { EquipmentPanel } from "@/components/game/equipment/EquipmentPanel";
+import { NpcInteractionModal } from "@/components/game/npc/NpcInteractionModal";
 import {
   Send,
   Mic,
