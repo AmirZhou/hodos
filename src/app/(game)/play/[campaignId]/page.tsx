@@ -884,7 +884,7 @@ function GameSidebar({
         </div>
       )}
 
-      {/* Equipment Section */}
+      {/* Equipment Section — Paper Doll */}
       {character && equipment && (
         <div className="rounded-xl bg-[var(--card)] overflow-hidden">
           <button
@@ -896,46 +896,7 @@ function GameSidebar({
           </button>
           {equipExpanded && (
             <div className="px-3 pb-3">
-              <div className="grid grid-cols-3 gap-2">
-                {equippedSlots.map(({ slot, item }) => {
-                  const Icon = SIDEBAR_SLOT_ICONS[slot] || Scroll;
-                  if (!item) {
-                    return (
-                      <div key={slot} className="rounded-lg border border-[var(--border)] bg-[var(--background-tertiary)] p-2 flex flex-col items-center gap-1 opacity-40">
-                        <Icon className="h-5 w-5 text-[var(--foreground-muted)]" />
-                        <span className="text-[9px] text-[var(--foreground-muted)] truncate w-full text-center">{getSlotLabel(slot as never)}</span>
-                      </div>
-                    );
-                  }
-                  const rarityColor = getRarityColor(item.rarity as never);
-                  const borderColor = RARITY_BORDER_COLORS[item.rarity as keyof typeof RARITY_BORDER_COLORS];
-                  const bgColor = RARITY_BG_COLORS[item.rarity as keyof typeof RARITY_BG_COLORS];
-                  const keyStat = (() => {
-                    const s = item.stats;
-                    if ((item.type === "mainHand" || item.type === "offHand") && s.damage) return `${s.damage} dmg`;
-                    if (s.ac) return `+${s.ac} AC`;
-                    const first = Object.entries(s).find(([, v]) => v !== undefined);
-                    if (first) return formatStatValue(first[0], first[1] as number);
-                    return null;
-                  })();
-                  return (
-                    <div
-                      key={slot}
-                      className="rounded-lg border p-2 flex flex-col items-center gap-1 transition-all hover:brightness-110"
-                      style={{ borderColor, backgroundColor: "rgba(0,0,0,0.3)" }}
-                    >
-                      <div
-                        className="w-8 h-8 rounded flex items-center justify-center"
-                        style={{ background: `linear-gradient(135deg, ${bgColor}, transparent)` }}
-                      >
-                        <div style={{ color: rarityColor }}><Icon className="h-4 w-4" /></div>
-                      </div>
-                      <span className="text-[9px] truncate w-full text-center font-medium" style={{ color: rarityColor }}>{item.name}</span>
-                      {keyStat && <span className="text-[8px] text-[var(--foreground-muted)]">{keyStat}</span>}
-                    </div>
-                  );
-                })}
-              </div>
+              <PaperDoll equippedSlots={equippedSlots} />
             </div>
           )}
           <button
