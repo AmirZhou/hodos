@@ -161,6 +161,7 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
           characterId={currentCharacter?._id}
           onSaveEntry={handleSaveEntry}
           savedEntries={savedEntries}
+          onNpcNameClick={setSelectedNpcId}
         />
       </div>
 
