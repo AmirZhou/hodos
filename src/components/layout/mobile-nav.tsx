@@ -8,7 +8,6 @@ import { useAuth } from "@/components/providers/auth-provider";
 
 const navItems = [
   { icon: Home, label: "Home", href: "/" },
-  { icon: Compass, label: "Discover", href: "/campaigns" },
   { icon: Plus, label: "Create", href: "/campaigns/new", isCreate: true },
   { icon: ScrollText, label: "Campaigns", href: "/campaigns" },
   { icon: Swords, label: "Characters", href: "/characters" },
