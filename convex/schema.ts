@@ -263,6 +263,7 @@ export default defineSchema({
       allowVideoChat: v.boolean(),
       contentRating: v.literal("explicit"),
     }),
+    seedScenario: v.optional(v.string()),
     createdAt: v.number(),
     lastPlayedAt: v.number(),
   })
