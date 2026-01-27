@@ -106,14 +106,16 @@ export const unequipItem = mutation({
     const character = await ctx.db.get(args.characterId);
     if (!character) throw new Error("Character not found");
 
-    const slot = args.slot as keyof typeof character.equipped;
-    const item = character.equipped[slot];
+    const equipped = character.equipped as Record<string, unknown>;
+    const inventory = character.inventory as unknown[];
+    const slot = args.slot;
+    const item = equipped[slot];
     if (!item) throw new Error("No item in slot: " + args.slot);
 
     await ctx.db.patch(args.characterId, {
-      inventory: [...character.inventory, item],
+      inventory: [...inventory, item],
       equipped: {
-        ...character.equipped,
+        ...equipped,
         [slot]: undefined,
       },
     });
