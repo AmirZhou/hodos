@@ -42,9 +42,11 @@ export default function NewCampaignPage() {
     setError(null);
 
     try {
+      const selectedSetting = settings.find((s) => s.id === setting);
       const result = await createCampaign({
         userId: user._id,
         name: campaignName.trim(),
+        seedScenario: selectedSetting && "seedScenario" in selectedSetting ? (selectedSetting as any).seedScenario : undefined,
       });
       router.push(`/campaigns/${result.campaignId}`);
     } catch (err) {
