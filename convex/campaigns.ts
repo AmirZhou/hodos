@@ -15,6 +15,7 @@ export const create = mutation({
     userId: v.id("users"),
     name: v.string(),
     storyPackId: v.optional(v.id("storyPacks")),
+    seedScenario: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const inviteCode = generateInviteCode();
@@ -25,6 +26,7 @@ export const create = mutation({
       name: args.name,
       inviteCode,
       storyPackId: args.storyPackId,
+      seedScenario: args.seedScenario,
       status: "lobby",
       settings: {
         maxPlayers: 6,
