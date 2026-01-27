@@ -415,10 +415,11 @@ async function executeAction(
     }
   }
 
-  // 12. Update session timestamp
+  // 12. Update session timestamp and suggested actions
   if (session) {
     await ctx.runMutation(api.game.session.updateLastAction, {
       sessionId: session._id,
+      suggestedActions: response.suggestedActions,
     });
   }
 
