@@ -241,8 +241,8 @@ export const giveStartingGear = mutation({
       .map(itemToDoc);
 
     await ctx.db.patch(args.characterId, {
-      equipped: { ...character.equipped, ...equipped },
-      inventory: [...character.inventory, ...inventory],
+      equipped: { ...(character.equipped as Record<string, unknown>), ...equipped },
+      inventory: [...(character.inventory as unknown[]), ...inventory],
     });
   },
 });
