@@ -4,6 +4,7 @@ import { api } from "../_generated/api";
 import { Id, Doc } from "../_generated/dataModel";
 import * as dice from "../dice";
 import { validateItemGrants } from "./itemGrants";
+import { findMatchingNpc } from "./npcNameResolver";
 
 // Type definitions for the response
 interface LinguisticAnalysis {
