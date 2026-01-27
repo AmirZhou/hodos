@@ -76,9 +76,31 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
     userId,
   } = useGame();
 
-  const seedScenario = useMutation(api.game.seedTestScenario.seedTestScenario);
+  const seedMutation = useMutation(api.game.seedTestScenario.seedTestScenario);
   const [seeding, setSeeding] = useState(false);
+  const [seeded, setSeeded] = useState(false);
   const [selectedScenario, setSelectedScenario] = useState<"bdsm-dungeon" | "foot-fetish-spa">("foot-fetish-spa");
+
+  // Auto-seed if campaign has a seedScenario and no active session yet
+  useEffect(() => {
+    if (
+      !seeding &&
+      !seeded &&
+      campaign?.seedScenario &&
+      currentCharacter &&
+      !gameState.hasActiveSession
+    ) {
+      setSeeding(true);
+      seedMutation({
+        campaignId,
+        characterId: currentCharacter._id,
+        scenario: campaign.seedScenario as "bdsm-dungeon" | "foot-fetish-spa",
+      })
+        .then(() => setSeeded(true))
+        .catch((err) => console.error("Auto-seed failed:", err))
+        .finally(() => setSeeding(false));
+    }
+  }, [campaign?.seedScenario, currentCharacter, gameState.hasActiveSession, seeding, seeded, campaignId, seedMutation]);
 
   const [showFrench, setShowFrench] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
