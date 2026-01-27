@@ -149,11 +149,12 @@ export const removeItemFromInventory = mutation({
     const character = await ctx.db.get(args.characterId);
     if (!character) throw new Error("Character not found");
 
-    if (args.inventoryIndex < 0 || args.inventoryIndex >= character.inventory.length) {
+    const inv = character.inventory as unknown[];
+    if (args.inventoryIndex < 0 || args.inventoryIndex >= inv.length) {
       throw new Error("Invalid inventory index");
     }
 
-    const newInventory = [...character.inventory];
+    const newInventory = [...inv];
     newInventory.splice(args.inventoryIndex, 1);
 
     await ctx.db.patch(args.characterId, { inventory: newInventory });
