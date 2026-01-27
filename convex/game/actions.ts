@@ -378,7 +378,27 @@ async function executeAction(
     }
   }
 
-  // 11. Update session timestamp
+  // 11. Process item grants from DM
+  if (response.itemsGranted) {
+    for (const grant of response.itemsGranted) {
+      try {
+        await ctx.runMutation(api.equipment.addItemToInventory, {
+          characterId,
+          itemId: grant.itemId,
+        });
+        await ctx.runMutation(api.game.log.add, {
+          campaignId,
+          type: "system",
+          contentEn: `Received: ${grant.reason}`,
+          contentFr: `Reçu: ${grant.reason}`,
+        });
+      } catch {
+        /* invalid item ID, skip silently */
+      }
+    }
+  }
+
+  // 12. Update session timestamp
   if (session) {
     await ctx.runMutation(api.game.session.updateLastAction, {
       sessionId: session._id,
