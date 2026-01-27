@@ -324,21 +324,21 @@ async function seedServantServing(ctx: MutationCtx, campaignId: Id<"campaigns">,
 
   const etienneId = await ctx.db.insert("npcs", {
     campaignId,
-    name: "Étienne",
-    pronouns: "he/him",
+    name: "Élise",
+    pronouns: "she/her",
     description:
-      "A beautiful young man with olive skin, dark curly hair falling across his forehead, and deep brown eyes that stay lowered unless given permission to look up. He wears only fitted dark trousers and a polished leather collar with your initials engraved on the clasp. His body is lean and well-kept — he takes pride in presenting himself for you. He is currently kneeling, massaging your feet with warm oil, occasionally pressing his lips to your ankle.",
+      "A beautiful young woman with olive skin, long dark hair cascading over bare shoulders, and deep brown eyes that stay lowered unless given permission to look up. She wears only a sheer silk slip and a polished leather collar with your initials engraved on the clasp. Her body is graceful and well-kept — she takes pride in presenting herself for you. She is currently kneeling, massaging your feet with warm oil, occasionally pressing her lips to your ankle.",
     descriptionFr:
-      "Un beau jeune homme à la peau olivâtre, aux cheveux bruns bouclés tombant sur son front, et aux yeux bruns profonds qui restent baissés sauf permission de regarder. Il ne porte qu'un pantalon sombre ajusté et un collier de cuir poli gravé de vos initiales sur le fermoir. Son corps est mince et soigné — il est fier de se présenter pour vous. Il est actuellement agenouillé, massant vos pieds avec de l'huile chaude, pressant occasionnellement ses lèvres contre votre cheville.",
+      "Une belle jeune femme à la peau olivâtre, aux longs cheveux sombres cascadant sur ses épaules nues, et aux yeux bruns profonds qui restent baissés sauf permission de regarder. Elle ne porte qu'une combinaison de soie transparente et un collier de cuir poli gravé de vos initiales sur le fermoir. Son corps est gracieux et soigné — elle est fière de se présenter pour vous. Elle est actuellement agenouillée, massant vos pieds avec de l'huile chaude, pressant occasionnellement ses lèvres contre votre cheville.",
     personality:
-      "Utterly devoted and already deep in service headspace. Étienne lives to anticipate your needs. He speaks softly, moves gracefully, and radiates quiet adoration. He has been yours for months and knows your preferences intimately — where you like to be touched, how firm, when to be silent and when to whisper praise. He is happiest when serving and craves your approval.",
+      "Utterly devoted and already deep in service headspace. Élise lives to anticipate your needs. She speaks softly, moves gracefully, and radiates quiet adoration. She has been yours for months and knows your preferences intimately — where you like to be touched, how firm, when to be silent and when to whisper praise. She is happiest when serving and craves your approval.",
     level: 4, hp: 26, maxHp: 26, ac: 11,
-    abilities: { strength: 11, dexterity: 16, constitution: 13, intelligence: 14, wisdom: 12, charisma: 16 },
+    abilities: { strength: 10, dexterity: 16, constitution: 12, intelligence: 14, wisdom: 13, charisma: 17 },
     isAlive: true, conditions: [], memories: [
       "Has served you faithfully for several months",
       "Knows your preferred foot massage pressure and technique",
-      "Was recently praised for his devotion — still glowing from it",
-      "Loves when you run your fingers through his hair",
+      "Was recently praised for her devotion — still glowing from it",
+      "Loves when you run your fingers through her hair",
     ], autoCreated: false, firstMetAt: now - 86400000 * 90, currentLocationId: locationId,
     intimacyProfile: {
       orientation: "submissive",
