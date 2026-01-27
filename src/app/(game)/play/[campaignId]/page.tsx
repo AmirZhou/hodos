@@ -29,7 +29,27 @@ import {
   Edit3,
   Play,
   Loader2,
+  Shield,
+  Zap,
+  Target,
+  ChevronDown,
+  ChevronUp,
+  Package,
+  Crown,
+  Shirt,
+  Hand,
+  Footprints,
+  CircleDot,
+  Gem,
+  Sword,
+  Scroll,
 } from "lucide-react";
+import { InventoryModal } from "@/components/game/equipment/InventoryModal";
+import { CharacterSheetModal } from "@/components/game/equipment/CharacterSheetModal";
+import {
+  getRarityColor, RARITY_BORDER_COLORS, RARITY_BG_COLORS,
+  getSlotLabel, formatStatValue,
+} from "@/lib/equipment";
 
 export default function GameplayPage({
   params,
