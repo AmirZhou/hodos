@@ -538,10 +538,18 @@ function ExplorationView({
         <div className="mx-auto max-w-3xl">
           {/* Quick Actions */}
           <div className="mb-3 flex flex-wrap gap-2">
-            <QuickAction label="Look around" labelFr="Regarder autour" onClick={handleQuickAction} disabled={isSubmitting} />
-            <QuickAction label="Talk to..." labelFr="Parler à..." onClick={handleQuickAction} disabled={isSubmitting} />
-            <QuickAction label="Investigate" labelFr="Enquêter" onClick={handleQuickAction} disabled={isSubmitting} />
-            <QuickAction label="Rest" labelFr="Se reposer" onClick={handleQuickAction} disabled={isSubmitting} />
+            {gameState.session?.suggestedActions && gameState.session.suggestedActions.length > 0 ? (
+              gameState.session.suggestedActions.map((action, i) => (
+                <QuickAction key={i} label={action.en} labelFr={action.fr} onClick={handleQuickAction} disabled={isSubmitting} />
+              ))
+            ) : (
+              <>
+                <QuickAction label="Look around" labelFr="Regarder autour" onClick={handleQuickAction} disabled={isSubmitting} />
+                <QuickAction label="Talk to..." labelFr="Parler à..." onClick={handleQuickAction} disabled={isSubmitting} />
+                <QuickAction label="Investigate" labelFr="Enquêter" onClick={handleQuickAction} disabled={isSubmitting} />
+                <QuickAction label="Rest" labelFr="Se reposer" onClick={handleQuickAction} disabled={isSubmitting} />
+              </>
+            )}
           </div>
 
           {/* Input */}
