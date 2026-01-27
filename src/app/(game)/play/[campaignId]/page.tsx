@@ -189,6 +189,7 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
               >
                 <option value="foot-fetish-spa">Foot Fetish Spa</option>
                 <option value="bdsm-dungeon">BDSM Dungeon</option>
+                <option value="servant-serving">Devoted Servant</option>
               </select>
               <Button
                 variant="outline"
