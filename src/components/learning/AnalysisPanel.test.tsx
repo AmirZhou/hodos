@@ -123,4 +123,36 @@ describe("AnalysisPanel", () => {
     fireEvent.click(screen.getByText("Hide Analysis"));
     expect(screen.getByText("Show Analysis")).toBeInTheDocument();
   });
+
+  describe("inline mode (alwaysExpanded)", () => {
+    it("shows content immediately without toggle button", () => {
+      render(<AnalysisPanel analysis={mockAnalysis} alwaysExpanded />);
+
+      expect(screen.getByText("GRAMMAR")).toBeInTheDocument();
+      expect(screen.getByText("VOCABULARY")).toBeInTheDocument();
+      expect(screen.queryByText("Show Analysis")).not.toBeInTheDocument();
+      expect(screen.queryByText("Hide Analysis")).not.toBeInTheDocument();
+    });
+
+    it("shows Save to Notebook button in inline mode", () => {
+      const onSave = vi.fn();
+      render(
+        <AnalysisPanel analysis={mockAnalysis} alwaysExpanded onSave={onSave} />
+      );
+
+      const btn = screen.getByText("Save to Notebook");
+      expect(btn).toBeInTheDocument();
+      fireEvent.click(btn);
+      expect(onSave).toHaveBeenCalledTimes(1);
+    });
+
+    it("shows saved state when isSaved is true", () => {
+      render(
+        <AnalysisPanel analysis={mockAnalysis} alwaysExpanded isSaved />
+      );
+
+      expect(screen.getByText("Saved")).toBeInTheDocument();
+      expect(screen.queryByText("Save to Notebook")).not.toBeInTheDocument();
+    });
+  });
 });
