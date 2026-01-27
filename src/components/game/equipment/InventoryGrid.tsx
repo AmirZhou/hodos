@@ -1,0 +1,75 @@
+"use client";
+
+import { useState } from "react";
+import { getRarityColor, RARITY_BORDER_COLORS, getSlotLabel } from "@/lib/equipment";
+import { ItemTooltip } from "./ItemTooltip";
+import type { EquipmentSlot, Rarity } from "../../../../convex/data/equipmentItems";
+
+interface ItemData {
+  id: string;
+  name: string;
+  nameFr: string;
+  description: string;
+  type: EquipmentSlot;
+  rarity: Rarity;
+  stats: Record<string, number | string | undefined>;
+  specialAttributes?: Record<string, number | undefined>;
+  passive?: string;
+}
+
+interface InventoryGridProps {
+  items: ItemData[];
+  onEquip: (itemId: string) => void;
+}
+
+export function InventoryGrid({ items, onEquip }: InventoryGridProps) {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+  if (items.length === 0) {
+    return (
+      <div className="text-center py-6 text-xs text-[var(--foreground-muted)]">
+        Inventory is empty
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-4 gap-1.5">
+      {items.map((item, index) => {
+        const borderColor = RARITY_BORDER_COLORS[item.rarity];
+        const nameColor = getRarityColor(item.rarity);
+
+        return (
+          <div
+            key={`${item.id}-${index}`}
+            className="relative"
+            onMouseEnter={() => setHoveredIndex(index)}
+            onMouseLeave={() => setHoveredIndex(null)}
+          >
+            <button
+              onClick={() => onEquip(item.id)}
+              className="w-full aspect-square rounded border flex flex-col items-center justify-center p-1 transition-all hover:brightness-125 cursor-pointer"
+              style={{
+                borderColor,
+                backgroundColor: "rgba(0,0,0,0.3)",
+              }}
+              title={`${item.name} (${getSlotLabel(item.type)}) - Click to equip`}
+            >
+              <span
+                className="text-[8px] leading-tight text-center truncate w-full"
+                style={{ color: nameColor }}
+              >
+                {item.name}
+              </span>
+            </button>
+            {hoveredIndex === index && (
+              <div className="absolute left-full ml-2 top-0 z-50">
+                <ItemTooltip item={item} />
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
