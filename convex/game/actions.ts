@@ -370,7 +370,8 @@ async function executeAction(
   // 10. Apply world state changes
   if (response.worldStateChanges?.relationshipChanges) {
     for (const [npcName, changes] of Object.entries(response.worldStateChanges.relationshipChanges)) {
-      const npc = npcs.find((n: Doc<"npcs">) => n.name === npcName);
+      const npcMatchId = findMatchingNpc(npcName, npcs);
+      const npc = npcMatchId ? npcs.find((n: Doc<"npcs">) => n._id === npcMatchId) : null;
       if (npc) {
         const rel = relationships.find((r: Doc<"relationships">) => r.npcId === npc._id);
         if (rel) {
