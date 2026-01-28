@@ -330,21 +330,19 @@ async function seedServantServing(ctx: MutationCtx, campaignId: Id<"campaigns">,
       "Was recently praised for her devotion — still glowing from it",
       "Loves when you run your fingers through her hair",
     ], autoCreated: false, firstMetAt: now - 86400000 * 90, currentLocationId: locationId,
-    intimacyProfile: {
-      orientation: "submissive",
-      roleIdentity: { power: 10, action: 20, sensation: 75, service: 95, flexibility: 25 },
-      kinks: {
-        service: 3, "foot worship": 3, "body worship": 3, collaring: 3, massage: 3,
-        pampering: 3, "power exchange": 3, praise: 3, "sensation play": 2, aftercare: 3,
-      },
-      aftercareNeed: 80, trustThreshold: 20,
+    adultStats: { composure: 70, arousal: 20, dominance: 10, submission: 95 },
+    kinkPreferences: {
+      service: 3, "foot worship": 3, "body worship": 3, collaring: 3, massage: 3,
+      pampering: 3, "power exchange": 3, praise: 3, "sensation play": 2, aftercare: 3,
     },
+    hardLimits: [],
+    desires: "To serve and please you completely",
   });
 
   // Established relationship — high trust, deep bond
   await ctx.db.insert("relationships", {
     campaignId, characterId, npcId: etienneId,
-    affinity: 75, trust: 85, attraction: 70, tension: 40, intimacy: 65,
+    affinity: 75, trust: 85, attraction: 70, fear: 0, intimacy: 65,
     history: [
       "Elise entered your service three months ago",
       "She earned her collar after proving her devotion",
