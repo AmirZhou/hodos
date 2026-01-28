@@ -6,7 +6,6 @@ import { MapPin, Lock, Swords, Users } from "lucide-react";
 interface LocationNodeProps {
   id: string;
   name: string;
-  nameFr?: string;
   isDiscovered: boolean;
   isCurrent: boolean;
   isConnected: boolean;
@@ -19,7 +18,6 @@ interface LocationNodeProps {
 
 export function LocationNode({
   name,
-  nameFr,
   isDiscovered,
   isCurrent,
   isConnected,
