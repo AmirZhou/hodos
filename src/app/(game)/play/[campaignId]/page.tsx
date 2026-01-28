@@ -231,7 +231,7 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
   return (
     <div className="flex h-screen bg-[var(--background)]">
       {/* Main Game Area */}
-      <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col min-w-0">
         {/* Top Bar */}
         <GameHeader
           campaignName={campaign?.name ?? "Game"}
@@ -243,23 +243,6 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
           onlinePlayers={gameState.onlinePlayers}
         />
 
-        {/* Map Modal — Tabbed: Location / World */}
-        {showMap && (
-          <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-            <div className="max-w-4xl w-full max-h-[90vh] overflow-auto">
-              <MapModal
-                campaignId={campaignId}
-                sessionId={gameState.sessionId}
-                currentLocationId={gameState.locationId}
-                currentCharacterId={currentCharacter?._id}
-                currentCharacterName={currentCharacter?.name}
-                onLocationSelect={() => setShowMap(false)}
-                onClose={() => setShowMap(false)}
-              />
-            </div>
-          </div>
-        )}
-
         {/* Main Content - Mode Router */}
         <GameModeRouter
           showFrench={showFrench}
@@ -270,9 +253,20 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
         />
       </div>
 
-      {/* Right Sidebar - Character & World Info */}
+      {/* Right Panel — Map + Character Info (always visible on lg) */}
       {sidebarOpen && (
-        <aside className="hidden w-80 flex-shrink-0 border-l border-[var(--border)] bg-[var(--background-secondary)] lg:block overflow-y-auto">
+        <aside className="hidden w-96 flex-shrink-0 border-l border-[var(--border)] bg-[var(--background-secondary)] lg:flex lg:flex-col overflow-y-auto">
+          {/* Map Panel (Location / World tabs) */}
+          <MapPanel
+            campaignId={campaignId}
+            sessionId={gameState.sessionId}
+            currentLocationId={gameState.locationId}
+            currentCharacterId={currentCharacter?._id}
+            currentCharacterName={currentCharacter?.name}
+            showMap={showMap}
+          />
+
+          {/* Character & World Info below the map */}
           <GameSidebar
             campaignId={campaignId}
             onNpcClick={setSelectedNpcId}
