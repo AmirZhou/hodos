@@ -612,9 +612,6 @@ function ExplorationView({
               <LogEntry
                 key={entry._id}
                 entry={entry}
-                showFrench={showFrench}
-                onSave={() => onSaveEntry(entry)}
-                isSaved={savedEntries.has(entry._id)}
                 onNpcNameClick={onNpcNameClick && entry.actorType === "npc" && entry.actorName && npcNameToId[entry.actorName]
                   ? () => onNpcNameClick(npcNameToId[entry.actorName!])
                   : undefined}
