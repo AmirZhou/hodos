@@ -27,7 +27,6 @@ export const getOrCreate = mutation({
     campaignId: v.id("campaigns"),
     name: v.string(),
     description: v.optional(v.string()),
-    descriptionFr: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     // Check if NPC already exists (fuzzy match on normalized name)
