@@ -1281,7 +1281,6 @@ function GameSidebar({
         {currentLocation ? (
           <>
             <h3 className="font-medium">{currentLocation.name}</h3>
-            <p className="text-xs text-[var(--accent-blue)]">{currentLocation.nameFr}</p>
             <p className="text-xs text-[var(--foreground-secondary)] mt-1 line-clamp-2">{currentLocation.description}</p>
             {currentLocation.npcs && currentLocation.npcs.length > 0 && (
               <div className="mt-2 pt-2 border-t border-[var(--border)]">
