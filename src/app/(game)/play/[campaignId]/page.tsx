@@ -45,6 +45,7 @@ import {
   Gem,
   Sword,
   Scroll,
+  X,
 } from "lucide-react";
 import { InventoryModal } from "@/components/game/equipment/InventoryModal";
 import { CharacterSheetModal } from "@/components/game/equipment/CharacterSheetModal";
