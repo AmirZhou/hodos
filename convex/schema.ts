@@ -365,6 +365,9 @@ export default defineSchema({
     // Intimacy Profile
     intimacyProfile: intimacyProfile,
 
+    // Grid position (for exploration map)
+    position: v.optional(v.object({ x: v.number(), y: v.number() })),
+
     // Location & Status
     currentLocationId: v.optional(v.id("locations")),
     isAlive: v.boolean(),
