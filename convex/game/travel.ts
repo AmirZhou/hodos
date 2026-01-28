@@ -90,7 +90,6 @@ export const getLocationDetails = query({
         parentLocation = {
           id: parent._id,
           name: parent.name,
-          nameFr: parent.nameFr,
         };
       }
     }
