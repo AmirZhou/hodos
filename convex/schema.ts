@@ -307,6 +307,9 @@ export default defineSchema({
     kinkPreferences: v.optional(kinkPreferences),
     hardLimits: v.optional(v.array(v.string())),
 
+    // DEPRECATED - kept for data migration only
+    intimacyProfile: v.optional(v.any()),
+
     createdAt: v.number(),
   })
     .index("by_user", ["userId"])
