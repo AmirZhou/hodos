@@ -700,7 +700,8 @@ function ExplorationView({
 interface GameLogEntry {
   _id: Id<"gameLog">;
   type: "narration" | "dialogue" | "action" | "roll" | "system" | "ooc" | "movement";
-  content: string;
+  content?: string;
+  contentEn?: string; // Legacy migration
   actorName?: string;
   actorId?: string;
   actorType?: "dm" | "character" | "npc";
