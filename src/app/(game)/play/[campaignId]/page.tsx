@@ -263,7 +263,6 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
             currentLocationId={gameState.locationId}
             currentCharacterId={currentCharacter?._id}
             currentCharacterName={currentCharacter?.name}
-            showMap={showMap}
           />
 
           {/* Character & World Info below the map */}
