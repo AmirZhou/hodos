@@ -56,6 +56,10 @@ export const add = mutation({
         usageNotes: v.array(v.string()),
       })
     ),
+    movementData: v.optional(v.object({
+      from: v.object({ x: v.number(), y: v.number() }),
+      to: v.object({ x: v.number(), y: v.number() }),
+    })),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("gameLog", {
