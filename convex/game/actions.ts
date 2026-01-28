@@ -2,7 +2,6 @@ import { v } from "convex/values";
 import { action } from "../_generated/server";
 import { api } from "../_generated/api";
 import { Id, Doc } from "../_generated/dataModel";
-import * as dice from "../dice";
 import { validateItemGrants } from "./itemGrants";
 import { findMatchingNpc } from "./npcNameResolver";
 
