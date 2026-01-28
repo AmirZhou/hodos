@@ -123,12 +123,10 @@ async function seedBdsmDungeon(ctx: MutationCtx, campaignId: Id<"campaigns">, ch
     abilities: { strength: 12, dexterity: 14, constitution: 12, intelligence: 16, wisdom: 15, charisma: 19 },
     position: { x: 8, y: 3 },
     isAlive: true, conditions: [], memories: [], autoCreated: false, firstMetAt: now, currentLocationId: locationId,
-    intimacyProfile: {
-      orientation: "dominant",
-      roleIdentity: { power: 85, action: 75, sensation: 70, service: 30, flexibility: 35 },
-      kinks: { bondage: 3, impact: 3, "power exchange": 3, "sensation play": 2, "role play": 2, worship: 2, "verbal humiliation": 1, aftercare: 3 },
-      aftercareNeed: 70, trustThreshold: 40,
-    },
+    adultStats: { composure: 90, arousal: 0, dominance: 85, submission: 15 },
+    kinkPreferences: { bondage: 3, impact: 3, "power exchange": 3, "sensation play": 2, "role play": 2, worship: 2, "verbal humiliation": 1, aftercare: 3 },
+    hardLimits: [],
+    desires: "To guide you through a journey of self-discovery",
   });
 
   const lucId = await ctx.db.insert("npcs", {
