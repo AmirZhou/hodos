@@ -103,15 +103,9 @@ export const updateSettings = mutation({
   args: {
     userId: v.id("users"),
     settings: v.object({
-      language: v.union(v.literal("en"), v.literal("fr"), v.literal("bilingual")),
       explicitContent: v.boolean(),
       videoEnabled: v.boolean(),
-      frenchLevel: v.union(
-        v.literal("none"),
-        v.literal("beginner"),
-        v.literal("intermediate"),
-        v.literal("advanced")
-      ),
+      intensityPreference: v.number(),
     }),
   },
   handler: async (ctx, args) => {
