@@ -308,8 +308,7 @@ async function executeAction(
         await ctx.runMutation(api.game.log.add, {
           campaignId,
           type: "system",
-          contentEn: `Received item: ${grant.itemName} (${grant.reason})`,
-          contentFr: `Objet reçu : ${grant.itemName} (${grant.reason})`,
+          content: `Received item: ${grant.itemName} (${grant.reason})`,
         });
       } catch (e) {
         console.warn("[ItemGrant] Failed to add item:", grant.itemId, e);
