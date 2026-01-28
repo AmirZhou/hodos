@@ -61,13 +61,13 @@ describe("formatNpcMemoryForPrompt", () => {
     const memory = {
       keyMoments: [
         {
-          date: Date.now() - 86400000, // 1 day ago
+          timestamp: Date.now() - 86400000, // 1 day ago
           summary: "Player saved NPC from bandits",
           emotionalImpact: 8,
           tags: ["rescue", "trust"],
         },
         {
-          date: Date.now() - 3600000, // 1 hour ago
+          timestamp: Date.now() - 3600000, // 1 hour ago
           summary: "Shared a romantic dinner",
           emotionalImpact: 7,
           tags: ["romance", "bonding"],
