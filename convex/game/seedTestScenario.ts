@@ -141,12 +141,10 @@ async function seedBdsmDungeon(ctx: MutationCtx, campaignId: Id<"campaigns">, ch
     abilities: { strength: 10, dexterity: 16, constitution: 12, intelligence: 13, wisdom: 11, charisma: 14 },
     position: { x: 3, y: 3 },
     isAlive: true, conditions: [], memories: [], autoCreated: false, firstMetAt: now, currentLocationId: locationId,
-    intimacyProfile: {
-      orientation: "submissive",
-      roleIdentity: { power: 15, action: 25, sensation: 70, service: 90, flexibility: 40 },
-      kinks: { bondage: 2, "power exchange": 3, service: 3, worship: 3, "sensation play": 2, collaring: 3, aftercare: 3 },
-      aftercareNeed: 85, trustThreshold: 35,
-    },
+    adultStats: { composure: 60, arousal: 0, dominance: 15, submission: 90 },
+    kinkPreferences: { bondage: 2, "power exchange": 3, service: 3, worship: 3, "sensation play": 2, collaring: 3, aftercare: 3 },
+    hardLimits: [],
+    desires: "To serve and please",
   });
 
   await ctx.db.insert("relationships", {
