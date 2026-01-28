@@ -46,7 +46,7 @@ http.route({
     // Build the prompt
     const contextMessage = `
 Recent game history:
-${recentLogs?.map((log) => `${log.actorName || "DM"}: ${log.contentEn}`).join("\n") || "No history yet"}
+${recentLogs?.map((log: { actorName?: string; contentEn: string }) => `${log.actorName || "DM"}: ${log.contentEn}`).join("\n") || "No history yet"}
 
 Character: ${character.name}
 
