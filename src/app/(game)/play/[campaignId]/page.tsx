@@ -586,6 +586,33 @@ function ExplorationView({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const logEndRef = useRef<HTMLDivElement>(null);
 
+  // Pending roll state
+  const pendingRoll = gameState.session?.pendingRoll;
+
+  // Calculate modifier for pending roll
+  const getRollModifier = () => {
+    if (!pendingRoll || !currentCharacter) return { modifier: 0, proficiencyBonus: 0 };
+
+    const abilities = currentCharacter.abilities;
+    const abilityKey = pendingRoll.ability.toLowerCase() as keyof typeof abilities;
+    const abilityScore = abilities[abilityKey] ?? 10;
+    const abilityMod = Math.floor((abilityScore - 10) / 2);
+
+    // Check if character is proficient in the skill
+    const proficiencyBonus = currentCharacter.proficiencyBonus ?? 2;
+    const skills = currentCharacter.skills ?? [];
+    const isProficient = pendingRoll.skill ? skills.includes(pendingRoll.skill.toLowerCase()) : false;
+
+    const totalModifier = abilityMod + (isProficient ? proficiencyBonus : 0);
+
+    return {
+      modifier: totalModifier,
+      proficiencyBonus: isProficient ? proficiencyBonus : 0
+    };
+  };
+
+  const { modifier: rollModifier, proficiencyBonus: rollProfBonus } = getRollModifier();
+
   const submitAction = useAction(api.game.actions.submitAction);
   const submitQuickAction = useAction(api.game.actions.submitQuickAction);
 
