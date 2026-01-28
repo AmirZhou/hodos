@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as admin_clearData from "../admin/clearData.js";
 import type * as ai_dm from "../ai/dm.js";
 import type * as ai_llmProvider from "../ai/llmProvider.js";
 import type * as campaigns from "../campaigns.js";
@@ -44,6 +45,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "admin/clearData": typeof admin_clearData;
   "ai/dm": typeof ai_dm;
   "ai/llmProvider": typeof ai_llmProvider;
   campaigns: typeof campaigns;

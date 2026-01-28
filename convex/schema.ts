@@ -154,6 +154,11 @@ const equipmentItem = v.object({
     arousalControl: v.optional(v.number()),
     dominanceBonus: v.optional(v.number()),
     submissionBonus: v.optional(v.number()),
+    allure: v.optional(v.number()),
+    commandPresence: v.optional(v.number()),
+    trustBuilding: v.optional(v.number()),
+    aftercarePower: v.optional(v.number()),
+    painThreshold: v.optional(v.number()),
   })),
   passive: v.optional(v.string()),
 });
