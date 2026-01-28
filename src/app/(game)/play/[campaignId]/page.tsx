@@ -407,8 +407,6 @@ function LocationTab({
 
 function GameHeader({
   campaignName,
-  showFrench,
-  onToggleFrench,
   onToggleMap,
   sidebarOpen,
   onToggleSidebar,
@@ -417,8 +415,6 @@ function GameHeader({
   llmProvider,
 }: {
   campaignName: string;
-  showFrench: boolean;
-  onToggleFrench: () => void;
   onToggleMap: () => void;
   sidebarOpen: boolean;
   onToggleSidebar: () => void;
@@ -445,23 +441,9 @@ function GameHeader({
         {sessionId && (
           <ModelSelector sessionId={sessionId} currentProvider={llmProvider} />
         )}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onToggleFrench}
-          className={showFrench ? "text-[var(--accent-blue)]" : ""}
-        >
-          <Globe className="h-4 w-4 mr-1" />
-          FR
-        </Button>
         <Button variant="ghost" size="icon" onClick={onToggleMap}>
           <Map className="h-5 w-5" />
         </Button>
-        <Link href="/notebook">
-          <Button variant="ghost" size="icon" title="Notebook">
-            <BookOpen className="h-5 w-5" />
-          </Button>
-        </Link>
         <Button
           variant="ghost"
           size="icon"
