@@ -79,10 +79,9 @@ export const getOrCreate = mutation({
       displayName: args.displayName,
       avatarUrl: args.avatarUrl,
       settings: {
-        language: "bilingual",
         explicitContent: true,
         videoEnabled: true,
-        frenchLevel: "beginner",
+        intensityPreference: 5,
       },
       createdAt: Date.now(),
     });
