@@ -28,6 +28,9 @@ export function useGameState({ campaignId }: UseGameStateOptions) {
   const isInCombat = currentMode === "combat" && session?.combat !== undefined;
   const isInScene = currentMode === "scene" && session?.scene !== undefined;
 
+  // Exploration state
+  const hasExplorationGrid = !!session?.explorationPositions && Object.keys(session.explorationPositions).length > 0;
+
   return {
     // Session data
     session,
@@ -42,6 +45,9 @@ export function useGameState({ campaignId }: UseGameStateOptions) {
     // Scene state
     scene: session?.scene,
     isInScene,
+
+    // Exploration state
+    hasExplorationGrid,
 
     // Multiplayer
     onlinePlayers: onlinePlayers ?? [],
