@@ -4,6 +4,7 @@ import type { EquipmentSlot } from "./equipmentItems";
 const SLOT_ORDER: EquipmentSlot[] = [
   "head", "chest", "hands", "boots", "cloak",
   "ring", "necklace", "mainHand", "offHand", "book",
+  "collar", "restraints", "toy",
 ];
 
 const SLOT_DISPLAY: Record<EquipmentSlot, string> = {
@@ -17,6 +18,9 @@ const SLOT_DISPLAY: Record<EquipmentSlot, string> = {
   mainHand: "MAIN HAND",
   offHand: "OFF HAND",
   book: "BOOK",
+  collar: "COLLAR",
+  restraints: "RESTRAINTS",
+  toy: "TOY",
 };
 
 /**
