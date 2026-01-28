@@ -610,22 +610,17 @@ export default function NewCharacterPage() {
                   </div>
                 </div>
 
-                {/* Intimacy Summary */}
+                {/* Adult Profile Summary */}
                 <div>
-                  <h4 className="text-sm font-medium mb-2">Intimacy Profile</h4>
+                  <h4 className="text-sm font-medium mb-2">Power Dynamics</h4>
                   <div className="space-y-1 text-sm text-[var(--foreground-secondary)]">
-                    <p>Orientation: {character.intimacyProfile.orientation}</p>
+                    <p>Orientation: {character.orientation}</p>
                     <p>
-                      Role:{" "}
-                      {character.intimacyProfile.roleIdentity.power > 60
-                        ? "Dominant-leaning"
-                        : character.intimacyProfile.roleIdentity.power < 40
-                          ? "Submissive-leaning"
-                          : "Switch"}
+                      Dominance: {character.adultStats.dominance} | Submission: {character.adultStats.submission}
                     </p>
                     <p>
                       Active kinks:{" "}
-                      {Object.entries(character.intimacyProfile.kinks)
+                      {Object.entries(character.kinkPreferences)
                         .filter(([_, v]) => v > 0)
                         .map(([k]) => k)
                         .slice(0, 5)
