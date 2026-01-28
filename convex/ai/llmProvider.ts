@@ -116,13 +116,13 @@ export async function callLLM(
 }
 
 // For streaming responses
-export function getStreamingConfig(): {
+export function getStreamingConfig(preferredProvider?: LLMProvider): {
   provider: LLMProvider;
   apiUrl: string;
   apiKey: string;
   model: string;
 } {
-  const { provider, config } = getProviderConfig();
+  const { provider, config } = getProviderConfig(preferredProvider);
   return {
     provider,
     apiUrl: config.apiUrl,
