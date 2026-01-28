@@ -543,9 +543,16 @@ export const endCombat = mutation({
       }
     }
 
+    // Copy final combatant positions back to exploration positions
+    const explorationPositions = { ...(session.explorationPositions ?? {}) };
+    for (const combatant of session.combat.combatants) {
+      explorationPositions[combatant.entityId] = combatant.position;
+    }
+
     await ctx.db.patch(args.sessionId, {
       mode: "exploration",
       combat: undefined,
+      explorationPositions,
       lastActionAt: Date.now(),
     });
 
