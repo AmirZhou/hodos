@@ -379,11 +379,10 @@ Respond with JSON containing:
       parsedResponse = JSON.parse(content);
     } catch {
       parsedResponse = {
-        narration: { en: content, fr: "[Translation pending]" },
+        narration: content,
         atmosphereDetails: [],
         npcIntroductions: [],
         suggestedActions: [],
-        vocabularyHighlights: [],
       };
     }
 
