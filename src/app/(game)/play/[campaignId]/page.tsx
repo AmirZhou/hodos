@@ -913,35 +913,7 @@ function LogEntry({
         </div>
       )}
 
-      {/* Side-by-side layout when analysis exists, otherwise just content */}
-      {hasAnalysis ? (
-        <div className="flex gap-4 items-start">
-          <div className="flex-1 min-w-0">
-            {contentBlock}
-          </div>
-          <div className="w-72 flex-shrink-0 hidden xl:block">
-            <AnalysisPanel
-              analysis={entry.linguisticAnalysis}
-              alwaysExpanded
-              onSave={!isSaved ? onSave : undefined}
-              isSaved={isSaved}
-            />
-          </div>
-        </div>
-      ) : (
-        contentBlock
-      )}
-
-      {/* Fallback: show analysis below on smaller screens */}
-      {hasAnalysis && (
-        <div className="xl:hidden">
-          <AnalysisPanel
-            analysis={entry.linguisticAnalysis}
-            onSave={!isSaved ? onSave : undefined}
-            isSaved={isSaved}
-          />
-        </div>
-      )}
+      {contentBlock}
     </div>
   );
 }
