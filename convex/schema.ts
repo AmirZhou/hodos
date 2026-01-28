@@ -305,6 +305,7 @@ export default defineSchema({
       // Adult equipment slots
       collar: v.optional(equipmentItem),
       restraints: v.optional(equipmentItem),
+      toy: v.optional(equipmentItem),
     }),
 
     // Conditions & Status
