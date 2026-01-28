@@ -500,10 +500,9 @@ ${args.isCriticalMiss ? "Make this feel dramatic and potentially comedic - somet
 
 Respond with JSON:
 {
-  "narration": { "en": "...", "fr": "..." },
+  "narration": "What happens as a result of the roll",
   "consequences": ["What happens as a result"],
-  "followUpOptions": [{ "en": "...", "fr": "...", "type": "..." }],
-  "vocabularyHighlights": [{ "word": "...", "translation": "...", "note": "..." }]
+  "followUpOptions": [{ "text": "Action description", "type": "dialogue|action|intimate" }]
 }`;
 
     const messages: LLMMessage[] = [
