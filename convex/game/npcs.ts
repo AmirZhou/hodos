@@ -4,8 +4,7 @@ import { Id } from "../_generated/dataModel";
 
 interface NPCDialogue {
   name: string;
-  en: string;
-  fr: string;
+  text: string;
 }
 
 interface AIResponse {
