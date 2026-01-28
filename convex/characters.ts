@@ -137,19 +137,14 @@ export const create = mutation({
     }),
     class: v.optional(v.string()),
     background: v.optional(v.string()),
-    intimacyProfile: v.object({
-      orientation: v.string(),
-      roleIdentity: v.object({
-        power: v.number(),
-        action: v.number(),
-        sensation: v.number(),
-        service: v.number(),
-        flexibility: v.number(),
-      }),
-      kinks: v.optional(v.record(v.string(), v.number())),
-      aftercareNeed: v.number(),
-      trustThreshold: v.number(),
-    }),
+    adultStats: v.optional(v.object({
+      composure: v.number(),
+      arousal: v.number(),
+      dominance: v.number(),
+      submission: v.number(),
+    })),
+    kinkPreferences: v.optional(v.record(v.string(), v.number())),
+    hardLimits: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
     const level = 1;
