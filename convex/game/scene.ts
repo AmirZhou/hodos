@@ -63,7 +63,8 @@ export const getSceneState = query({
               ? {
                   name: character.name,
                   portrait: character.portrait,
-                  intimacyProfile: character.intimacyProfile,
+                  adultStats: character.adultStats,
+                  kinkPreferences: character.kinkPreferences,
                 }
               : null,
           };
@@ -75,7 +76,8 @@ export const getSceneState = query({
               ? {
                   name: npc.name,
                   portrait: npc.portrait,
-                  intimacyProfile: npc.intimacyProfile,
+                  adultStats: npc.adultStats,
+                  kinkPreferences: npc.kinkPreferences,
                 }
               : null,
           };
