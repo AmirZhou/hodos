@@ -601,7 +601,7 @@ function ExplorationView({
 
     // Check if character is proficient in the skill
     const proficiencyBonus = currentCharacter.proficiencyBonus ?? 2;
-    const skills = currentCharacter.skills ?? [];
+    const skills = (currentCharacter as { skills?: string[] }).skills ?? [];
     const isProficient = pendingRoll.skill ? skills.includes(pendingRoll.skill.toLowerCase()) : false;
 
     const totalModifier = abilityMod + (isProficient ? proficiencyBonus : 0);
