@@ -61,28 +61,24 @@ export default function NewCampaignPage() {
     {
       id: "quebec-modern",
       name: "Modern Quebec",
-      nameFr: "Québec moderne",
       description: "Contemporary Montreal with hidden supernatural elements",
       icon: Globe,
     },
     {
       id: "quebec-fantasy",
       name: "Quebec Fantasy",
-      nameFr: "Québec fantastique",
       description: "A magical version of Quebec with full fantasy elements",
       icon: Sparkles,
     },
     {
       id: "custom",
       name: "Custom Setting",
-      nameFr: "Paramètre personnalisé",
       description: "Define your own world with the AI DM",
       icon: Users,
     },
     {
       id: "foot-fetish-spa",
       name: "Foot Fetish Spa",
-      nameFr: "Spa fétichiste des pieds",
       description: "A private spa suite with two NPCs who share a love of feet — massage, worship, and pampering",
       icon: Footprints,
       seedScenario: "foot-fetish-spa",
@@ -90,7 +86,6 @@ export default function NewCampaignPage() {
     {
       id: "bdsm-dungeon",
       name: "BDSM Dungeon",
-      nameFr: "Donjon BDSM",
       description: "A velvet-draped dungeon with a dominant mistress and a submissive servant",
       icon: Heart,
       seedScenario: "bdsm-dungeon",
@@ -98,7 +93,6 @@ export default function NewCampaignPage() {
     {
       id: "servant-serving",
       name: "Devoted Servant",
-      nameFr: "Serviteur dévoué",
       description: "Your personal servant is already kneeling at your feet, mid-service — an established dynamic you command",
       icon: Crown,
       seedScenario: "servant-serving",
@@ -106,7 +100,6 @@ export default function NewCampaignPage() {
     {
       id: "mid-scene",
       name: "In Medias Res",
-      nameFr: "En pleine action",
       description: "You're already deep in an intense, passionate encounter — pick up right in the heat of the moment",
       icon: Flame,
       seedScenario: "mid-scene",
