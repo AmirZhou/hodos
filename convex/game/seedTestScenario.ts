@@ -9,9 +9,8 @@ function itemToDoc(item: EquipmentItem) {
   return {
     id: item.id,
     name: item.name,
-    nameFr: item.nameFr,
     description: item.description,
-    type: item.type as "head" | "chest" | "hands" | "boots" | "cloak" | "ring" | "necklace" | "mainHand" | "offHand" | "book",
+    type: item.type as "head" | "chest" | "hands" | "boots" | "cloak" | "ring" | "necklace" | "mainHand" | "offHand" | "book" | "collar" | "restraints" | "toy",
     rarity: item.rarity as "mundane" | "common" | "uncommon" | "rare" | "epic" | "legendary",
     stats: item.stats,
     specialAttributes: item.specialAttributes,
