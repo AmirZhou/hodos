@@ -134,3 +134,52 @@ export const end = mutation({
     });
   },
 });
+
+// Set a pending roll for user to execute
+export const setPendingRoll = mutation({
+  args: {
+    sessionId: v.id("gameSessions"),
+    pendingRoll: v.object({
+      type: v.string(),
+      skill: v.optional(v.string()),
+      ability: v.string(),
+      dc: v.number(),
+      reason: v.string(),
+      characterId: v.id("characters"),
+      actionContext: v.string(),
+    }),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.sessionId, {
+      pendingRoll: args.pendingRoll,
+      lastActionAt: Date.now(),
+    });
+  },
+});
+
+// Clear the pending roll
+export const clearPendingRoll = mutation({
+  args: {
+    sessionId: v.id("gameSessions"),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.sessionId, {
+      pendingRoll: undefined,
+      lastActionAt: Date.now(),
+    });
+  },
+});
+
+// Set LLM provider
+export const setLlmProvider = mutation({
+  args: {
+    sessionId: v.id("gameSessions"),
+    provider: v.union(v.literal("deepseek"), v.literal("openai")),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.sessionId, {
+      llmProvider: args.provider,
+      lastActionAt: Date.now(),
+    });
+  },
+});
