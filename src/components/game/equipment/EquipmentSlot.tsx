@@ -27,7 +27,6 @@ const SLOT_ICONS: Record<string, React.ComponentType<{ className?: string }>> = 
 interface ItemData {
   id: string;
   name: string;
-  nameFr: string;
   description: string;
   type: SlotType;
   rarity: Rarity;
