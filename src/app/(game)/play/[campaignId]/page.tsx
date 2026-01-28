@@ -316,38 +316,35 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
   );
 }
 
-function MapModal({
+function MapPanel({
   campaignId,
   sessionId,
   currentLocationId,
   currentCharacterId,
   currentCharacterName,
-  onLocationSelect,
-  onClose,
+  showMap,
 }: {
   campaignId: Id<"campaigns">;
   sessionId?: Id<"gameSessions">;
   currentLocationId?: Id<"locations">;
   currentCharacterId?: Id<"characters">;
   currentCharacterName?: string;
-  onLocationSelect?: () => void;
-  onClose?: () => void;
+  showMap?: boolean;
 }) {
   const [activeTab, setActiveTab] = useState<"location" | "world">("location");
 
-  // Get current location details for the Location tab header
   const currentLocation = useQuery(
     api.game.travel.getCurrentLocation,
     sessionId ? { sessionId } : "skip"
   );
 
   return (
-    <div className="rounded-lg bg-[var(--card)] border border-[var(--border)] overflow-hidden">
+    <div className="border-b border-[var(--border)]">
       {/* Tab Header */}
       <div className="flex border-b border-[var(--border)]">
         <button
           onClick={() => setActiveTab("location")}
-          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
+          className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium transition-colors ${
             activeTab === "location"
               ? "text-[var(--accent-gold)] border-b-2 border-[var(--accent-gold)]"
               : "text-[var(--foreground-secondary)] hover:text-[var(--foreground)]"
@@ -358,7 +355,7 @@ function MapModal({
         </button>
         <button
           onClick={() => setActiveTab("world")}
-          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
+          className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium transition-colors ${
             activeTab === "world"
               ? "text-[var(--accent-gold)] border-b-2 border-[var(--accent-gold)]"
               : "text-[var(--foreground-secondary)] hover:text-[var(--foreground)]"
@@ -367,14 +364,6 @@ function MapModal({
           <Globe className="h-4 w-4" />
           World
         </button>
-        {onClose && (
-          <button
-            onClick={onClose}
-            className="px-3 text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        )}
       </div>
 
       {/* Tab Content */}
@@ -386,12 +375,13 @@ function MapModal({
           currentCharacterName={currentCharacterName}
         />
       ) : (
-        <LocationGraph
-          campaignId={campaignId}
-          sessionId={sessionId}
-          currentLocationId={currentLocationId}
-          onLocationSelect={onLocationSelect}
-        />
+        <div className="overflow-auto max-h-[50vh]">
+          <LocationGraph
+            campaignId={campaignId}
+            sessionId={sessionId}
+            currentLocationId={currentLocationId}
+          />
+        </div>
       )}
     </div>
   );
