@@ -149,6 +149,7 @@ async function seedBdsmDungeon(ctx: MutationCtx, campaignId: Id<"campaigns">, ch
       "Devoted and eager to please. Luc finds peace in service and structure. He is shy at first but opens up quickly to those who show genuine care. Deeply loyal once trust is established.",
     level: 3, hp: 22, maxHp: 22, ac: 12,
     abilities: { strength: 10, dexterity: 16, constitution: 12, intelligence: 13, wisdom: 11, charisma: 14 },
+    position: { x: 3, y: 3 },
     isAlive: true, conditions: [], memories: [], autoCreated: false, firstMetAt: now, currentLocationId: locationId,
     intimacyProfile: {
       orientation: "submissive",
