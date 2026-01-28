@@ -107,19 +107,15 @@ export default function NewCharacterPage() {
     },
     class: "",
     background: "",
-    intimacyProfile: {
-      orientation: "Bisexual",
-      roleIdentity: {
-        power: 50,
-        action: 50,
-        sensation: 50,
-        service: 50,
-        flexibility: 50,
-      },
-      kinks: {},
-      aftercareNeed: 50,
-      trustThreshold: 50,
+    adultStats: {
+      composure: 75,
+      arousal: 0,
+      dominance: 50,
+      submission: 50,
     },
+    kinkPreferences: {},
+    hardLimits: [],
+    orientation: "Bisexual",
   });
 
   const [abilityAssignments, setAbilityAssignments] = useState<Record<AbilityName, number | null>>({
