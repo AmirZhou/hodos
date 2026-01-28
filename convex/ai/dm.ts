@@ -360,11 +360,10 @@ ${args.presentNpcs.map((npc) => `- ${npc.name}: ${npc.description}. Currently: $
 
 Respond with JSON containing:
 {
-  "narration": { "en": "...", "fr": "..." },
+  "narration": "Scene description text",
   "atmosphereDetails": ["detail1", "detail2"],
-  "npcIntroductions": [{ "name": "...", "en": "...", "fr": "..." }],
-  "suggestedActions": [{ "en": "...", "fr": "...", "type": "..." }],
-  "vocabularyHighlights": [{ "word": "...", "translation": "...", "note": "..." }]
+  "npcIntroductions": [{ "name": "NPC Name", "text": "What they say or do" }],
+  "suggestedActions": [{ "text": "Action description", "type": "dialogue|action|intimate" }]
 }`;
 
     const messages: LLMMessage[] = [
