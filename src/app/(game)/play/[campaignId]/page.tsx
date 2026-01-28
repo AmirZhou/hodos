@@ -773,8 +773,7 @@ function ExplorationView({
 interface GameLogEntry {
   _id: Id<"gameLog">;
   type: "narration" | "dialogue" | "action" | "roll" | "system" | "ooc" | "movement";
-  contentEn: string;
-  contentFr: string;
+  content: string;
   actorName?: string;
   actorId?: string;
   actorType?: "dm" | "character" | "npc";
@@ -788,24 +787,6 @@ interface GameLogEntry {
     result: number;
     dc?: number;
     success?: boolean;
-  };
-  annotations?: {
-    vocabulary: Array<{
-      word: string;
-      translation: string;
-      note?: string;
-    }>;
-    grammar?: string;
-  };
-  linguisticAnalysis?: {
-    grammar: string[];
-    vocabulary: Array<{
-      word: string;
-      translation: string;
-      partOfSpeech: string;
-      usage?: string;
-    }>;
-    usageNotes: string[];
   };
 }
 
