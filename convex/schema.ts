@@ -532,7 +532,10 @@ export default defineSchema({
       v.literal("movement")
     ),
 
-    content: v.string(),
+    content: v.optional(v.string()), // Made optional for migration
+    // DEPRECATED - kept for data migration
+    contentEn: v.optional(v.string()),
+    contentFr: v.optional(v.string()),
 
     actorType: v.optional(
       v.union(v.literal("dm"), v.literal("character"), v.literal("npc"))
