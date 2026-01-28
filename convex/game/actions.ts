@@ -427,3 +427,120 @@ export const submitQuickAction = action({
     return executeAction(ctx, args.campaignId, args.characterId, args.actionText.en);
   },
 });
+
+// Execute a pending roll (user clicked the dice)
+export const executeRoll = action({
+  args: {
+    campaignId: v.id("campaigns"),
+    sessionId: v.id("gameSessions"),
+    characterId: v.id("characters"),
+    // The actual d20 roll result (1-20) - passed from frontend animation
+    naturalRoll: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const { campaignId, sessionId, characterId, naturalRoll } = args;
+
+    // Get session with pending roll
+    const session = await ctx.runQuery(api.game.session.getCurrent, { campaignId });
+    if (!session || !session.pendingRoll) {
+      throw new Error("No pending roll found");
+    }
+
+    const roll = session.pendingRoll;
+
+    // Get character for modifiers
+    const character = await ctx.runQuery(api.characters.get, { characterId });
+    if (!character) {
+      throw new Error("Character not found");
+    }
+
+    // Calculate modifiers
+    const ability = roll.ability as keyof typeof character.abilities;
+    const abilityScore = character.abilities[ability] || 10;
+    const abilityMod = Math.floor((abilityScore - 10) / 2);
+
+    const skillProficiency = roll.skill ? (character.skills[roll.skill] || 0) : 0;
+    const isProficient = skillProficiency >= 1;
+    const hasExpertise = skillProficiency >= 2;
+
+    let modifier = abilityMod;
+    if (isProficient) modifier += character.proficiencyBonus;
+    if (hasExpertise) modifier += character.proficiencyBonus; // Expertise doubles prof bonus
+
+    const total = naturalRoll + modifier;
+    const success = total >= roll.dc;
+    const isCritical = naturalRoll === 20;
+    const isCriticalMiss = naturalRoll === 1;
+    const finalSuccess = isCritical || (!isCriticalMiss && success);
+
+    // Log the roll
+    await ctx.runMutation(api.game.log.add, {
+      campaignId,
+      type: "roll",
+      contentEn: `${character.name} rolls ${roll.skill || roll.ability}: ${naturalRoll} + ${modifier} = ${total} vs DC ${roll.dc} - ${finalSuccess ? "SUCCESS" : "FAILURE"}${isCritical ? " (CRITICAL!)" : ""}${isCriticalMiss ? " (CRITICAL MISS!)" : ""}`,
+      contentFr: `${character.name} lance ${roll.skill || roll.ability}: ${naturalRoll} + ${modifier} = ${total} contre DD ${roll.dc} - ${finalSuccess ? "SUCCÈS" : "ÉCHEC"}${isCritical ? " (CRITIQUE!)" : ""}${isCriticalMiss ? " (ÉCHEC CRITIQUE!)" : ""}`,
+      actorType: "character",
+      actorId: characterId,
+      actorName: character.name,
+      roll: {
+        type: roll.type,
+        dice: `1d20+${modifier}`,
+        result: total,
+        dc: roll.dc,
+        success: finalSuccess,
+      },
+    });
+
+    // Get narrative for the roll outcome
+    const rollNarration = await ctx.runAction(api.ai.dm.narrateRollOutcome, {
+      rollType: roll.type,
+      skill: roll.skill ?? undefined,
+      rollResult: naturalRoll,
+      modifier,
+      total,
+      dc: roll.dc,
+      success: finalSuccess,
+      isCritical,
+      isCriticalMiss,
+      actionAttempted: roll.actionContext,
+      context: roll.reason,
+    }) as { response: any; usage: any };
+
+    // Log the narrated outcome
+    await ctx.runMutation(api.game.log.add, {
+      campaignId,
+      type: "narration",
+      contentEn: rollNarration.response.narration?.en || "",
+      contentFr: rollNarration.response.narration?.fr || "",
+      actorType: "dm",
+      annotations: {
+        vocabulary: sanitizeVocabulary(rollNarration.response.vocabularyHighlights),
+      },
+      linguisticAnalysis: sanitizeLinguisticAnalysis(rollNarration.response.linguisticAnalysis),
+    });
+
+    // Clear the pending roll
+    await ctx.runMutation(api.game.session.clearPendingRoll, { sessionId });
+
+    // Update suggested actions
+    if (rollNarration.response.followUpOptions) {
+      await ctx.runMutation(api.game.session.updateLastAction, {
+        sessionId,
+        suggestedActions: rollNarration.response.followUpOptions,
+      });
+    }
+
+    return {
+      success: true,
+      rollResult: {
+        naturalRoll,
+        modifier,
+        total,
+        dc: roll.dc,
+        success: finalSuccess,
+        isCritical,
+        isCriticalMiss,
+      },
+    };
+  },
+});
