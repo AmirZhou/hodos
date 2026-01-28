@@ -217,6 +217,9 @@ async function executeAction(
 
   const response = dmResponse.response;
 
+  // Debug: log the requiresRoll response
+  console.log("[DM Response] requiresRoll:", JSON.stringify(response.requiresRoll));
+
   // 8. Handle dice rolls if needed
   if (response.requiresRoll?.needed) {
     const roll = response.requiresRoll;
