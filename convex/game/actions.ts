@@ -350,14 +350,10 @@ export const submitQuickAction = action({
     campaignId: v.id("campaigns"),
     characterId: v.id("characters"),
     actionType: v.string(),
-    actionText: v.object({
-      en: v.string(),
-      fr: v.string(),
-    }),
+    actionText: v.string(),
   },
   handler: async (ctx, args): Promise<ActionResult> => {
-    // Quick actions are handled the same as free text, using the English version
-    return executeAction(ctx, args.campaignId, args.characterId, args.actionText.en);
+    return executeAction(ctx, args.campaignId, args.characterId, args.actionText);
   },
 });
 
