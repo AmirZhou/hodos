@@ -488,10 +488,13 @@ export default defineSchema({
     }))),
     currentGridSize: v.optional(v.object({ width: v.number(), height: v.number() })),
 
-    // Suggested actions (simplified - no French)
+    // Suggested actions (flexible for migration)
     suggestedActions: v.optional(v.array(v.object({
-      text: v.string(),
+      text: v.optional(v.string()),
       type: v.string(),
+      // DEPRECATED - kept for data migration
+      en: v.optional(v.string()),
+      fr: v.optional(v.string()),
     }))),
 
     // Pending roll
