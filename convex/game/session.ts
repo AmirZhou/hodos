@@ -74,8 +74,7 @@ export const updateLastAction = mutation({
   args: {
     sessionId: v.id("gameSessions"),
     suggestedActions: v.optional(v.array(v.object({
-      en: v.string(),
-      fr: v.string(),
+      text: v.string(),
       type: v.string(),
     }))),
   },
