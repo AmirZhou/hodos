@@ -17,6 +17,7 @@ import type * as dice from "../dice.js";
 import type * as equipment from "../equipment.js";
 import type * as game_actions from "../game/actions.js";
 import type * as game_combat from "../game/combat.js";
+import type * as game_exploration from "../game/exploration.js";
 import type * as game_itemGrants from "../game/itemGrants.js";
 import type * as game_log from "../game/log.js";
 import type * as game_npcNameResolver from "../game/npcNameResolver.js";
@@ -51,6 +52,7 @@ declare const fullApi: ApiFromModules<{
   equipment: typeof equipment;
   "game/actions": typeof game_actions;
   "game/combat": typeof game_combat;
+  "game/exploration": typeof game_exploration;
   "game/itemGrants": typeof game_itemGrants;
   "game/log": typeof game_log;
   "game/npcNameResolver": typeof game_npcNameResolver;

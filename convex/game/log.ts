@@ -11,7 +11,8 @@ export const add = mutation({
       v.literal("action"),
       v.literal("roll"),
       v.literal("system"),
-      v.literal("ooc")
+      v.literal("ooc"),
+      v.literal("movement")
     ),
     contentEn: v.string(),
     contentFr: v.string(),
