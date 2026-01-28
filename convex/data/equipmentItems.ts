@@ -1,14 +1,14 @@
 // Equipment Items Database - Auto-generated from design doc
 // ~170 items across 10 equipment slots and 6 rarity tiers
 
-export type EquipmentSlot = "head" | "chest" | "hands" | "boots" | "cloak" | "ring" | "necklace" | "mainHand" | "offHand" | "book";
-export type EquipedSlot = "head" | "chest" | "hands" | "boots" | "cloak" | "ring1" | "ring2" | "necklace" | "mainHand" | "offHand" | "book";
+export type EquipmentSlot = "head" | "chest" | "hands" | "boots" | "cloak" | "ring" | "necklace" | "mainHand" | "offHand" | "book" | "collar" | "restraints" | "toy";
+export type EquipedSlot = "head" | "chest" | "hands" | "boots" | "cloak" | "ring1" | "ring2" | "necklace" | "mainHand" | "offHand" | "book" | "collar" | "restraints" | "toy";
 export type Rarity = "mundane" | "common" | "uncommon" | "rare" | "epic" | "legendary";
 
 export interface EquipmentItem {
   id: string;
   name: string;
-  nameFr: string;
+  nameFr?: string; // Deprecated, kept for compatibility
   description: string;
   type: EquipmentSlot;
   rarity: Rarity;
