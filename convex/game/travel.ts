@@ -108,14 +108,12 @@ export const getLocationDetails = query({
         name: npc.name,
         portrait: npc.portrait,
         description: npc.description,
-        descriptionFr: npc.descriptionFr,
       })),
       connectedLocations: connectedLocations.filter(Boolean),
       parentLocation,
       childLocations: childLocations.map((child) => ({
         id: child._id,
         name: child.name,
-        nameFr: child.nameFr,
         isDiscovered: child.isDiscovered,
       })),
     };
