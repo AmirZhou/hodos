@@ -644,7 +644,7 @@ function ExplorationView({
     }
   };
 
-  const handleQuickAction = async (label: string, labelFr: string) => {
+  const handleQuickAction = async (label: string) => {
     if (!currentCharacter || !campaign || isSubmitting) return;
 
     setIsSubmitting(true);
@@ -653,7 +653,7 @@ function ExplorationView({
         campaignId: campaign._id,
         characterId: currentCharacter._id,
         actionType: label.toLowerCase().replace(/\s+/g, "_"),
-        actionText: { en: label, fr: labelFr },
+        actionText: { text: label },
       });
     } catch (error) {
       console.error("Failed to submit quick action:", error);
