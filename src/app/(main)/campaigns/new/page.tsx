@@ -165,7 +165,6 @@ export default function NewCampaignPage() {
                       </div>
                       <div>
                         <CardTitle className="text-base">{s.name}</CardTitle>
-                        <p className="text-xs text-[var(--accent-blue)]">{s.nameFr}</p>
                       </div>
                     </div>
                   </CardHeader>
