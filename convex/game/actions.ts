@@ -257,19 +257,14 @@ async function executeAction(
       }
     }
 
-    // Log the dialogue (attach linguistic analysis to each for French learning)
+    // Log the dialogue
     for (const dialogue of response.npcDialogue) {
       await ctx.runMutation(api.game.log.add, {
         campaignId,
         type: "dialogue",
-        contentEn: dialogue.en,
-        contentFr: dialogue.fr,
+        content: dialogue.text,
         actorType: "npc",
         actorName: dialogue.name,
-        annotations: {
-          vocabulary: sanitizeVocabulary(response.vocabularyHighlights),
-        },
-        linguisticAnalysis: sanitizeLinguisticAnalysis(response.linguisticAnalysis),
       });
     }
   }
