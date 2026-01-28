@@ -46,6 +46,7 @@ import {
   Sword,
   Scroll,
   X,
+  MapPin,
 } from "lucide-react";
 import { InventoryModal } from "@/components/game/equipment/InventoryModal";
 import { CharacterSheetModal } from "@/components/game/equipment/CharacterSheetModal";
