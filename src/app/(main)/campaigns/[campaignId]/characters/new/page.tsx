@@ -473,36 +473,33 @@ export default function NewCharacterPage() {
               </div>
             </div>
 
-            {/* Role Identity Sliders */}
+            {/* Power Dynamics (Two-Axis) */}
             <div className="space-y-4">
-              <label className="block text-sm font-medium">Role Identity</label>
+              <label className="block text-sm font-medium">Power Dynamics</label>
+              <p className="text-xs text-[var(--foreground-secondary)]">
+                Both dominance and submission are separate axes — you can be high in both (switch), low in both (vanilla), or lean one way.
+              </p>
 
               {[
-                { key: "power", left: "Submissive", right: "Dominant" },
-                { key: "action", left: "Bottom", right: "Top" },
-                { key: "sensation", left: "Masochist", right: "Sadist" },
-                { key: "service", left: "Service-giving", right: "Service-receiving" },
-                { key: "flexibility", left: "Fixed Role", right: "Switch" },
-              ].map(({ key, left, right }) => (
+                { key: "dominance", label: "Dominance", description: "Desire to lead, control, or top" },
+                { key: "submission", label: "Submission", description: "Desire to follow, yield, or bottom" },
+              ].map(({ key, label, description }) => (
                 <div key={key} className="space-y-1">
                   <div className="flex justify-between text-xs text-[var(--foreground-secondary)]">
-                    <span>{left}</span>
-                    <span>{right}</span>
+                    <span>{label}: {character.adultStats[key as keyof typeof character.adultStats]}</span>
+                    <span className="text-[var(--foreground-muted)]">{description}</span>
                   </div>
                   <input
                     type="range"
                     min="0"
                     max="100"
-                    value={character.intimacyProfile.roleIdentity[key as keyof typeof character.intimacyProfile.roleIdentity]}
+                    value={character.adultStats[key as keyof typeof character.adultStats]}
                     onChange={(e) =>
                       setCharacter({
                         ...character,
-                        intimacyProfile: {
-                          ...character.intimacyProfile,
-                          roleIdentity: {
-                            ...character.intimacyProfile.roleIdentity,
-                            [key]: parseInt(e.target.value),
-                          },
+                        adultStats: {
+                          ...character.adultStats,
+                          [key]: parseInt(e.target.value),
                         },
                       })
                     }
