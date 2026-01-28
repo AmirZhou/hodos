@@ -72,19 +72,15 @@ interface CharacterData {
   abilities: Record<AbilityName, number>;
   class: string;
   background: string;
-  intimacyProfile: {
-    orientation: string;
-    roleIdentity: {
-      power: number;
-      action: number;
-      sensation: number;
-      service: number;
-      flexibility: number;
-    };
-    kinks: Record<string, number>;
-    aftercareNeed: number;
-    trustThreshold: number;
+  adultStats: {
+    composure: number;
+    arousal: number;
+    dominance: number;
+    submission: number;
   };
+  kinkPreferences: Record<string, number>;
+  hardLimits: string[];
+  orientation: string;
 }
 
 export default function NewCharacterPage() {
