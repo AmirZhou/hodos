@@ -505,6 +505,7 @@ export const executeRoll = action({
       isCriticalMiss,
       actionAttempted: roll.actionContext,
       context: roll.reason,
+      llmProvider: session.llmProvider,
     }) as { response: any; usage: any };
 
     // Log the narrated outcome
