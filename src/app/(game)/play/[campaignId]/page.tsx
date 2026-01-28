@@ -790,7 +790,7 @@ function LogEntry({
         {!isRoll && (
           <div className="space-y-2">
             <p className="text-[var(--foreground)] leading-relaxed">
-              {entry.content}
+              {entry.content || entry.contentEn || ""}
             </p>
           </div>
         )}
