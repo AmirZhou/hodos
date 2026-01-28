@@ -475,11 +475,6 @@ export const narrateRollOutcome = action({
     context: v.string(),
   },
   handler: async (ctx, args) => {
-    const apiKey = process.env.DEEPSEEK_API_KEY;
-    if (!apiKey) {
-      throw new Error("DEEPSEEK_API_KEY not configured");
-    }
-
     const outcomeType = args.isCritical
       ? "CRITICAL SUCCESS"
       : args.isCriticalMiss
@@ -508,12 +503,13 @@ Respond with JSON:
   "vocabularyHighlights": [{ "word": "...", "translation": "...", "note": "..." }]
 }`;
 
-    const messages: DeepSeekMessage[] = [
+    const messages: LLMMessage[] = [
       { role: "system", content: DM_SYSTEM_PROMPT },
       { role: "user", content: prompt },
     ];
 
-    const { content, usage } = await callDeepSeek(messages, apiKey);
+    const { content, usage, provider, model, latencyMs } = await callLLM(messages, { jsonMode: true });
+    console.log(`[LLM] ${provider}/${model} responded in ${latencyMs}ms`);
 
     let parsedResponse;
     try {
@@ -527,6 +523,6 @@ Respond with JSON:
       };
     }
 
-    return { response: parsedResponse, usage };
+    return { response: parsedResponse, usage, provider, model, latencyMs };
   },
 });
