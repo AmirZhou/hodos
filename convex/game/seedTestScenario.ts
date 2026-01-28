@@ -103,11 +103,8 @@ async function seedBdsmDungeon(ctx: MutationCtx, campaignId: Id<"campaigns">, ch
   const locationId = await ctx.db.insert("locations", {
     campaignId,
     name: "The Velvet Sanctum",
-    nameFr: "Le Sanctuaire de Velours",
     description:
       "A luxurious underground chamber draped in deep crimson and black velvet. Wrought-iron candelabras cast flickering shadows across an array of ornate furniture — a padded St. Andrew's cross, silk-draped suspension frame, and a throne of dark leather. The air is thick with the scent of sandalwood and warm wax. Soft ambient music drifts from unseen sources.",
-    descriptionFr:
-      "Une chambre souterraine luxueuse drapée de velours cramoisi et noir. Des candélabres en fer forgé projettent des ombres vacillantes sur un ensemble de meubles ornés — une croix de Saint-André rembourrée, un cadre de suspension drapé de soie et un trône de cuir sombre. L'air est chargé de santal et de cire chaude. Une musique ambiante douce flotte depuis des sources invisibles.",
     connectedTo: [],
     isDiscovered: true,
     properties: { type: "dungeon", lighting: "candlelight", mood: "intimate", privacy: "private" },
