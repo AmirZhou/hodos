@@ -38,17 +38,10 @@ const PROVIDER_CONFIGS: Record<LLMProvider, Omit<ProviderConfig, "apiKey">> = {
   },
 };
 
-// Session-level override (set via setSessionProvider before calling LLM)
-let sessionProviderOverride: LLMProvider | null = null;
-
-export function setSessionProvider(provider: LLMProvider | null) {
-  sessionProviderOverride = provider;
-}
-
-function getProviderConfig(): { provider: LLMProvider; config: ProviderConfig } {
-  // Session override takes precedence over env var
+function getProviderConfig(preferredProvider?: LLMProvider): { provider: LLMProvider; config: ProviderConfig } {
+  // Preferred provider takes precedence over env var
   const providerEnv = process.env.LLM_PROVIDER?.toLowerCase() as LLMProvider | undefined;
-  const provider: LLMProvider = sessionProviderOverride ?? (providerEnv === "openai" ? "openai" : "deepseek");
+  const provider: LLMProvider = preferredProvider ?? (providerEnv === "openai" ? "openai" : "deepseek");
 
   const apiKey =
     provider === "openai"
