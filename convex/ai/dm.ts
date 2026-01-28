@@ -319,6 +319,9 @@ ${args.input}
     return {
       response: parsedResponse,
       usage,
+      provider,
+      model,
+      latencyMs,
     };
   },
 });
