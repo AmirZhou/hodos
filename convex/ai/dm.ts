@@ -282,7 +282,10 @@ ${args.input}
       { role: "user", content: contextMessage },
     ];
 
-    const { content, usage, provider, model, latencyMs } = await callLLM(messages, { jsonMode: true });
+    const { content, usage, provider, model, latencyMs } = await callLLM(messages, {
+      jsonMode: true,
+      provider: args.llmProvider,
+    });
     console.log(`[LLM] ${provider}/${model} responded in ${latencyMs}ms`);
 
     // Parse the JSON response
