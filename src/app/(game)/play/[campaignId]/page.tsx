@@ -655,6 +655,20 @@ function LogEntry({
   isSaved?: boolean;
   onNpcNameClick?: () => void;
 }) {
+  const { gameState } = useGame();
+
+  // Movement log entries get special rendering
+  if (entry.type === "movement" && entry.movementData && gameState.sessionId) {
+    return (
+      <MovementLogEntry
+        sessionId={gameState.sessionId}
+        characterId={entry.actorId ?? ""}
+        actorName={entry.actorName}
+        movementData={entry.movementData}
+      />
+    );
+  }
+
   const isPlayerAction = entry.actorType === "character";
   const isRoll = entry.type === "roll";
   const isDialogue = entry.type === "dialogue";
