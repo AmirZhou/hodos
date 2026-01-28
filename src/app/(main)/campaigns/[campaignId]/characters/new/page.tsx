@@ -199,12 +199,9 @@ export default function NewCharacterPage() {
   const updateKink = (kink: string, level: number) => {
     setCharacter((prev) => ({
       ...prev,
-      intimacyProfile: {
-        ...prev.intimacyProfile,
-        kinks: {
-          ...prev.intimacyProfile.kinks,
-          [kink]: level,
-        },
+      kinkPreferences: {
+        ...prev.kinkPreferences,
+        [kink]: level,
       },
     }));
   };
@@ -227,7 +224,9 @@ export default function NewCharacterPage() {
         abilities: character.abilities,
         class: character.class || undefined,
         background: character.background || undefined,
-        intimacyProfile: character.intimacyProfile,
+        adultStats: character.adultStats,
+        kinkPreferences: character.kinkPreferences,
+        hardLimits: character.hardLimits,
       });
       router.push(`/campaigns/${campaignId}`);
     } catch (err) {
