@@ -432,8 +432,6 @@ async function seedMidScene(ctx: MutationCtx, campaignId: Id<"campaigns">, chara
     pronouns: "she/her",
     description:
       "A stunning woman with dark olive skin, wild black hair fanned across the pillows, and flushed cheeks. Her body glistens with a light sheen of sweat. She is naked beneath you, legs wrapped around your waist, her nails digging lightly into your back. Her lips are parted, eyes half-closed, breath coming in short gasps. A thin gold chain around her neck catches the moonlight with every movement.",
-    descriptionFr:
-      "Une femme magnifique à la peau olive foncée, aux cheveux noirs sauvages étalés sur les oreillers, et aux joues rougies. Son corps brille d'une fine couche de sueur. Elle est nue sous vous, les jambes enroulées autour de votre taille, ses ongles s'enfonçant légèrement dans votre dos. Ses lèvres sont entrouvertes, les yeux mi-clos, le souffle court et haletant. Une fine chaîne en or autour de son cou capte le clair de lune à chaque mouvement.",
     personality:
       "Passionate, vocal, and fully present. Sofia is lost in the moment — she holds nothing back. She moans openly, whispers your name, tells you exactly what she wants. Between waves of intensity she is tender, stroking your face, pulling you close for deep kisses. She has been building toward this for weeks and is savoring every second.",
     level: 4, hp: 28, maxHp: 28, ac: 10,
