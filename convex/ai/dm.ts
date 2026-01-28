@@ -205,7 +205,7 @@ export const processPlayerInput = action({
             v.object({
               keyMoments: v.array(
                 v.object({
-                  date: v.number(),
+                  timestamp: v.number(),
                   summary: v.string(),
                   emotionalImpact: v.number(),
                   tags: v.array(v.string()),
