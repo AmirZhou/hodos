@@ -149,12 +149,12 @@ async function seedBdsmDungeon(ctx: MutationCtx, campaignId: Id<"campaigns">, ch
 
   await ctx.db.insert("relationships", {
     campaignId, characterId, npcId: vivienneId,
-    affinity: 15, trust: 20, attraction: 25, tension: 30, intimacy: 5,
+    affinity: 15, trust: 20, attraction: 25, fear: 30, intimacy: 5,
     history: ["Met at the entrance to The Velvet Sanctum"], flags: {},
   });
   await ctx.db.insert("relationships", {
     campaignId, characterId, npcId: lucId,
-    affinity: 20, trust: 15, attraction: 15, tension: 10, intimacy: 0,
+    affinity: 20, trust: 15, attraction: 15, fear: 0, intimacy: 0,
     history: ["Luc greeted you at the door with a bow"], flags: {},
   });
 
