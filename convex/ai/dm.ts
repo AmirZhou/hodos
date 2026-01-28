@@ -276,7 +276,7 @@ ${npc.memory ? formatNpcMemoryForPrompt(npc.memory) : ""}`
 
 ## Recent History
 ${args.context.recentHistory
-  .map((h) => `[${h.type}${h.actorName ? ` - ${h.actorName}` : ""}]: ${h.contentEn}`)
+  .map((h) => `[${h.type}${h.actorName ? ` - ${h.actorName}` : ""}]: ${h.content}`)
   .join("\n")}
 
 ## Player Action
