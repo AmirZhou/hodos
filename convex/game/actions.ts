@@ -207,86 +207,52 @@ async function executeAction(
   const response = dmResponse.response;
 
   // 8. Handle dice rolls if needed
-  let rollResult: RollResult | null = null;
   if (response.requiresRoll?.needed) {
     const roll = response.requiresRoll;
-    const ability = roll.ability as keyof typeof character.abilities;
-    const abilityScore = character.abilities[ability] || 10;
 
-    // Check if character is proficient in the skill
-    const skillProficiency = roll.skill ? (character.skills[roll.skill] || 0) : 0;
-    const isProficient = skillProficiency >= 1;
-    const hasExpertise = skillProficiency >= 2;
+    // Log the initial narration if any (before the roll prompt)
+    if (response.narration) {
+      await ctx.runMutation(api.game.log.add, {
+        campaignId,
+        type: "narration",
+        contentEn: response.narration.en,
+        contentFr: response.narration.fr,
+        actorType: "dm",
+        annotations: {
+          vocabulary: sanitizeVocabulary(response.vocabularyHighlights),
+        },
+        linguisticAnalysis: sanitizeLinguisticAnalysis(response.linguisticAnalysis),
+      });
+    }
 
-    const checkResult = dice.makeAbilityCheck(
-      abilityScore,
-      character.proficiencyBonus,
-      isProficient,
-      hasExpertise
-    );
+    // Save as pending roll for user to execute interactively
+    if (session) {
+      await ctx.runMutation(api.game.session.setPendingRoll, {
+        sessionId: session._id,
+        pendingRoll: {
+          type: roll.type,
+          skill: roll.skill,
+          ability: roll.ability,
+          dc: roll.dc,
+          reason: roll.reason,
+          characterId,
+          actionContext: input,
+        },
+      });
+    }
 
-    const success = checkResult.total >= roll.dc;
-    const isCritical = checkResult.naturalRoll === 20;
-    const isCriticalMiss = checkResult.naturalRoll === 1;
-
-    rollResult = {
-      ...checkResult,
-      dc: roll.dc,
-      success: isCritical || (!isCriticalMiss && success),
-      isCritical,
-      isCriticalMiss,
-      skill: roll.skill,
-      ability: roll.ability,
-    };
-
-    // Log the roll
-    await ctx.runMutation(api.game.log.add, {
-      campaignId,
-      type: "roll",
-      contentEn: `${character.name} rolls ${roll.skill || roll.ability}: ${checkResult.naturalRoll} + ${checkResult.modifier} = ${checkResult.total} vs DC ${roll.dc} - ${rollResult.success ? "SUCCESS" : "FAILURE"}${isCritical ? " (CRITICAL!)" : ""}${isCriticalMiss ? " (CRITICAL MISS!)" : ""}`,
-      contentFr: `${character.name} lance ${roll.skill || roll.ability}: ${checkResult.naturalRoll} + ${checkResult.modifier} = ${checkResult.total} contre DD ${roll.dc} - ${rollResult.success ? "SUCCÈS" : "ÉCHEC"}${isCritical ? " (CRITIQUE!)" : ""}${isCriticalMiss ? " (ÉCHEC CRITIQUE!)" : ""}`,
-      actorType: "character",
-      actorId: characterId,
-      actorName: character.name,
-      roll: {
+    // Return early - user will click dice to roll
+    return {
+      success: true,
+      requiresRoll: true,
+      rollInfo: {
         type: roll.type,
-        dice: `1d20+${checkResult.modifier}`,
-        result: checkResult.total,
+        skill: roll.skill,
+        ability: roll.ability,
         dc: roll.dc,
-        success: rollResult.success,
+        reason: roll.reason,
       },
-    });
-
-    // Get narrative for the roll outcome
-    const rollNarration = await ctx.runAction(api.ai.dm.narrateRollOutcome, {
-      rollType: roll.type,
-      skill: roll.skill ?? undefined,
-      rollResult: checkResult.naturalRoll,
-      modifier: checkResult.modifier,
-      total: checkResult.total,
-      dc: roll.dc,
-      success: rollResult.success,
-      isCritical,
-      isCriticalMiss,
-      actionAttempted: input,
-      context: response.narration?.en || "",
-    }) as { response: any; usage: any };
-
-    // Log the narrated outcome
-    await ctx.runMutation(api.game.log.add, {
-      campaignId,
-      type: "narration",
-      contentEn: rollNarration.response.narration?.en || "",
-      contentFr: rollNarration.response.narration?.fr || "",
-      actorType: "dm",
-      annotations: {
-        vocabulary: sanitizeVocabulary(rollNarration.response.vocabularyHighlights),
-      },
-      linguisticAnalysis: sanitizeLinguisticAnalysis(rollNarration.response.linguisticAnalysis),
-    });
-
-    // Update suggested actions based on roll outcome
-    response.suggestedActions = rollNarration.response.followUpOptions || response.suggestedActions;
+    };
   } else {
     // No roll needed - just log the narration
     if (response.narration) {
