@@ -111,6 +111,7 @@ const rollDetails = v.object({
 const equipmentItem = v.object({
   id: v.string(),
   name: v.string(),
+  nameFr: v.optional(v.string()), // Deprecated, kept for data migration
   description: v.string(),
   type: v.union(
     v.literal("head"), v.literal("chest"), v.literal("hands"),
