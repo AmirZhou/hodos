@@ -4,7 +4,7 @@ import { Doc, Id } from "./_generated/dataModel";
 
 // Types
 export interface KeyMoment {
-  date: number;
+  timestamp: number;
   summary: string;
   emotionalImpact: number;
   tags: string[];
