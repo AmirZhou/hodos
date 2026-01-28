@@ -477,6 +477,7 @@ export const narrateRollOutcome = action({
     isCriticalMiss: v.boolean(),
     actionAttempted: v.string(),
     context: v.string(),
+    llmProvider: v.optional(v.union(v.literal("deepseek"), v.literal("openai"))),
   },
   handler: async (ctx, args) => {
     const outcomeType = args.isCritical
