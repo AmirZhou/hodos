@@ -43,8 +43,13 @@ export default function CampaignsPage() {
   );
 
   // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.push("/login");
+    }
+  }, [authLoading, isAuthenticated, router]);
+
   if (!authLoading && !isAuthenticated) {
-    router.push("/login");
     return null;
   }
 
