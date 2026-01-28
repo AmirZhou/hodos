@@ -137,8 +137,6 @@ async function seedBdsmDungeon(ctx: MutationCtx, campaignId: Id<"campaigns">, ch
     pronouns: "he/him",
     description:
       "A lean, graceful young man with pale skin, soft auburn hair, and downcast green eyes. He wears a simple black collar with a silver ring, fitted dark trousers, and no shirt — revealing faint marks across his shoulders. He moves quietly, always attentive.",
-    descriptionFr:
-      "Un jeune homme mince et gracieux à la peau pâle, aux cheveux auburn doux et aux yeux verts baissés. Il porte un simple collier noir avec un anneau d'argent, un pantalon sombre ajusté, et pas de chemise — révélant de légères marques sur ses épaules. Il se déplace silencieusement, toujours attentif.",
     personality:
       "Devoted and eager to please. Luc finds peace in service and structure. He is shy at first but opens up quickly to those who show genuine care. Deeply loyal once trust is established.",
     level: 3, hp: 22, maxHp: 22, ac: 12,
