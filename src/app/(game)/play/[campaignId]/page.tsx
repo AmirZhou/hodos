@@ -650,7 +650,7 @@ function ExplorationView({
           <div className="mb-3 flex flex-wrap gap-2">
             {gameState.session?.suggestedActions && gameState.session.suggestedActions.length > 0 ? (
               gameState.session.suggestedActions.map((action, i) => (
-                <QuickAction key={i} label={action.text} onClick={handleQuickAction} disabled={isSubmitting} />
+                <QuickAction key={i} label={action.text || action.en || ""} onClick={handleQuickAction} disabled={isSubmitting} />
               ))
             ) : (
               <>
