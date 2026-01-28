@@ -595,7 +595,7 @@ interface SceneParticipantWithEntity {
   entityType: "character" | "npc";
   role: "dominant" | "submissive" | "switch" | "observer";
   currentComfort: number;
-  entity: { name: string; intimacyProfile?: unknown } | null;
+  entity: { name: string; adultStats?: unknown } | null;
   index: number;
 }
 
