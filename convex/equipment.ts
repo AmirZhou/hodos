@@ -27,7 +27,6 @@ function itemToDoc(item: EquipmentItem) {
   return {
     id: item.id,
     name: item.name,
-    nameFr: item.nameFr,
     description: item.description,
     type: item.type as "head" | "chest" | "hands" | "boots" | "cloak" | "ring" | "necklace" | "mainHand" | "offHand" | "book",
     rarity: item.rarity as "mundane" | "common" | "uncommon" | "rare" | "epic" | "legendary",
