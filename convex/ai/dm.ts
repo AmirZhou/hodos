@@ -184,8 +184,7 @@ export const processPlayerInput = action({
       recentHistory: v.array(
         v.object({
           type: v.string(),
-          contentEn: v.string(),
-          contentFr: v.string(),
+          content: v.string(),
           actorName: v.optional(v.string()),
         })
       ),
