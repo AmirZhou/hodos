@@ -159,7 +159,7 @@ export function NpcInteractionModal({
                     <RelBar label="Affinity" value={relationship.affinity} min={-100} max={100} color="var(--accent-gold)" />
                     <RelBar label="Trust" value={relationship.trust} min={0} max={100} color="var(--accent-blue)" />
                     <RelBar label="Attraction" value={relationship.attraction} min={0} max={100} color="var(--accent-red)" />
-                    <RelBar label="Tension" value={relationship.tension} min={0} max={100} color="var(--accent-purple)" />
+                    <RelBar label="Fear" value={relationship.fear} min={0} max={100} color="var(--accent-purple)" />
                     <RelBar label="Intimacy" value={relationship.intimacy} min={0} max={100} color="var(--accent-green)" />
                   </div>
                 </div>
