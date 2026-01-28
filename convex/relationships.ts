@@ -182,27 +182,25 @@ export const calculateCompatibility = query({
       throw new Error("Character or NPC not found");
     }
 
-    const charProfile = character.intimacyProfile;
-    const npcProfile = npc.intimacyProfile;
+    const charStats = character.adultStats || { composure: 50, arousal: 0, dominance: 50, submission: 50 };
+    const npcStats = npc.adultStats || { composure: 50, arousal: 0, dominance: 50, submission: 50 };
 
-    // Calculate role compatibility
-    // Complementary roles (dom + sub) score higher than matching roles
-    const powerCompat =
-      100 - Math.abs(charProfile.roleIdentity.power + npcProfile.roleIdentity.power - 100);
-    const actionCompat =
-      100 - Math.abs(charProfile.roleIdentity.action + npcProfile.roleIdentity.action - 100);
-    const sensationCompat =
-      100 - Math.abs(charProfile.roleIdentity.sensation + npcProfile.roleIdentity.sensation - 100);
+    // Calculate power dynamic compatibility
+    // Complementary dynamics (high dom + high sub) score higher
+    const domSubCompat = 100 - Math.abs(
+      (charStats.dominance - charStats.submission) +
+      (npcStats.dominance - npcStats.submission)
+    ) / 2;
 
     // Calculate kink overlap
     const charKinks = new Set(
-      Object.entries(charProfile.kinks)
-        .filter(([_, v]) => v > 0)
+      Object.entries(character.kinkPreferences || {})
+        .filter(([, val]) => (val as number) > 0)
         .map(([k]) => k)
     );
     const npcKinks = new Set(
-      Object.entries(npcProfile.kinks)
-        .filter(([_, v]) => v > 0)
+      Object.entries(npc.kinkPreferences || {})
+        .filter(([, val]) => (val as number) > 0)
         .map(([k]) => k)
     );
 
@@ -213,26 +211,18 @@ export const calculateCompatibility = query({
         : 50;
 
     // Check for limit conflicts
-    const charLimits = new Set(
-      Object.entries(charProfile.kinks)
-        .filter(([_, v]) => v === -2)
-        .map(([k]) => k)
-    );
-    const npcLimits = new Set(
-      Object.entries(npcProfile.kinks)
-        .filter(([_, v]) => v === -2)
-        .map(([k]) => k)
-    );
+    const charLimits = new Set(character.hardLimits || []);
+    const npcLimits = new Set(npc.hardLimits || []);
 
     // If character's interests conflict with NPC's hard limits (or vice versa), reduce compatibility
     const charInterests = new Set(
-      Object.entries(charProfile.kinks)
-        .filter(([_, v]) => v >= 2)
+      Object.entries(character.kinkPreferences || {})
+        .filter(([, val]) => (val as number) >= 2)
         .map(([k]) => k)
     );
     const npcInterests = new Set(
-      Object.entries(npcProfile.kinks)
-        .filter(([_, v]) => v >= 2)
+      Object.entries(npc.kinkPreferences || {})
+        .filter(([, val]) => (val as number) >= 2)
         .map(([k]) => k)
     );
 
@@ -243,26 +233,16 @@ export const calculateCompatibility = query({
     const limitPenalty = limitConflicts * 15;
 
     // Overall compatibility score
-    const rawScore =
-      (powerCompat * 0.3 +
-        actionCompat * 0.2 +
-        sensationCompat * 0.2 +
-        kinkOverlap * 0.3) -
-      limitPenalty;
+    const rawScore = (domSubCompat * 0.4 + kinkOverlap * 0.6) - limitPenalty;
 
     const compatibility = Math.max(0, Math.min(100, rawScore));
 
     return {
       overall: Math.round(compatibility),
-      roleCompatibility: Math.round((powerCompat + actionCompat + sensationCompat) / 3),
+      powerDynamicCompat: Math.round(domSubCompat),
       kinkOverlap: Math.round(kinkOverlap),
       sharedKinks,
       limitConflicts,
-      details: {
-        powerCompat: Math.round(powerCompat),
-        actionCompat: Math.round(actionCompat),
-        sensationCompat: Math.round(sensationCompat),
-      },
     };
   },
 });
