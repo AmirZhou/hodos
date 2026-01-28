@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { GameProvider, useGame } from "@/components/game/engine";
 import { CombatView } from "@/components/game/combat";
 import { SceneView, SafewordButton } from "@/components/game/scene";
+import { ExplorationGrid } from "@/components/game/exploration/ExplorationGrid";
+import { MovementLogEntry } from "@/components/game/exploration/MovementLogEntry";
 import { LocationGraph } from "@/components/game/map";
 import { AnalysisPanel } from "@/components/learning";
 import { EquipmentPanel } from "@/components/game/equipment/EquipmentPanel";
