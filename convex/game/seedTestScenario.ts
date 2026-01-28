@@ -195,11 +195,8 @@ async function seedFootFetishSpa(ctx: MutationCtx, campaignId: Id<"campaigns">, 
   const locationId = await ctx.db.insert("locations", {
     campaignId,
     name: "The Silken Step",
-    nameFr: "Le Pas de Soie",
     description:
       "A lavish private spa suite with warm marble floors and the gentle sound of running water. Plush velvet chaise lounges line the walls beside low ottomans draped in silk. Aromatic oils, lotions, and warm towels are arranged on a gilded tray. Soft golden light filters through translucent curtains. In the center, a cushioned pedestal stands invitingly — clearly designed for foot worship and pampering. Ankle bracelets and toe rings glitter in a crystal dish.",
-    descriptionFr:
-      "Une suite de spa privée somptueuse avec des sols en marbre chaud et le doux bruit de l'eau courante. Des chaises longues en velours moelleux bordent les murs à côté de poufs bas drapés de soie. Des huiles aromatiques, des lotions et des serviettes chaudes sont disposées sur un plateau doré. Une lumière dorée douce filtre à travers des rideaux translucides. Au centre, un piédestal rembourré se dresse de manière invitante — clairement conçu pour le culte et le soin des pieds. Des bracelets de cheville et des bagues d'orteil scintillent dans un plat en cristal.",
     connectedTo: [],
     isDiscovered: true,
     properties: { type: "spa", lighting: "warm golden", mood: "sensual", privacy: "private" },
