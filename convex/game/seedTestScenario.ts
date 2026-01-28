@@ -209,12 +209,10 @@ async function seedFootFetishSpa(ctx: MutationCtx, campaignId: Id<"campaigns">, 
     level: 4, hp: 28, maxHp: 28, ac: 11,
     abilities: { strength: 10, dexterity: 15, constitution: 12, intelligence: 14, wisdom: 13, charisma: 18 },
     isAlive: true, conditions: [], memories: [], autoCreated: false, firstMetAt: now, currentLocationId: locationId,
-    intimacyProfile: {
-      orientation: "switch",
-      roleIdentity: { power: 55, action: 60, sensation: 80, service: 45, flexibility: 75 },
-      kinks: { "foot worship": 3, "sensation play": 3, massage: 3, pampering: 3, teasing: 2, "body worship": 2, "role play": 1, aftercare: 2 },
-      aftercareNeed: 50, trustThreshold: 25,
-    },
+    adultStats: { composure: 80, arousal: 0, dominance: 55, submission: 45 },
+    kinkPreferences: { "foot worship": 3, "sensation play": 3, massage: 3, pampering: 3, teasing: 2, "body worship": 2, "role play": 1, aftercare: 2 },
+    hardLimits: [],
+    desires: "To have her feet worshipped while she pampers you",
   });
 
   const marcelId = await ctx.db.insert("npcs", {
@@ -228,22 +226,20 @@ async function seedFootFetishSpa(ctx: MutationCtx, campaignId: Id<"campaigns">, 
     level: 4, hp: 30, maxHp: 30, ac: 12,
     abilities: { strength: 14, dexterity: 16, constitution: 13, intelligence: 12, wisdom: 15, charisma: 16 },
     isAlive: true, conditions: [], memories: [], autoCreated: false, firstMetAt: now, currentLocationId: locationId,
-    intimacyProfile: {
-      orientation: "switch",
-      roleIdentity: { power: 40, action: 55, sensation: 85, service: 75, flexibility: 70 },
-      kinks: { "foot worship": 3, massage: 3, "sensation play": 3, "body worship": 3, service: 2, pampering: 2, aftercare: 3 },
-      aftercareNeed: 60, trustThreshold: 30,
-    },
+    adultStats: { composure: 85, arousal: 0, dominance: 40, submission: 75 },
+    kinkPreferences: { "foot worship": 3, massage: 3, "sensation play": 3, "body worship": 3, service: 2, pampering: 2, aftercare: 3 },
+    hardLimits: [],
+    desires: "To worship your feet and serve you through touch",
   });
 
   await ctx.db.insert("relationships", {
     campaignId, characterId, npcId: isabelleId,
-    affinity: 20, trust: 20, attraction: 30, tension: 25, intimacy: 5,
+    affinity: 20, trust: 20, attraction: 30, fear: 0, intimacy: 5,
     history: ["Isabelle welcomed you with a barefoot curtsy"], flags: {},
   });
   await ctx.db.insert("relationships", {
     campaignId, characterId, npcId: marcelId,
-    affinity: 15, trust: 25, attraction: 20, tension: 15, intimacy: 0,
+    affinity: 15, trust: 25, attraction: 20, fear: 0, intimacy: 0,
     history: ["Marcel offered you a warm towel and a knowing smile"], flags: {},
   });
 
