@@ -462,6 +462,20 @@ export default defineSchema({
       type: v.string(),
     }))),
 
+    // Pending roll - waits for user to click dice
+    pendingRoll: v.optional(v.object({
+      type: v.string(), // skill_check, attack, saving_throw, ability_check
+      skill: v.optional(v.string()),
+      ability: v.string(),
+      dc: v.number(),
+      reason: v.string(),
+      characterId: v.id("characters"),
+      actionContext: v.string(), // The original player action that triggered this
+    })),
+
+    // LLM provider selection
+    llmProvider: v.optional(v.union(v.literal("deepseek"), v.literal("openai"))),
+
     startedAt: v.number(),
     lastActionAt: v.number(),
   }).index("by_campaign", ["campaignId"]),
