@@ -108,42 +108,11 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
     }
   }, [(campaign as { seedScenario?: string } | null)?.seedScenario, currentCharacter, gameState.hasActiveSession, seeding, seeded, campaignId, seedMutation]);
 
-  const [showFrench, setShowFrench] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showMap, setShowMap] = useState(false);
-  const [savedEntries, setSavedEntries] = useState<Set<string>>(new Set());
   const [selectedNpcId, setSelectedNpcId] = useState<Id<"npcs"> | null>(null);
   const [showInventory, setShowInventory] = useState(false);
   const [showCharSheet, setShowCharSheet] = useState(false);
-
-  const saveToNotebook = useMutation(api.notebook.save);
-
-  const handleSaveEntry = useCallback(
-    async (entry: GameLogEntry) => {
-      if (!userId) return;
-
-      try {
-        await saveToNotebook({
-          userId,
-          frenchText: "",
-          englishText: entry.content,
-          grammarNotes: [],
-          vocabularyItems: [],
-          usageNote: "",
-          gameLogId: entry._id,
-          campaignId,
-          sceneSummary: entry.actorName
-            ? `${entry.actorName}: ${entry.content.slice(0, 100)}`
-            : entry.content.slice(0, 100),
-          tags: [],
-        });
-        setSavedEntries((prev) => new Set(prev).add(entry._id));
-      } catch (error) {
-        console.error("Failed to save to notebook:", error);
-      }
-    },
-    [userId, campaignId, saveToNotebook]
-  );
 
   // Loading state
   if (isLoading) {
