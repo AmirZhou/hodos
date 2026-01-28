@@ -48,7 +48,6 @@ export const getOrCreate = mutation({
       name: args.name,
       pronouns: "they/them",
       description: args.description || `A character named ${args.name}`,
-      descriptionFr: args.descriptionFr || `Un personnage nommé ${args.name}`,
       personality: "Unknown - discovered through interaction",
       level: 1,
       hp: 10,
