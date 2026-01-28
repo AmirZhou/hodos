@@ -342,11 +342,6 @@ export const generateSceneDescription = action({
     ),
   },
   handler: async (ctx, args) => {
-    const apiKey = process.env.DEEPSEEK_API_KEY;
-    if (!apiKey) {
-      throw new Error("DEEPSEEK_API_KEY not configured");
-    }
-
     const prompt = `Generate a vivid scene description for the player arriving at this location.
 
 Location: ${args.locationName}
@@ -366,12 +361,13 @@ Respond with JSON containing:
   "vocabularyHighlights": [{ "word": "...", "translation": "...", "note": "..." }]
 }`;
 
-    const messages: DeepSeekMessage[] = [
+    const messages: LLMMessage[] = [
       { role: "system", content: DM_SYSTEM_PROMPT },
       { role: "user", content: prompt },
     ];
 
-    const { content, usage } = await callDeepSeek(messages, apiKey);
+    const { content, usage, provider, model, latencyMs } = await callLLM(messages, { jsonMode: true });
+    console.log(`[LLM] ${provider}/${model} responded in ${latencyMs}ms`);
 
     let parsedResponse;
     try {
@@ -386,7 +382,7 @@ Respond with JSON containing:
       };
     }
 
-    return { response: parsedResponse, usage };
+    return { response: parsedResponse, usage, provider, model, latencyMs };
   },
 });
 
