@@ -56,10 +56,20 @@ interface RollResult {
 interface ActionResult {
   narration?: { en: string; fr: string };
   npcDialogue?: Array<{ name: string; en: string; fr: string }>;
-  roll: RollResult | null;
+  roll?: RollResult | null;
   suggestedActions?: Array<{ en: string; fr: string; type: string }>;
   vocabularyHighlights?: Array<{ word: string; translation: string; note?: string }>;
   linguisticAnalysis?: LinguisticAnalysis;
+  // For pending roll responses
+  success?: boolean;
+  requiresRoll?: boolean;
+  rollInfo?: {
+    type: string;
+    skill?: string;
+    ability: string;
+    dc: number;
+    reason: string;
+  };
 }
 
 // Sanitize vocabulary items to only include allowed fields
