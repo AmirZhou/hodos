@@ -441,7 +441,9 @@ export default defineSchema({
     campaignId: v.id("campaigns"),
     templateId: v.optional(v.string()),
     name: v.string(),
+    nameFr: v.optional(v.string()), // DEPRECATED
     description: v.string(),
+    descriptionFr: v.optional(v.string()), // DEPRECATED
     parentLocationId: v.optional(v.id("locations")),
     connectedTo: v.array(v.id("locations")),
     isDiscovered: v.boolean(),
