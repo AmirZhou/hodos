@@ -320,6 +320,145 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
   );
 }
 
+function MapModal({
+  campaignId,
+  sessionId,
+  currentLocationId,
+  currentCharacterId,
+  currentCharacterName,
+  onLocationSelect,
+  onClose,
+}: {
+  campaignId: Id<"campaigns">;
+  sessionId?: Id<"gameSessions">;
+  currentLocationId?: Id<"locations">;
+  currentCharacterId?: Id<"characters">;
+  currentCharacterName?: string;
+  onLocationSelect?: () => void;
+  onClose?: () => void;
+}) {
+  const [activeTab, setActiveTab] = useState<"location" | "world">("location");
+
+  // Get current location details for the Location tab header
+  const currentLocation = useQuery(
+    api.game.travel.getCurrentLocation,
+    sessionId ? { sessionId } : "skip"
+  );
+
+  return (
+    <div className="rounded-lg bg-[var(--card)] border border-[var(--border)] overflow-hidden">
+      {/* Tab Header */}
+      <div className="flex border-b border-[var(--border)]">
+        <button
+          onClick={() => setActiveTab("location")}
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
+            activeTab === "location"
+              ? "text-[var(--accent-gold)] border-b-2 border-[var(--accent-gold)]"
+              : "text-[var(--foreground-secondary)] hover:text-[var(--foreground)]"
+          }`}
+        >
+          <MapPin className="h-4 w-4" />
+          {currentLocation?.name ?? "Location"}
+        </button>
+        <button
+          onClick={() => setActiveTab("world")}
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
+            activeTab === "world"
+              ? "text-[var(--accent-gold)] border-b-2 border-[var(--accent-gold)]"
+              : "text-[var(--foreground-secondary)] hover:text-[var(--foreground)]"
+          }`}
+        >
+          <Globe className="h-4 w-4" />
+          World
+        </button>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="px-3 text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+
+      {/* Tab Content */}
+      {activeTab === "location" ? (
+        <LocationTab
+          sessionId={sessionId}
+          currentLocation={currentLocation}
+          currentCharacterId={currentCharacterId}
+          currentCharacterName={currentCharacterName}
+        />
+      ) : (
+        <LocationGraph
+          campaignId={campaignId}
+          sessionId={sessionId}
+          currentLocationId={currentLocationId}
+          onLocationSelect={onLocationSelect}
+        />
+      )}
+    </div>
+  );
+}
+
+function LocationTab({
+  sessionId,
+  currentLocation,
+  currentCharacterId,
+  currentCharacterName,
+}: {
+  sessionId?: Id<"gameSessions">;
+  currentLocation?: { name: string; nameFr: string; description: string; npcs?: Array<{ id: string; name: string }> } | null;
+  currentCharacterId?: Id<"characters">;
+  currentCharacterName?: string;
+}) {
+  return (
+    <div className="p-4 space-y-4">
+      {/* Location Info */}
+      {currentLocation ? (
+        <div>
+          <h3 className="font-bold text-lg">{currentLocation.name}</h3>
+          <p className="text-sm text-[var(--accent-blue)]">{currentLocation.nameFr}</p>
+          <p className="text-sm text-[var(--foreground-secondary)] mt-2">
+            {currentLocation.description}
+          </p>
+        </div>
+      ) : (
+        <p className="text-[var(--foreground-muted)]">No location set.</p>
+      )}
+
+      {/* Exploration Grid */}
+      {sessionId && (
+        <ExplorationGrid
+          sessionId={sessionId}
+          currentCharacterId={currentCharacterId}
+          currentCharacterName={currentCharacterName}
+        />
+      )}
+
+      {/* NPCs at location */}
+      {currentLocation?.npcs && currentLocation.npcs.length > 0 && (
+        <div>
+          <h4 className="text-sm font-medium mb-2">Characters here:</h4>
+          <div className="space-y-1">
+            {currentLocation.npcs.map((npc) => (
+              <div
+                key={npc.id}
+                className="flex items-center gap-2 text-sm p-2 rounded bg-[var(--background-tertiary)]"
+              >
+                <div className="w-6 h-6 rounded-full bg-[var(--accent-red)] flex items-center justify-center text-white text-xs font-bold">
+                  {npc.name[0]}
+                </div>
+                <span>{npc.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function GameHeader({
   campaignName,
   showFrench,
