@@ -127,6 +127,7 @@ async function seedBdsmDungeon(ctx: MutationCtx, campaignId: Id<"campaigns">, ch
       "Commanding yet attentive. Vivienne reads people effortlessly and takes pleasure in guiding others to discover their desires. Strict but caring — she enforces rules because she values trust and safety above all.",
     level: 5, hp: 35, maxHp: 35, ac: 14,
     abilities: { strength: 12, dexterity: 14, constitution: 12, intelligence: 16, wisdom: 15, charisma: 19 },
+    position: { x: 8, y: 3 },
     isAlive: true, conditions: [], memories: [], autoCreated: false, firstMetAt: now, currentLocationId: locationId,
     intimacyProfile: {
       orientation: "dominant",
