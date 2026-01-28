@@ -142,9 +142,13 @@ export const undoMovement = mutation({
     const history = [...(session.movementHistory ?? [])];
 
     // Find the last movement for this character
-    const lastIndex = history.findLastIndex(
-      (h) => h.characterId === args.characterId
-    );
+    let lastIndex = -1;
+    for (let i = history.length - 1; i >= 0; i--) {
+      if (history[i].characterId === args.characterId) {
+        lastIndex = i;
+        break;
+      }
+    }
     if (lastIndex === -1) throw new Error("No movement to undo");
 
     const lastMove = history[lastIndex];
