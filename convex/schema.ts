@@ -474,7 +474,8 @@ export default defineSchema({
       v.literal("action"),
       v.literal("roll"),
       v.literal("system"),
-      v.literal("ooc")
+      v.literal("ooc"),
+      v.literal("movement")
     ),
 
     contentEn: v.string(),
