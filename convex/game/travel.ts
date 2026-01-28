@@ -19,9 +19,7 @@ export const getLocationGraph = query({
     const locationNodes = locations.map((loc) => ({
       id: loc._id,
       name: loc.name,
-      nameFr: loc.nameFr,
       description: loc.description,
-      descriptionFr: loc.descriptionFr,
       isDiscovered: loc.isDiscovered,
       parentLocationId: loc.parentLocationId,
       connectedTo: loc.connectedTo,
