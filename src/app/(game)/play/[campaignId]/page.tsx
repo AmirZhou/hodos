@@ -719,15 +719,9 @@ interface GameLogEntry {
 
 function LogEntry({
   entry,
-  showFrench,
-  onSave,
-  isSaved,
   onNpcNameClick,
 }: {
   entry: GameLogEntry;
-  showFrench: boolean;
-  onSave?: () => void;
-  isSaved?: boolean;
   onNpcNameClick?: () => void;
 }) {
   const { gameState } = useGame();
