@@ -198,7 +198,7 @@ export const addKeyMoment = mutation({
     }
 
     const fullMoment: KeyMoment = {
-      date: Date.now(),
+      timestamp: Date.now(),
       ...args.moment,
     };
 
