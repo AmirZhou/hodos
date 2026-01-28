@@ -31,8 +31,13 @@ export default function CampaignDetailPage() {
   const characters = useQuery(api.characters.listByCampaign, { campaignId });
 
   // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.push("/login");
+    }
+  }, [authLoading, isAuthenticated, router]);
+
   if (!authLoading && !isAuthenticated) {
-    router.push("/login");
     return null;
   }
 
