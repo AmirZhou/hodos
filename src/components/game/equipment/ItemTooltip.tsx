@@ -38,13 +38,8 @@ export function ItemTooltip({ item }: { item: ItemData }) {
       }}
     >
       {/* Name */}
-      <div className="font-bold mb-1" style={{ color: rarityColor }}>
+      <div className="font-bold mb-2" style={{ color: rarityColor }}>
         {item.name}
-      </div>
-
-      {/* French name */}
-      <div className="text-xs italic mb-2" style={{ color: "var(--foreground-muted)" }}>
-        {item.nameFr}
       </div>
 
       {/* Slot & Rarity */}
