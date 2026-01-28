@@ -386,9 +386,7 @@ export const seedTestLocations = mutation({
     const dungeonCellId = await ctx.db.insert("locations", {
       campaignId: args.campaignId,
       name: "Stone Chamber",
-      nameFr: "Chambre de Pierre",
       description: "A dimly lit stone chamber with rough-hewn walls. A single iron door stands on the far side.",
-      descriptionFr: "Une chambre de pierre faiblement éclairée avec des murs grossièrement taillés. Une porte en fer se dresse de l'autre côté.",
       connectedTo: [],
       isDiscovered: true,
       properties: { type: "dungeon", lighting: "dim" },
@@ -398,9 +396,7 @@ export const seedTestLocations = mutation({
     const corridorId = await ctx.db.insert("locations", {
       campaignId: args.campaignId,
       name: "Dark Corridor",
-      nameFr: "Couloir Sombre",
       description: "A long, narrow corridor stretching into darkness. Torches flicker on the walls at irregular intervals.",
-      descriptionFr: "Un long couloir étroit s'étendant dans l'obscurité. Des torches vacillent sur les murs à intervalles irréguliers.",
       connectedTo: [dungeonCellId],
       isDiscovered: false,
       properties: { type: "dungeon", lighting: "dim" },
@@ -410,9 +406,7 @@ export const seedTestLocations = mutation({
     const guardRoomId = await ctx.db.insert("locations", {
       campaignId: args.campaignId,
       name: "Guard Room",
-      nameFr: "Salle de Garde",
       description: "A larger room with weapon racks and a table. Signs of recent activity.",
-      descriptionFr: "Une salle plus grande avec des râteliers d'armes et une table. Des signes d'activité récente.",
       connectedTo: [corridorId],
       isDiscovered: false,
       properties: { type: "dungeon", lighting: "normal" },
@@ -431,9 +425,7 @@ export const seedTestLocations = mutation({
     const forestEdgeId = await ctx.db.insert("locations", {
       campaignId: args.campaignId,
       name: "Forest Edge",
-      nameFr: "Orée de la Forêt",
       description: "Daylight filters through the trees. The dungeon entrance lies behind you.",
-      descriptionFr: "La lumière du jour filtre à travers les arbres. L'entrée du donjon se trouve derrière vous.",
       connectedTo: [guardRoomId],
       isDiscovered: false,
       properties: { type: "outdoor", lighting: "bright" },
