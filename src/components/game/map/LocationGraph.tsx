@@ -19,9 +19,7 @@ interface LocationGraphProps {
 interface LocationData {
   id: Id<"locations">;
   name: string;
-  nameFr: string;
   description: string;
-  descriptionFr: string;
   isDiscovered: boolean;
   hasGrid: boolean;
   connectedTo: Id<"locations">[];
