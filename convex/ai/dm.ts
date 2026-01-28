@@ -449,12 +449,11 @@ Respond with JSON:
       parsedResponse = JSON.parse(content);
     } catch {
       parsedResponse = {
-        dialogue: { en: content, fr: "[Translation pending]" },
+        dialogue: content,
         internalThought: "",
         emotionalState: "neutral",
         bodyLanguage: "",
         relationshipShift: { affinity: 0, trust: 0, attraction: 0 },
-        vocabularyHighlights: [],
       };
     }
 
