@@ -557,58 +557,6 @@ export default function NewCharacterPage() {
               ))}
             </div>
 
-            {/* Aftercare & Trust */}
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>Aftercare Need</span>
-                  <span className="text-[var(--foreground-secondary)]">
-                    {character.intimacyProfile.aftercareNeed}%
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={character.intimacyProfile.aftercareNeed}
-                  onChange={(e) =>
-                    setCharacter({
-                      ...character,
-                      intimacyProfile: {
-                        ...character.intimacyProfile,
-                        aftercareNeed: parseInt(e.target.value),
-                      },
-                    })
-                  }
-                  className="w-full accent-[var(--accent-gold)]"
-                />
-              </div>
-
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>Trust Threshold (before intimacy)</span>
-                  <span className="text-[var(--foreground-secondary)]">
-                    {character.intimacyProfile.trustThreshold}%
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={character.intimacyProfile.trustThreshold}
-                  onChange={(e) =>
-                    setCharacter({
-                      ...character,
-                      intimacyProfile: {
-                        ...character.intimacyProfile,
-                        trustThreshold: parseInt(e.target.value),
-                      },
-                    })
-                  }
-                  className="w-full accent-[var(--accent-gold)]"
-                />
-              </div>
-            </div>
           </div>
         )}
 
