@@ -243,6 +243,8 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
           sidebarOpen={sidebarOpen}
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
           onlinePlayers={gameState.onlinePlayers}
+          sessionId={gameState.sessionId}
+          llmProvider={gameState.session?.llmProvider}
         />
 
         {/* Main Content - Mode Router */}
