@@ -452,6 +452,8 @@ function GameHeader({
   sidebarOpen,
   onToggleSidebar,
   onlinePlayers,
+  sessionId,
+  llmProvider,
 }: {
   campaignName: string;
   showFrench: boolean;
@@ -460,6 +462,8 @@ function GameHeader({
   sidebarOpen: boolean;
   onToggleSidebar: () => void;
   onlinePlayers: Array<{ displayName: string }>;
+  sessionId?: Id<"gameSessions">;
+  llmProvider?: "deepseek" | "openai";
 }) {
   return (
     <header className="flex h-14 items-center justify-between border-b border-[var(--border)] bg-[var(--background-secondary)] px-4">
@@ -476,6 +480,10 @@ function GameHeader({
         )}
       </div>
       <div className="flex items-center gap-2">
+        {/* Model selector */}
+        {sessionId && (
+          <ModelSelector sessionId={sessionId} currentProvider={llmProvider} />
+        )}
         <Button
           variant="ghost"
           size="sm"
