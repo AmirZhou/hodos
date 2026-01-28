@@ -403,7 +403,7 @@ async function executeAction(
   return {
     narration: response.narration,
     npcDialogue: response.npcDialogue,
-    roll: rollResult,
+    roll: null,
     suggestedActions: response.suggestedActions,
     vocabularyHighlights: sanitizeVocabulary(response.vocabularyHighlights),
     linguisticAnalysis: sanitizeLinguisticAnalysis(response.linguisticAnalysis),
