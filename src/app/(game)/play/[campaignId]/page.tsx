@@ -695,6 +695,27 @@ function ExplorationView({
               />
             ))
           )}
+
+          {/* Pending Roll Prompt */}
+          {pendingRoll && campaign && gameState.sessionId && currentCharacter && (
+            <RollPrompt
+              campaignId={campaign._id}
+              sessionId={gameState.sessionId}
+              pendingRoll={pendingRoll as {
+                type: string;
+                skill?: string;
+                ability: string;
+                dc: number;
+                reason: string;
+                characterId: Id<"characters">;
+                actionContext: string;
+              }}
+              characterName={currentCharacter.name}
+              modifier={rollModifier}
+              proficiencyBonus={rollProfBonus}
+            />
+          )}
+
           <div ref={logEndRef} />
         </div>
       </div>
