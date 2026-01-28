@@ -301,14 +301,10 @@ ${args.input}
     } catch {
       // If parsing fails, wrap the content in a basic structure
       parsedResponse = {
-        narration: {
-          en: content,
-          fr: "[Translation pending]",
-        },
+        narration: content,
         requiresRoll: { needed: false },
         suggestedActions: [],
         worldStateChanges: {},
-        vocabularyHighlights: [],
       };
     }
 
