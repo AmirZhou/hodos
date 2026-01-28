@@ -820,7 +820,6 @@ function LogEntry({
   const isPlayerAction = entry.actorType === "character";
   const isRoll = entry.type === "roll";
   const isDialogue = entry.type === "dialogue";
-  const hasAnalysis = showFrench && !!entry.linguisticAnalysis;
 
   const contentBlock = (
     <>
