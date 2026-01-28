@@ -510,19 +510,6 @@ function ExplorationView({
 
   return (
     <>
-      {/* Exploration Grid */}
-      {gameState.sessionId && (
-        <div className="px-4 pt-4 lg:px-6 lg:pt-6">
-          <div className="mx-auto max-w-5xl">
-            <ExplorationGrid
-              sessionId={gameState.sessionId}
-              currentCharacterId={currentCharacter?._id}
-              currentCharacterName={currentCharacter?.name}
-            />
-          </div>
-        </div>
-      )}
-
       {/* Game Log */}
       <div className="flex-1 overflow-y-auto p-4 lg:p-6">
         <div className="mx-auto max-w-5xl space-y-6">
