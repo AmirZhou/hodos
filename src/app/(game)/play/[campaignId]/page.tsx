@@ -392,7 +392,7 @@ function LocationTab({
   currentCharacterName,
 }: {
   sessionId?: Id<"gameSessions">;
-  currentLocation?: { name: string; nameFr: string; description: string; npcs?: Array<{ id: string; name: string }> } | null;
+  currentLocation?: { name: string; description: string; npcs?: Array<{ id: string; name: string }> } | null;
   currentCharacterId?: Id<"characters">;
   currentCharacterName?: string;
 }) {
@@ -402,7 +402,6 @@ function LocationTab({
       {currentLocation ? (
         <div>
           <h3 className="font-bold text-lg">{currentLocation.name}</h3>
-          <p className="text-sm text-[var(--accent-blue)]">{currentLocation.nameFr}</p>
           <p className="text-sm text-[var(--foreground-secondary)] mt-2">
             {currentLocation.description}
           </p>
