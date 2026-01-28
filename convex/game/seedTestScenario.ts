@@ -117,8 +117,6 @@ async function seedBdsmDungeon(ctx: MutationCtx, campaignId: Id<"campaigns">, ch
     pronouns: "she/her",
     description:
       "A tall, striking woman with sharp cheekbones and knowing dark eyes. She wears a fitted black corset over flowing crimson silk, thigh-high boots, and carries a coiled riding crop at her hip. Every movement radiates confident authority.",
-    descriptionFr:
-      "Une femme grande et frappante aux pommettes saillantes et aux yeux sombres perspicaces. Elle porte un corset noir ajusté sur de la soie cramoisie fluide, des cuissardes, et une cravache enroulée à la hanche. Chaque mouvement irradie une autorité confiante.",
     personality:
       "Commanding yet attentive. Vivienne reads people effortlessly and takes pleasure in guiding others to discover their desires. Strict but caring — she enforces rules because she values trust and safety above all.",
     level: 5, hp: 35, maxHp: 35, ac: 14,
