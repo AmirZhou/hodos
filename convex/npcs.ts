@@ -1,18 +1,11 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
-const defaultIntimacyProfile = {
-  orientation: "Bisexual",
-  roleIdentity: {
-    power: 50,
-    action: 50,
-    sensation: 50,
-    service: 50,
-    flexibility: 50,
-  },
-  kinks: {},
-  aftercareNeed: 50,
-  trustThreshold: 50,
+const defaultAdultStats = {
+  composure: 75,
+  arousal: 0,
+  dominance: 50,
+  submission: 50,
 };
 
 const defaultAbilities = {
