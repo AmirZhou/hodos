@@ -246,11 +246,6 @@ export const processPlayerInput = action({
     }),
   },
   handler: async (ctx, args) => {
-    const apiKey = process.env.DEEPSEEK_API_KEY;
-    if (!apiKey) {
-      throw new Error("DEEPSEEK_API_KEY not configured");
-    }
-
     // Build context message
     const contextMessage = `
 ## Current Situation
@@ -281,12 +276,13 @@ ${args.context.recentHistory
 ${args.input}
 `;
 
-    const messages: DeepSeekMessage[] = [
+    const messages: LLMMessage[] = [
       { role: "system", content: DM_SYSTEM_PROMPT },
       { role: "user", content: contextMessage },
     ];
 
-    const { content, usage } = await callDeepSeek(messages, apiKey);
+    const { content, usage, provider, model, latencyMs } = await callLLM(messages, { jsonMode: true });
+    console.log(`[LLM] ${provider}/${model} responded in ${latencyMs}ms`);
 
     // Parse the JSON response
     let parsedResponse;
