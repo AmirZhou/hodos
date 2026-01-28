@@ -132,16 +132,6 @@ export function LocationNode({
         >
           {isDiscovered ? name : "???"}
         </text>
-        {isDiscovered && nameFr && (
-          <text
-            textAnchor="middle"
-            fill="var(--accent-blue)"
-            fontSize={10}
-            dy={14}
-          >
-            {nameFr}
-          </text>
-        )}
       </g>
     </g>
   );
