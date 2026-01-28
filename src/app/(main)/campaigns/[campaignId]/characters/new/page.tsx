@@ -521,7 +521,7 @@ export default function NewCharacterPage() {
                   <h4 className="text-sm text-[var(--foreground-secondary)]">{category}</h4>
                   <div className="flex flex-wrap gap-2">
                     {kinks.map((kink) => {
-                      const level = character.intimacyProfile.kinks[kink] || 0;
+                      const level = character.kinkPreferences[kink] || 0;
                       const colors = {
                         "-2": "bg-[var(--accent-red)] text-white",
                         "-1": "bg-[var(--accent-red)]/30",
