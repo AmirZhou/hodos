@@ -179,6 +179,7 @@ async function executeAction(
     campaignId,
     characterId,
     input,
+    llmProvider: session?.llmProvider,
     context: {
       recentHistory: recentLogs.map((log: Doc<"gameLog">) => ({
         type: log.type,
