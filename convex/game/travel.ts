@@ -206,9 +206,7 @@ export const travelTo = mutation({
       location: {
         id: destination._id,
         name: destination.name,
-        nameFr: destination.nameFr,
         description: destination.description,
-        descriptionFr: destination.descriptionFr,
       },
     };
   },
@@ -235,7 +233,6 @@ export const discoverLocation = mutation({
       location: {
         id: location._id,
         name: location.name,
-        nameFr: location.nameFr,
       },
     };
   },
@@ -245,9 +242,7 @@ export const createLocation = mutation({
   args: {
     campaignId: v.id("campaigns"),
     name: v.string(),
-    nameFr: v.string(),
     description: v.string(),
-    descriptionFr: v.string(),
     parentLocationId: v.optional(v.id("locations")),
     connectedTo: v.optional(v.array(v.id("locations"))),
     isDiscovered: v.optional(v.boolean()),
@@ -281,9 +276,7 @@ export const createLocation = mutation({
     const locationId = await ctx.db.insert("locations", {
       campaignId: args.campaignId,
       name: args.name,
-      nameFr: args.nameFr,
       description: args.description,
-      descriptionFr: args.descriptionFr,
       parentLocationId: args.parentLocationId,
       connectedTo: args.connectedTo ?? [],
       isDiscovered: args.isDiscovered ?? false,
