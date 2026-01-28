@@ -30,7 +30,7 @@ export const create = mutation({
       affinity: args.initialAffinity ?? 0,
       trust: args.initialTrust ?? 0,
       attraction: args.initialAttraction ?? 0,
-      tension: 0,
+      fear: 0,
       intimacy: 0,
       history: [],
       flags: {},
