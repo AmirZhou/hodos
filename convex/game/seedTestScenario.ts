@@ -208,8 +208,6 @@ async function seedFootFetishSpa(ctx: MutationCtx, campaignId: Id<"campaigns">, 
     pronouns: "she/her",
     description:
       "A lithe, playful woman with honey-blonde hair and mischievous hazel eyes. She wears a sheer ivory robe that falls just above her knees, and her feet are bare — perfectly pedicured with crimson nails, adorned with a delicate gold ankle chain. She curls her toes against the warm marble as she smiles at you.",
-    descriptionFr:
-      "Une femme svelte et espiègle aux cheveux blond miel et aux yeux noisette malicieux. Elle porte une robe ivoire transparente qui tombe juste au-dessus des genoux, et ses pieds sont nus — parfaitement pédicurés avec des ongles cramoisis, ornés d'une délicate chaîne de cheville en or. Elle recroqueville ses orteils contre le marbre chaud en vous souriant.",
     personality:
       "Flirtatious and uninhibited. Isabelle adores attention — especially directed at her feet. She is warm, teasing, and expressive, often stretching or flexing her toes when she notices someone looking. She enjoys being pampered and is generous with affection in return.",
     level: 4, hp: 28, maxHp: 28, ac: 11,
