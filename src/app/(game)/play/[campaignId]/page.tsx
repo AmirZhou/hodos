@@ -255,7 +255,7 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
 
       {/* Right Panel — Map + Character Info (always visible on lg) */}
       {sidebarOpen && (
-        <aside className="hidden w-96 flex-shrink-0 border-l border-[var(--border)] bg-[var(--background-secondary)] lg:flex lg:flex-col overflow-y-auto">
+        <aside className="hidden w-[480px] flex-shrink-0 border-l border-[var(--border)] bg-[var(--background-secondary)] lg:flex lg:flex-col overflow-y-auto">
           {/* Map Panel (Location / World tabs) */}
           <MapPanel
             campaignId={campaignId}
