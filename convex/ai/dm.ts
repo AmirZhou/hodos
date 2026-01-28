@@ -172,6 +172,7 @@ export const processPlayerInput = action({
     campaignId: v.id("campaigns"),
     characterId: v.id("characters"),
     input: v.string(),
+    llmProvider: v.optional(v.union(v.literal("deepseek"), v.literal("openai"))),
     context: v.object({
       recentHistory: v.array(
         v.object({
