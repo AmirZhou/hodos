@@ -652,7 +652,7 @@ function ExplorationView({
         campaignId: campaign._id,
         characterId: currentCharacter._id,
         actionType: label.toLowerCase().replace(/\s+/g, "_"),
-        actionText: { text: label },
+        actionText: label,
       });
     } catch (error) {
       console.error("Failed to submit quick action:", error);
