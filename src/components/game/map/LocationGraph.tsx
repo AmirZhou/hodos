@@ -244,9 +244,6 @@ export function LocationGraph({
           <div className="w-72 border-l border-[var(--border)] p-4 space-y-4">
             <div>
               <h3 className="font-bold text-lg">{selectedDetails.name}</h3>
-              <p className="text-sm text-[var(--accent-blue)]">
-                {selectedDetails.nameFr}
-              </p>
             </div>
 
             <p className="text-sm text-[var(--foreground-secondary)]">
