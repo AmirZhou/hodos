@@ -18,7 +18,7 @@ import {
   Heart,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function CampaignDetailPage() {
   const params = useParams();
