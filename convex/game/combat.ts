@@ -189,17 +189,27 @@ export const initiateCombat = mutation({
       throw new Error("Session not found");
     }
 
-    // Create combatant states with default values
-    const combatantStates = args.combatants.map((c) => ({
-      entityId: c.entityId,
-      entityType: c.entityType,
-      initiative: 0, // Will be set during rolling_initiative phase
-      position: c.position,
-      hasAction: true,
-      hasBonusAction: true,
-      hasReaction: true,
-      movementRemaining: 30, // Default 30ft movement
-    }));
+    // Copy exploration positions to combatants if available
+    const explorationPositions = session.explorationPositions ?? {};
+
+    const combatantStates = args.combatants.map((c) => {
+      // Use exploration position if combatant didn't specify one, or if position is (0,0) default
+      const explorationPos = explorationPositions[c.entityId];
+      const position = (c.position.x === 0 && c.position.y === 0 && explorationPos)
+        ? explorationPos
+        : c.position;
+
+      return {
+        entityId: c.entityId,
+        entityType: c.entityType,
+        initiative: 0,
+        position,
+        hasAction: true,
+        hasBonusAction: true,
+        hasReaction: true,
+        movementRemaining: 30,
+      };
+    });
 
     const now = Date.now();
 
