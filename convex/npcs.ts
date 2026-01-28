@@ -32,7 +32,6 @@ export const create = mutation({
     pronouns: v.string(),
     portrait: v.optional(v.string()),
     description: v.string(),
-    descriptionFr: v.string(),
     personality: v.string(),
     level: v.optional(v.number()),
     abilities: v.optional(
