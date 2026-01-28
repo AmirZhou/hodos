@@ -329,8 +329,6 @@ async function executeAction(
     npcDialogue: response.npcDialogue,
     roll: null,
     suggestedActions: response.suggestedActions,
-    vocabularyHighlights: sanitizeVocabulary(response.vocabularyHighlights),
-    linguisticAnalysis: sanitizeLinguisticAnalysis(response.linguisticAnalysis),
   };
 }
 
