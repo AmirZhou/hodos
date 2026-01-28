@@ -224,7 +224,6 @@ export function LocationGraph({
                   key={location.id}
                   id={location.id}
                   name={location.name}
-                  nameFr={location.nameFr}
                   isDiscovered={location.isDiscovered}
                   isCurrent={location.id === currentLocationId}
                   isConnected={isConnectedToCurrent}
