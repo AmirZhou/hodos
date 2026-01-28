@@ -25,10 +25,9 @@ export const getOrCreateByEmail = mutation({
       email,
       displayName,
       settings: {
-        language: "bilingual",
         explicitContent: true,
         videoEnabled: true,
-        frenchLevel: "beginner",
+        intensityPreference: 5,
       },
       createdAt: Date.now(),
     });
