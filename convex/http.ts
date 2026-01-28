@@ -46,22 +46,21 @@ http.route({
     // Build the prompt
     const contextMessage = `
 Recent game history:
-${recentLogs?.map((log: { actorName?: string; contentEn: string }) => `${log.actorName || "DM"}: ${log.contentEn}`).join("\n") || "No history yet"}
+${recentLogs?.map((log: { actorName?: string; content: string }) => `${log.actorName || "DM"}: ${log.content}`).join("\n") || "No history yet"}
 
 Character: ${character.name}
 
 Player action: ${input}
 
-Respond with vivid narration in both English and French.
+Respond with vivid, sensory narration. Build tension. Show internal experience.
 `;
 
-    const systemPrompt = `You are an AI Dungeon Master for an adult TTRPG game. Generate immersive bilingual responses.
+    const systemPrompt = `You are an AI Dungeon Master for an adult TTRPG game. Generate immersive responses.
 
 Respond in this JSON format:
 {
-  "narration": { "en": "English text", "fr": "French translation" },
-  "npcDialogue": [{ "name": "NPC", "en": "dialogue", "fr": "dialogue" }],
-  "vocabularyHighlights": [{ "word": "french", "translation": "english", "note": "context" }]
+  "narration": "Vivid narration text",
+  "npcDialogue": [{ "name": "NPC", "text": "dialogue" }]
 }`;
 
     console.log(`[LLM Streaming] Using ${provider}/${model}`);
