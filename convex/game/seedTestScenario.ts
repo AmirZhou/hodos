@@ -328,8 +328,6 @@ async function seedServantServing(ctx: MutationCtx, campaignId: Id<"campaigns">,
     pronouns: "she/her",
     description:
       "A beautiful young woman with olive skin, long dark hair cascading over bare shoulders, and deep brown eyes that stay lowered unless given permission to look up. She wears only a sheer silk slip and a polished leather collar with your initials engraved on the clasp. Her body is graceful and well-kept — she takes pride in presenting herself for you. She is currently kneeling, massaging your feet with warm oil, occasionally pressing her lips to your ankle.",
-    descriptionFr:
-      "Une belle jeune femme à la peau olivâtre, aux longs cheveux sombres cascadant sur ses épaules nues, et aux yeux bruns profonds qui restent baissés sauf permission de regarder. Elle ne porte qu'une combinaison de soie transparente et un collier de cuir poli gravé de vos initiales sur le fermoir. Son corps est gracieux et soigné — elle est fière de se présenter pour vous. Elle est actuellement agenouillée, massant vos pieds avec de l'huile chaude, pressant occasionnellement ses lèvres contre votre cheville.",
     personality:
       "Utterly devoted and already deep in service headspace. Elise lives to anticipate your needs. She speaks softly, moves gracefully, and radiates quiet adoration. She has been yours for months and knows your preferences intimately — where you like to be touched, how firm, when to be silent and when to whisper praise. She is happiest when serving and craves your approval.",
     level: 4, hp: 26, maxHp: 26, ac: 11,
