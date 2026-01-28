@@ -202,8 +202,6 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
         {/* Top Bar */}
         <GameHeader
           campaignName={campaign?.name ?? "Game"}
-          showFrench={showFrench}
-          onToggleFrench={() => setShowFrench(!showFrench)}
           onToggleMap={() => setShowMap(!showMap)}
           sidebarOpen={sidebarOpen}
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
@@ -214,10 +212,7 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
 
         {/* Main Content - Mode Router */}
         <GameModeRouter
-          showFrench={showFrench}
           characterId={currentCharacter?._id}
-          onSaveEntry={handleSaveEntry}
-          savedEntries={savedEntries}
           onNpcNameClick={setSelectedNpcId}
         />
       </div>
