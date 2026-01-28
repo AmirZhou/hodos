@@ -419,11 +419,8 @@ async function seedMidScene(ctx: MutationCtx, campaignId: Id<"campaigns">, chara
   const locationId = await ctx.db.insert("locations", {
     campaignId,
     name: "The Moonlit Suite",
-    nameFr: "La Suite au Clair de Lune",
     description:
       "A lavish bedroom suite on the top floor of a private estate. Moonlight pours through tall arched windows, casting silver across tangled silk sheets. The bed is large and disheveled — pillows scattered, the duvet half on the floor. Candles on the nightstand have burned low, wax pooling on brass. The air is hot, thick with the scent of sweat, perfume, and arousal. Clothes are strewn across the floor — your shirt draped over a chair, her dress in a heap by the door.",
-    descriptionFr:
-      "Une suite somptueuse au dernier étage d'un domaine privé. Le clair de lune se déverse par de hautes fenêtres en arc, projetant de l'argent sur des draps de soie emmêlés. Le lit est grand et défait — oreillers éparpillés, la couette à moitié par terre. Les bougies sur la table de nuit ont brûlé bas, la cire s'accumulant sur le laiton. L'air est chaud, chargé de sueur, de parfum et de désir. Les vêtements sont éparpillés sur le sol — votre chemise drapée sur une chaise, sa robe en tas près de la porte.",
     connectedTo: [],
     isDiscovered: true,
     properties: { type: "bedroom", lighting: "moonlight", mood: "passionate", privacy: "private" },
