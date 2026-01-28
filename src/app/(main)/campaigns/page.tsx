@@ -1,15 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, Swords, Clock, Users } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { useAuth } from "@/components/providers/auth-provider";
+import { RequireAuth } from "@/components/auth/RequireAuth";
 
 function formatLastPlayed(timestamp: number): string {
   const now = Date.now();
@@ -34,26 +33,22 @@ function getStatusColor(status: string): string {
 }
 
 export default function CampaignsPage() {
-  const router = useRouter();
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  return (
+    <RequireAuth>
+      <CampaignsContent />
+    </RequireAuth>
+  );
+}
+
+function CampaignsContent() {
+  const { user } = useAuth();
 
   const campaigns = useQuery(
     api.campaigns.list,
     user?._id ? { userId: user._id } : "skip"
   );
 
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      router.push("/login");
-    }
-  }, [authLoading, isAuthenticated, router]);
-
-  if (!authLoading && !isAuthenticated) {
-    return null;
-  }
-
-  const isLoading = authLoading || campaigns === undefined;
+  const isLoading = campaigns === undefined;
 
   return (
     <div className="min-h-screen">
