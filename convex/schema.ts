@@ -196,7 +196,10 @@ export default defineSchema({
     settings: v.object({
       explicitContent: v.boolean(),
       videoEnabled: v.boolean(),
-      intensityPreference: v.number(), // 1-10 default intensity
+      intensityPreference: v.optional(v.number()), // 1-10 default intensity
+      // DEPRECATED - kept for data migration
+      language: v.optional(v.string()),
+      frenchLevel: v.optional(v.string()),
     }),
     // User's global kink preferences (used as default for new characters)
     kinkPreferences: v.optional(kinkPreferences),
