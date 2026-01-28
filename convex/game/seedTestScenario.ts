@@ -227,8 +227,6 @@ async function seedFootFetishSpa(ctx: MutationCtx, campaignId: Id<"campaigns">, 
     pronouns: "he/him",
     description:
       "A well-built man with warm brown skin, close-cropped hair, and a gentle smile. He wears loose linen trousers rolled to the calf, barefoot on the warm stone. His hands are strong and practiced — clearly a masseur by trade. A small tattoo of a lotus decorates his ankle.",
-    descriptionFr:
-      "Un homme bien bâti à la peau brune chaleureuse, aux cheveux coupés courts et au sourire doux. Il porte un pantalon en lin ample retroussé au mollet, pieds nus sur la pierre chaude. Ses mains sont fortes et exercées — visiblement un masseur de métier. Un petit tatouage de lotus orne sa cheville.",
     personality:
       "Attentive and sensual. Marcel is a devoted caretaker who expresses affection through touch. He takes pride in reading bodies and knowing exactly where and how to press. He is quietly confident, unhurried, and worships beauty in all its forms — with a particular reverence for feet.",
     level: 4, hp: 30, maxHp: 30, ac: 12,
