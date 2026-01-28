@@ -439,6 +439,19 @@ export const submitQuickAction = action({
   },
 });
 
+interface ExecuteRollResult {
+  success: boolean;
+  rollResult: {
+    naturalRoll: number;
+    modifier: number;
+    total: number;
+    dc: number;
+    success: boolean;
+    isCritical: boolean;
+    isCriticalMiss: boolean;
+  };
+}
+
 // Execute a pending roll (user clicked the dice)
 export const executeRoll = action({
   args: {
@@ -448,16 +461,24 @@ export const executeRoll = action({
     // The actual d20 roll result (1-20) - passed from frontend animation
     naturalRoll: v.number(),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<ExecuteRollResult> => {
     const { campaignId, sessionId, characterId, naturalRoll } = args;
 
     // Get session with pending roll
-    const session = await ctx.runQuery(api.game.session.getCurrent, { campaignId });
+    const session = await ctx.runQuery(api.game.session.getCurrent, { campaignId }) as Doc<"gameSessions"> | null;
     if (!session || !session.pendingRoll) {
       throw new Error("No pending roll found");
     }
 
-    const roll = session.pendingRoll;
+    const roll = session.pendingRoll as {
+      type: string;
+      skill?: string;
+      ability: string;
+      dc: number;
+      reason: string;
+      characterId: Id<"characters">;
+      actionContext: string;
+    };
 
     // Get character for modifiers
     const character = await ctx.runQuery(api.characters.get, { characterId });
