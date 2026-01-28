@@ -386,29 +386,25 @@ async function seedServantServing(ctx: MutationCtx, campaignId: Id<"campaigns">,
 
   await ctx.db.insert("gameLog", {
     campaignId, sessionId, type: "system",
-    contentEn: "You are in your private chambers. Elise is already serving you.",
-    contentFr: "Vous êtes dans vos appartements privés. Elise est déjà en train de vous servir.",
+    content: "You are in your private chambers. Elise is already serving you.",
     createdAt: now,
   });
 
   await ctx.db.insert("gameLog", {
     campaignId, sessionId, type: "narration", actorType: "dm",
-    contentEn: "The fire crackles softly as Elise kneels before you, warm oil glistening on her hands. She works your feet with practiced devotion — thumbs pressing into the arch, fingers tracing each toe, lips brushing your ankle between strokes. Her collar catches the firelight. She has not spoken — she knows you prefer silence during this ritual, unless you invite her to speak. The wine on the side table is already poured. The evening is yours to command.",
-    contentFr: "Le feu crépite doucement tandis qu'Elise s'agenouille devant vous, l'huile chaude brillant sur ses mains. Elle masse vos pieds avec une dévotion exercée — les pouces pressant la voûte plantaire, les doigts traçant chaque orteil, les lèvres effleurant votre cheville entre les caresses. Son collier capte la lueur du feu. Elle n'a pas parlé — elle sait que vous préférez le silence pendant ce rituel, à moins que vous ne l'invitiez à parler. Le vin sur la table d'appoint est déjà versé. La soirée est vôtre à commander.",
+    content: "The fire crackles softly as Elise kneels before you, warm oil glistening on her hands. She works your feet with practiced devotion — thumbs pressing into the arch, fingers tracing each toe, lips brushing your ankle between strokes. Her collar catches the firelight. She has not spoken — she knows you prefer silence during this ritual, unless you invite her to speak. The wine on the side table is already poured. The evening is yours to command.",
     createdAt: now + 1,
   });
 
   await ctx.db.insert("gameLog", {
     campaignId, sessionId, type: "narration", actorType: "dm",
-    contentEn: "Elise glances up briefly — a flicker of adoration in her dark eyes — then lowers her gaze again, pressing a slow kiss to the top of your foot before continuing her work.",
-    contentFr: "Elise lève brièvement les yeux — une lueur d'adoration dans ses yeux sombres — puis baisse de nouveau le regard, déposant un lent baiser sur le dessus de votre pied avant de reprendre son travail.",
+    content: "Elise glances up briefly — a flicker of adoration in her dark eyes — then lowers her gaze again, pressing a slow kiss to the top of your foot before continuing her work.",
     createdAt: now + 2,
   });
 
   await ctx.db.insert("gameLog", {
     campaignId, sessionId, type: "system",
-    contentEn: "Quick actions: [Run your fingers through her hair] [Tell her to speak] [Guide her mouth higher] [Take the wine] [Give her a new order] [Praise her work] [Use the riding crop]",
-    contentFr: "Actions rapides : [Passer vos doigts dans ses cheveux] [Lui dire de parler] [Guider sa bouche plus haut] [Prendre le vin] [Lui donner un nouvel ordre] [Louer son travail] [Utiliser la cravache]",
+    content: "Quick actions: [Run your fingers through her hair] [Tell her to speak] [Guide her mouth higher] [Take the wine] [Give her a new order] [Praise her work] [Use the riding crop]",
     createdAt: now + 3,
   });
 
