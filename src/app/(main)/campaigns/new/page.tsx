@@ -5,32 +5,79 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, Sparkles, Globe, Users, Footprints, Heart, Crown, Flame } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation } from "convex/react";
 import { api } from "../../../../../convex/_generated/api";
 import { useAuth } from "@/components/providers/auth-provider";
+import { RequireAuth } from "@/components/auth/RequireAuth";
+
+const settings = [
+  {
+    id: "quebec-modern",
+    name: "Modern Quebec",
+    description: "Contemporary Montreal with hidden supernatural elements",
+    icon: Globe,
+  },
+  {
+    id: "quebec-fantasy",
+    name: "Quebec Fantasy",
+    description: "A magical version of Quebec with full fantasy elements",
+    icon: Sparkles,
+  },
+  {
+    id: "custom",
+    name: "Custom Setting",
+    description: "Define your own world with the AI DM",
+    icon: Users,
+  },
+  {
+    id: "foot-fetish-spa",
+    name: "Foot Fetish Spa",
+    description: "A private spa suite with two NPCs who share a love of feet — massage, worship, and pampering",
+    icon: Footprints,
+    seedScenario: "foot-fetish-spa",
+  },
+  {
+    id: "bdsm-dungeon",
+    name: "BDSM Dungeon",
+    description: "A velvet-draped dungeon with a dominant mistress and a submissive servant",
+    icon: Heart,
+    seedScenario: "bdsm-dungeon",
+  },
+  {
+    id: "servant-serving",
+    name: "Devoted Servant",
+    description: "Your personal servant is already kneeling at your feet, mid-service — an established dynamic you command",
+    icon: Crown,
+    seedScenario: "servant-serving",
+  },
+  {
+    id: "mid-scene",
+    name: "In Medias Res",
+    description: "You're already deep in an intense, passionate encounter — pick up right in the heat of the moment",
+    icon: Flame,
+    seedScenario: "mid-scene",
+  },
+];
 
 export default function NewCampaignPage() {
+  return (
+    <RequireAuth>
+      <NewCampaignContent />
+    </RequireAuth>
+  );
+}
+
+function NewCampaignContent() {
   const router = useRouter();
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { user } = useAuth();
   const createCampaign = useMutation(api.campaigns.create);
 
   const [campaignName, setCampaignName] = useState("");
   const [setting, setSetting] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      router.push("/login");
-    }
-  }, [authLoading, isAuthenticated, router]);
-
-  if (!authLoading && !isAuthenticated) {
-    return null;
-  }
 
   const handleCreate = async () => {
     if (!user?._id) {
@@ -61,55 +108,6 @@ export default function NewCampaignPage() {
       setIsCreating(false);
     }
   };
-
-  const settings = [
-    {
-      id: "quebec-modern",
-      name: "Modern Quebec",
-      description: "Contemporary Montreal with hidden supernatural elements",
-      icon: Globe,
-    },
-    {
-      id: "quebec-fantasy",
-      name: "Quebec Fantasy",
-      description: "A magical version of Quebec with full fantasy elements",
-      icon: Sparkles,
-    },
-    {
-      id: "custom",
-      name: "Custom Setting",
-      description: "Define your own world with the AI DM",
-      icon: Users,
-    },
-    {
-      id: "foot-fetish-spa",
-      name: "Foot Fetish Spa",
-      description: "A private spa suite with two NPCs who share a love of feet — massage, worship, and pampering",
-      icon: Footprints,
-      seedScenario: "foot-fetish-spa",
-    },
-    {
-      id: "bdsm-dungeon",
-      name: "BDSM Dungeon",
-      description: "A velvet-draped dungeon with a dominant mistress and a submissive servant",
-      icon: Heart,
-      seedScenario: "bdsm-dungeon",
-    },
-    {
-      id: "servant-serving",
-      name: "Devoted Servant",
-      description: "Your personal servant is already kneeling at your feet, mid-service — an established dynamic you command",
-      icon: Crown,
-      seedScenario: "servant-serving",
-    },
-    {
-      id: "mid-scene",
-      name: "In Medias Res",
-      description: "You're already deep in an intense, passionate encounter — pick up right in the heat of the moment",
-      icon: Flame,
-      seedScenario: "mid-scene",
-    },
-  ];
 
   return (
     <div className="min-h-screen">
