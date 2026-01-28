@@ -765,7 +765,7 @@ function LogEntry({
                 {entry.roll.result}
               </div>
               <div>
-                <div className="text-sm font-medium">{entry.content}</div>
+                <div className="text-sm font-medium">{entry.content || entry.contentEn || ""}</div>
                 <div className="text-xs text-[var(--foreground-muted)]">
                   {entry.roll.dice}
                   {entry.roll.dc && ` vs DC ${entry.roll.dc}`}
