@@ -2,6 +2,7 @@ import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
 import { api } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
+import { getStreamingConfig } from "./ai/llmProvider";
 
 const http = httpRouter();
 
@@ -17,10 +18,8 @@ http.route({
       input: string;
     };
 
-    const apiKey = process.env.DEEPSEEK_API_KEY;
-    if (!apiKey) {
-      return new Response("DEEPSEEK_API_KEY not configured", { status: 500 });
-    }
+    // Get provider config
+    const { provider, apiUrl, apiKey, model } = getStreamingConfig();
 
     // Get context data
     const character = await ctx.runQuery(api.characters.get, { characterId });
@@ -65,15 +64,17 @@ Respond in this JSON format:
   "vocabularyHighlights": [{ "word": "french", "translation": "english", "note": "context" }]
 }`;
 
-    // Call DeepSeek with streaming
-    const response = await fetch("https://api.deepseek.com/chat/completions", {
+    console.log(`[LLM Streaming] Using ${provider}/${model}`);
+
+    // Call LLM with streaming
+    const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "deepseek-chat",
+        model,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: contextMessage },
