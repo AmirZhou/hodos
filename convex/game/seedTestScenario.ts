@@ -175,8 +175,15 @@ async function seedBdsmDungeon(ctx: MutationCtx, campaignId: Id<"campaigns">, ch
     inventory: [...character.inventory, ...items] as typeof character.inventory,
   });
 
+  // Create session with exploration positions
+  const explorationPositions: Record<string, { x: number; y: number }> = {};
+  explorationPositions[characterId] = { x: 6, y: 8 }; // Near entrance (bottom center)
+
   const sessionId = await ctx.db.insert("gameSessions", {
     campaignId, status: "active", mode: "exploration", locationId, startedAt: now, lastActionAt: now,
+    explorationPositions,
+    currentGridSize: { width: 12, height: 10 },
+    movementHistory: [],
   });
 
   await ctx.db.insert("gameLog", { campaignId, sessionId, type: "system", contentEn: "You have entered The Velvet Sanctum. The heavy door closes behind you with a soft click.", contentFr: "Vous êtes entré dans le Sanctuaire de Velours. La lourde porte se referme derrière vous avec un clic doux.", createdAt: now });
