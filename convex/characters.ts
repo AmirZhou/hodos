@@ -180,10 +180,14 @@ export const create = mutation({
       exhaustionLevel: 0,
       deathSaves: { successes: 0, failures: 0 },
 
-      intimacyProfile: {
-        ...args.intimacyProfile,
-        kinks: args.intimacyProfile.kinks || defaultKinks,
+      adultStats: args.adultStats || {
+        composure: 75,
+        arousal: 0,
+        dominance: 50,
+        submission: 50,
       },
+      kinkPreferences: args.kinkPreferences || defaultKinks,
+      hardLimits: args.hardLimits || [],
 
       createdAt: Date.now(),
     });
