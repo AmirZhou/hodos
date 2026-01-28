@@ -427,8 +427,7 @@ export const executeRoll = action({
     await ctx.runMutation(api.game.log.add, {
       campaignId,
       type: "roll",
-      contentEn: `${character.name} rolls ${roll.skill || roll.ability}: ${naturalRoll} + ${modifier} = ${total} vs DC ${roll.dc} - ${finalSuccess ? "SUCCESS" : "FAILURE"}${isCritical ? " (CRITICAL!)" : ""}${isCriticalMiss ? " (CRITICAL MISS!)" : ""}`,
-      contentFr: `${character.name} lance ${roll.skill || roll.ability}: ${naturalRoll} + ${modifier} = ${total} contre DD ${roll.dc} - ${finalSuccess ? "SUCCÈS" : "ÉCHEC"}${isCritical ? " (CRITIQUE!)" : ""}${isCriticalMiss ? " (ÉCHEC CRITIQUE!)" : ""}`,
+      content: `${character.name} rolls ${roll.skill || roll.ability}: ${naturalRoll} + ${modifier} = ${total} vs DC ${roll.dc} - ${finalSuccess ? "SUCCESS" : "FAILURE"}${isCritical ? " (CRITICAL!)" : ""}${isCriticalMiss ? " (CRITICAL MISS!)" : ""}`,
       actorType: "character",
       actorId: characterId,
       actorName: character.name,
