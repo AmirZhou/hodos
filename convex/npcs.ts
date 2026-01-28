@@ -74,7 +74,6 @@ export const create = mutation({
       pronouns: args.pronouns,
       portrait: args.portrait,
       description: args.description,
-      descriptionFr: args.descriptionFr,
       personality: args.personality,
       level,
       hp: maxHp,
