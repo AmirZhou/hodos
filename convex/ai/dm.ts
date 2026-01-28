@@ -513,7 +513,10 @@ Respond with JSON:
       { role: "user", content: prompt },
     ];
 
-    const { content, usage, provider, model, latencyMs } = await callLLM(messages, { jsonMode: true });
+    const { content, usage, provider, model, latencyMs } = await callLLM(messages, {
+      jsonMode: true,
+      provider: args.llmProvider,
+    });
     console.log(`[LLM] ${provider}/${model} responded in ${latencyMs}ms`);
 
     let parsedResponse;
