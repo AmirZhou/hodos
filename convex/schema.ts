@@ -323,7 +323,10 @@ export default defineSchema({
     pronouns: v.string(),
     portrait: v.optional(v.string()),
     description: v.string(),
+    descriptionFr: v.optional(v.string()), // DEPRECATED
     personality: v.string(), // AI guidance
+    // DEPRECATED - kept for data migration
+    intimacyProfile: v.optional(v.any()),
 
     // Stats (simplified for NPCs)
     level: v.number(),
