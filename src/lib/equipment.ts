@@ -49,6 +49,9 @@ export const SLOT_LABELS: Record<EquipmentSlot | EquipedSlot, string> = {
   mainHand: "Main Hand",
   offHand: "Off Hand",
   book: "Book",
+  collar: "Collar",
+  restraints: "Restraints",
+  toy: "Toy",
 };
 
 // Map equipped slot to item type for ring slots
