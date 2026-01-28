@@ -270,43 +270,37 @@ async function seedFootFetishSpa(ctx: MutationCtx, campaignId: Id<"campaigns">, 
 
   await ctx.db.insert("gameLog", {
     campaignId, sessionId, type: "system",
-    contentEn: "You have entered The Silken Step — a private spa suite reserved just for you tonight.",
-    contentFr: "Vous êtes entré dans Le Pas de Soie — une suite de spa privée réservée rien que pour vous ce soir.",
+    content: "You have entered The Silken Step — a private spa suite reserved just for you tonight.",
     createdAt: now,
   });
 
   await ctx.db.insert("gameLog", {
     campaignId, sessionId, type: "narration", actorType: "dm",
-    contentEn: "Warm marble greets your bare feet as you step inside. The air is fragrant with jasmine and vanilla oil. Golden light bathes the room in a soft glow. Plush lounges and silk-draped ottomans invite you to sit. On a gilded tray, you see aromatic massage oils, warm towels, and a crystal dish of ankle bracelets and toe rings. Two people await you — both barefoot, both smiling.",
-    contentFr: "Le marbre chaud accueille vos pieds nus lorsque vous entrez. L'air est parfumé de jasmin et d'huile de vanille. Une lumière dorée baigne la pièce d'une douce lueur. Des chaises longues moelleuses et des poufs drapés de soie vous invitent à vous asseoir. Sur un plateau doré, vous apercevez des huiles de massage aromatiques, des serviettes chaudes et un plat en cristal de bracelets de cheville et de bagues d'orteil. Deux personnes vous attendent — pieds nus toutes les deux, souriantes.",
+    content: "Warm marble greets your bare feet as you step inside. The air is fragrant with jasmine and vanilla oil. Golden light bathes the room in a soft glow. Plush lounges and silk-draped ottomans invite you to sit. On a gilded tray, you see aromatic massage oils, warm towels, and a crystal dish of ankle bracelets and toe rings. Two people await you — both barefoot, both smiling.",
     createdAt: now + 1,
   });
 
   await ctx.db.insert("gameLog", {
     campaignId, sessionId, type: "dialogue", actorType: "npc", actorId: isabelleId, actorName: "Isabelle",
-    contentEn: "There you are! Come, sit down. Marcel has warmed the oils already. I've been dying to try those ankle bracelets... unless you'd rather put them on me yourself?",
-    contentFr: "Te voilà ! Viens, assieds-toi. Marcel a déjà réchauffé les huiles. Je meurs d'envie d'essayer ces bracelets de cheville... à moins que tu préfères me les mettre toi-même ?",
+    content: "There you are! Come, sit down. Marcel has warmed the oils already. I've been dying to try those ankle bracelets... unless you'd rather put them on me yourself?",
     createdAt: now + 2,
   });
 
   await ctx.db.insert("gameLog", {
     campaignId, sessionId, type: "dialogue", actorType: "npc", actorId: marcelId, actorName: "Marcel",
-    contentEn: "Welcome. Make yourself comfortable — shoes off, of course. I'll start whenever you're ready. Feet first... the rest follows naturally.",
-    contentFr: "Bienvenue. Mettez-vous à l'aise — chaussures enlevées, bien sûr. Je commence quand vous êtes prêt(e). Les pieds d'abord... le reste suit naturellement.",
+    content: "Welcome. Make yourself comfortable — shoes off, of course. I'll start whenever you're ready. Feet first... the rest follows naturally.",
     createdAt: now + 3,
   });
 
   await ctx.db.insert("gameLog", {
     campaignId, sessionId, type: "system",
-    contentEn: "You find items on the gilded tray: Heels of Confidence, a Ring of Seduction, and more. They have been added to your inventory.",
-    contentFr: "Vous trouvez des objets sur le plateau doré : des Talons de Confiance, un Anneau de Séduction, et plus encore. Ils ont été ajoutés à votre inventaire.",
+    content: "You find items on the gilded tray: Heels of Confidence, a Ring of Seduction, and more. They have been added to your inventory.",
     createdAt: now + 4,
   });
 
   await ctx.db.insert("gameLog", {
     campaignId, sessionId, type: "system",
-    contentEn: "Quick actions: [Sit on the lounge] [Offer to massage Isabelle's feet] [Let Marcel begin] [Examine the oils] [Put an ankle bracelet on Isabelle] [Remove your shoes]",
-    contentFr: "Actions rapides : [S'asseoir sur la chaise longue] [Proposer de masser les pieds d'Isabelle] [Laisser Marcel commencer] [Examiner les huiles] [Mettre un bracelet de cheville à Isabelle] [Enlever vos chaussures]",
+    content: "Quick actions: [Sit on the lounge] [Offer to massage Isabelle's feet] [Let Marcel begin] [Examine the oils] [Put an ankle bracelet on Isabelle] [Remove your shoes]",
     createdAt: now + 5,
   });
 
