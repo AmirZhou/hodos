@@ -107,7 +107,7 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
         .catch((err) => console.error("Auto-seed failed:", err))
         .finally(() => setSeeding(false));
     }
-  }, [campaign?.seedScenario, currentCharacter, gameState.hasActiveSession, seeding, seeded, campaignId, seedMutation]);
+  }, [(campaign as { seedScenario?: string } | null)?.seedScenario, currentCharacter, gameState.hasActiveSession, seeding, seeded, campaignId, seedMutation]);
 
   const [showFrench, setShowFrench] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
