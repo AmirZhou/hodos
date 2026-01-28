@@ -67,6 +67,9 @@ export const SLOT_LABELS: Record<EquipmentSlot, string> = {
   mainHand: "Main Hand",
   offHand: "Off Hand",
   book: "Book",
+  collar: "Collar",
+  restraints: "Restraints",
+  toy: "Toy",
 };
 
 export const EQUIPMENT_SLOTS: EquipmentSlot[] = [
