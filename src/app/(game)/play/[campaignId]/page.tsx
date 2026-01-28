@@ -241,14 +241,16 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
           onlinePlayers={gameState.onlinePlayers}
         />
 
-        {/* Map Modal */}
+        {/* Map Modal — Tabbed: Location / World */}
         {showMap && (
           <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
             <div className="max-w-4xl w-full max-h-[90vh] overflow-auto">
-              <LocationGraph
+              <MapModal
                 campaignId={campaignId}
                 sessionId={gameState.sessionId}
                 currentLocationId={gameState.locationId}
+                currentCharacterId={currentCharacter?._id}
+                currentCharacterName={currentCharacter?.name}
                 onLocationSelect={() => setShowMap(false)}
                 onClose={() => setShowMap(false)}
               />
