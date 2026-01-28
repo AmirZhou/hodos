@@ -76,7 +76,6 @@ export const getLocationDetails = query({
           ? {
               id: connected._id,
               name: connected.name,
-              nameFr: connected.nameFr,
               isDiscovered: connected.isDiscovered,
             }
           : null;
