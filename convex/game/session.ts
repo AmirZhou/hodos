@@ -144,7 +144,10 @@ export const setPendingRoll = mutation({
       ability: v.string(),
       dc: v.number(),
       reason: v.string(),
-      stakes: v.optional(v.string()),
+      stakes: v.optional(v.object({
+        onSuccess: v.string(),
+        onFailure: v.string(),
+      })),
       characterId: v.id("characters"),
       actionContext: v.string(),
     }),
