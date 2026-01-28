@@ -371,7 +371,8 @@ export default defineSchema({
     affinity: v.number(),     // -100 to +100
     trust: v.number(),        // 0 to 100
     attraction: v.number(),   // 0 to 100
-    fear: v.number(),         // 0 to 100 (NEW)
+    fear: v.optional(v.number()),   // 0 to 100 (NEW)
+    tension: v.optional(v.number()), // DEPRECATED - use fear
     intimacy: v.number(),     // 0 to 100
 
     // Power dynamic perception (NEW)
