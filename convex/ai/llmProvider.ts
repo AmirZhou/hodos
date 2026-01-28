@@ -67,9 +67,10 @@ export async function callLLM(
     temperature?: number;
     maxTokens?: number;
     jsonMode?: boolean;
+    provider?: LLMProvider;
   }
 ): Promise<LLMResponse> {
-  const { provider, config } = getProviderConfig();
+  const { provider, config } = getProviderConfig(options?.provider);
   const startTime = Date.now();
 
   const requestBody: Record<string, unknown> = {
