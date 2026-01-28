@@ -428,27 +428,25 @@ async function seedMidScene(ctx: MutationCtx, campaignId: Id<"campaigns">, chara
     abilities: { strength: 11, dexterity: 14, constitution: 13, intelligence: 15, wisdom: 13, charisma: 18 },
     isAlive: true, conditions: [], memories: [
       "You met at a masquerade ball three weeks ago",
-      "The tension between you has been building since that first dance",
+      "The chemistry between you has been building since that first dance",
       "She kissed you first, pulling you behind a curtain at the governor's gala",
       "Tonight she invited you to her private suite — you both knew what that meant",
       "You undressed each other slowly, kissing every inch of exposed skin",
       "She gasped when you first entered her and pulled you deeper",
     ], autoCreated: false, firstMetAt: now - 86400000 * 21, currentLocationId: locationId,
-    intimacyProfile: {
-      orientation: "switch",
-      roleIdentity: { power: 45, action: 65, sensation: 85, service: 40, flexibility: 80 },
-      kinks: {
-        "sensation play": 3, "body worship": 3, "role play": 2, teasing: 3,
-        praise: 3, biting: 2, "hair pulling": 2, aftercare: 3,
-      },
-      aftercareNeed: 70, trustThreshold: 30,
+    adultStats: { composure: 50, arousal: 85, dominance: 45, submission: 40 },
+    kinkPreferences: {
+      "sensation play": 3, "body worship": 3, "role play": 2, teasing: 3,
+      praise: 3, biting: 2, "hair pulling": 2, aftercare: 3,
     },
+    hardLimits: [],
+    desires: "To experience passion and connection",
   });
 
   // Deep established attraction, high intimacy — this has been building
   await ctx.db.insert("relationships", {
     campaignId, characterId, npcId: sofiaId,
-    affinity: 65, trust: 60, attraction: 90, tension: 85, intimacy: 75,
+    affinity: 65, trust: 60, attraction: 90, fear: 0, intimacy: 75,
     history: [
       "Met at a masquerade ball — instant chemistry",
       "Danced together all night, couldn't stop talking",
