@@ -480,13 +480,13 @@ async function seedMidScene(ctx: MutationCtx, campaignId: Id<"campaigns">, chara
     startedAt: now - 1800000,
     lastActionAt: now,
     suggestedActions: [
-      { en: "Thrust deeper", fr: "Pousser plus profondement", type: "intimate" },
-      { en: "Kiss her neck", fr: "Embrasser son cou", type: "intimate" },
-      { en: "Pull her hair gently", fr: "Tirer doucement ses cheveux", type: "intimate" },
-      { en: "Whisper in her ear", fr: "Murmurer a son oreille", type: "intimate" },
-      { en: "Slow down and tease", fr: "Ralentir et la taquiner", type: "intimate" },
-      { en: "Flip her on top", fr: "La mettre au-dessus", type: "intimate" },
-      { en: "Tell her she's beautiful", fr: "Lui dire qu'elle est belle", type: "intimate" },
+      { text: "Thrust deeper", type: "intimate" },
+      { text: "Kiss her neck", type: "intimate" },
+      { text: "Pull her hair gently", type: "intimate" },
+      { text: "Whisper in her ear", type: "intimate" },
+      { text: "Slow down and tease", type: "intimate" },
+      { text: "Flip her on top", type: "intimate" },
+      { text: "Tell her she's beautiful", type: "intimate" },
     ],
   });
 
