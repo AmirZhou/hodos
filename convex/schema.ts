@@ -536,6 +536,8 @@ export default defineSchema({
     // DEPRECATED - kept for data migration
     contentEn: v.optional(v.string()),
     contentFr: v.optional(v.string()),
+    annotations: v.optional(v.any()),
+    linguisticAnalysis: v.optional(v.any()),
 
     actorType: v.optional(
       v.union(v.literal("dm"), v.literal("character"), v.literal("npc"))
