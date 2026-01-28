@@ -42,12 +42,10 @@ interface RollResult {
 }
 
 interface ActionResult {
-  narration?: { en: string; fr: string };
-  npcDialogue?: Array<{ name: string; en: string; fr: string }>;
+  narration?: string;
+  npcDialogue?: Array<{ name: string; text: string }>;
   roll?: RollResult | null;
-  suggestedActions?: Array<{ en: string; fr: string; type: string }>;
-  vocabularyHighlights?: Array<{ word: string; translation: string; note?: string }>;
-  linguisticAnalysis?: LinguisticAnalysis;
+  suggestedActions?: Array<{ text: string; type: string }>;
   // For pending roll responses
   success?: boolean;
   requiresRoll?: boolean;
@@ -57,6 +55,7 @@ interface ActionResult {
     ability: string;
     dc: number;
     reason: string;
+    stakes?: string;
   };
 }
 
