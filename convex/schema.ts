@@ -12,21 +12,17 @@ const abilityScores = v.object({
   charisma: v.number(),
 });
 
-const roleIdentity = v.object({
-  power: v.number(), // 0-100 (sub to dom)
-  action: v.number(), // 0-100 (bottom to top)
-  sensation: v.number(), // 0-100 (masochist to sadist)
-  service: v.number(), // 0-100 (giving to receiving)
-  flexibility: v.number(), // 0-100 (fixed to switch)
+// Adult stats for power dynamics
+const adultStats = v.object({
+  composure: v.number(),    // 0-100, ability to stay in control
+  arousal: v.number(),      // 0-100, current excitement level
+  dominance: v.number(),    // 0-100, capacity to control others
+  submission: v.number(),   // 0-100, capacity to surrender
 });
 
-const intimacyProfile = v.object({
-  orientation: v.string(),
-  roleIdentity: roleIdentity,
-  kinks: v.record(v.string(), v.number()), // tag -> level (-2 to +3)
-  aftercareNeed: v.number(), // 0-100
-  trustThreshold: v.number(), // 0-100
-});
+// Kink preferences (tag -> preference level)
+// -2 = hard limit, -1 = soft limit, 0 = neutral, 1 = curious, 2 = enjoys, 3 = loves
+const kinkPreferences = v.record(v.string(), v.number());
 
 // Enhanced combatant state with position and action tracking
 const combatantState = v.object({
@@ -112,45 +108,17 @@ const rollDetails = v.object({
   success: v.optional(v.boolean()),
 });
 
-const vocabAnnotation = v.object({
-  word: v.string(),
-  translation: v.string(),
-  note: v.optional(v.string()),
-});
-
-// Enhanced linguistic analysis for French learning
-const linguisticAnalysisVocabItem = v.object({
-  word: v.string(),
-  translation: v.string(),
-  partOfSpeech: v.string(),
-  usage: v.optional(v.string()),
-});
-
-const linguisticAnalysis = v.object({
-  grammar: v.array(v.string()),
-  vocabulary: v.array(linguisticAnalysisVocabItem),
-  usageNotes: v.array(v.string()),
-});
-
-const item = v.object({
-  id: v.string(),
-  name: v.string(),
-  nameFr: v.string(),
-  description: v.string(),
-  type: v.string(),
-  properties: v.record(v.string(), v.any()),
-});
-
 const equipmentItem = v.object({
   id: v.string(),
   name: v.string(),
-  nameFr: v.string(),
   description: v.string(),
   type: v.union(
     v.literal("head"), v.literal("chest"), v.literal("hands"),
     v.literal("boots"), v.literal("cloak"), v.literal("ring"),
     v.literal("necklace"), v.literal("mainHand"), v.literal("offHand"),
-    v.literal("book")
+    v.literal("book"),
+    // Adult equipment types
+    v.literal("collar"), v.literal("restraints"), v.literal("toy")
   ),
   rarity: v.union(
     v.literal("mundane"), v.literal("common"), v.literal("uncommon"),
@@ -177,16 +145,15 @@ const equipmentItem = v.object({
     perceptionBonus: v.optional(v.number()),
     persuasionBonus: v.optional(v.number()),
     xpBonus: v.optional(v.number()),
+    // Adult attributes
     seduction: v.optional(v.number()),
     intimidation: v.optional(v.number()),
-    submission: v.optional(v.number()),
     bondageArts: v.optional(v.number()),
     sensationMastery: v.optional(v.number()),
-    trustBuilding: v.optional(v.number()),
-    aftercarePower: v.optional(v.number()),
-    painThreshold: v.optional(v.number()),
-    allure: v.optional(v.number()),
-    commandPresence: v.optional(v.number()),
+    composureBonus: v.optional(v.number()),
+    arousalControl: v.optional(v.number()),
+    dominanceBonus: v.optional(v.number()),
+    submissionBonus: v.optional(v.number()),
   })),
   passive: v.optional(v.string()),
 });
@@ -221,26 +188,35 @@ const condition = v.object({
   source: v.optional(v.string()),
 });
 
+// Scene history entry for NPC memory
+const sceneHistoryEntry = v.object({
+  timestamp: v.number(),
+  playerRole: v.union(v.literal("dominant"), v.literal("submissive"), v.literal("switch")),
+  npcRole: v.union(v.literal("dominant"), v.literal("submissive"), v.literal("switch")),
+  activities: v.array(v.string()),
+  intensity: v.number(), // 1-10
+  keyMoments: v.array(v.string()),
+  aftercare: v.union(v.literal("good"), v.literal("rushed"), v.literal("skipped")),
+  npcFeeling: v.string(), // "satisfied", "wanting more", "hurt", etc.
+});
+
 // ============ SCHEMA ============
 
 export default defineSchema({
   // ============ USERS & AUTH ============
   users: defineTable({
-    clerkId: v.optional(v.string()), // Optional - for Clerk integration later
+    clerkId: v.optional(v.string()),
     email: v.string(),
     displayName: v.string(),
     avatarUrl: v.optional(v.string()),
     settings: v.object({
-      language: v.union(v.literal("en"), v.literal("fr"), v.literal("bilingual")),
       explicitContent: v.boolean(),
       videoEnabled: v.boolean(),
-      frenchLevel: v.union(
-        v.literal("none"),
-        v.literal("beginner"),
-        v.literal("intermediate"),
-        v.literal("advanced")
-      ),
+      intensityPreference: v.number(), // 1-10 default intensity
     }),
+    // User's global kink preferences (used as default for new characters)
+    kinkPreferences: v.optional(kinkPreferences),
+    hardLimits: v.optional(v.array(v.string())),
     createdAt: v.number(),
   })
     .index("by_clerk_id", ["clerkId"])
@@ -326,6 +302,9 @@ export default defineSchema({
       mainHand: v.optional(equipmentItem),
       offHand: v.optional(equipmentItem),
       book: v.optional(equipmentItem),
+      // Adult equipment slots
+      collar: v.optional(equipmentItem),
+      restraints: v.optional(equipmentItem),
     }),
 
     // Conditions & Status
@@ -336,8 +315,12 @@ export default defineSchema({
       failures: v.number(),
     }),
 
-    // Intimacy Profile
-    intimacyProfile: intimacyProfile,
+    // Adult Stats (NEW)
+    adultStats: v.optional(adultStats),
+
+    // Kink preferences and limits
+    kinkPreferences: v.optional(kinkPreferences),
+    hardLimits: v.optional(v.array(v.string())),
 
     createdAt: v.number(),
   })
@@ -352,7 +335,6 @@ export default defineSchema({
     pronouns: v.string(),
     portrait: v.optional(v.string()),
     description: v.string(),
-    descriptionFr: v.string(),
     personality: v.string(), // AI guidance
 
     // Stats (simplified for NPCs)
@@ -362,8 +344,15 @@ export default defineSchema({
     ac: v.number(),
     abilities: abilityScores,
 
-    // Intimacy Profile
-    intimacyProfile: intimacyProfile,
+    // Adult Stats (NEW)
+    adultStats: v.optional(adultStats),
+
+    // NPC's kink preferences and limits
+    kinkPreferences: v.optional(kinkPreferences),
+    hardLimits: v.optional(v.array(v.string())),
+
+    // What NPC wants from player (AI guidance)
+    desires: v.optional(v.string()),
 
     // Grid position (for exploration map)
     position: v.optional(v.object({ x: v.number(), y: v.number() })),
@@ -373,7 +362,7 @@ export default defineSchema({
     isAlive: v.boolean(),
     conditions: v.array(condition),
 
-    // AI memory
+    // Simple AI memory (for backward compat)
     memories: v.array(v.string()),
 
     // Auto-creation tracking
@@ -387,11 +376,17 @@ export default defineSchema({
     characterId: v.id("characters"),
     npcId: v.id("npcs"),
 
-    affinity: v.number(), // -100 to +100
-    trust: v.number(), // 0 to 100
-    attraction: v.number(), // 0 to 100
-    tension: v.number(), // 0 to 100
-    intimacy: v.number(), // 0 to 100
+    // Core relationship scores
+    affinity: v.number(),     // -100 to +100
+    trust: v.number(),        // 0 to 100
+    attraction: v.number(),   // 0 to 100
+    fear: v.number(),         // 0 to 100 (NEW)
+    intimacy: v.number(),     // 0 to 100
+
+    // Power dynamic perception (NEW)
+    // How dominant/submissive the player appears to this NPC
+    playerDomInTheirEyes: v.optional(v.number()),  // 0-100
+    playerSubInTheirEyes: v.optional(v.number()),  // 0-100
 
     dynamic: v.optional(dynamicType),
 
@@ -402,19 +397,68 @@ export default defineSchema({
     .index("by_character", ["characterId"])
     .index("by_character_and_npc", ["characterId", "npcId"]),
 
+  // ============ NPC MEMORIES (Enhanced) ============
+  npcMemories: defineTable({
+    npcId: v.id("npcs"),
+    characterId: v.id("characters"),
+
+    // Key moments (5-10 max, pruned by significance)
+    keyMoments: v.array(
+      v.object({
+        timestamp: v.number(),
+        summary: v.string(),
+        emotionalImpact: v.number(), // -10 to +10
+        tags: v.array(v.string()),
+      })
+    ),
+
+    // Scene history (NEW)
+    sceneHistory: v.optional(v.array(sceneHistoryEntry)),
+
+    // Emotional summary
+    emotionalState: v.object({
+      currentMood: v.string(),
+      feelingsTowardCharacter: v.string(),
+      trustLevel: v.number(),
+      attractionLevel: v.number(),
+      lastUpdated: v.number(),
+    }),
+
+    // Relationship status
+    relationshipStatus: v.object({
+      type: v.union(
+        v.literal("stranger"),
+        v.literal("acquaintance"),
+        v.literal("friend"),
+        v.literal("intimate"),
+        v.literal("rival")
+      ),
+      dynamicEstablished: v.boolean(),
+      sharedSecrets: v.array(v.string()),
+    }),
+
+    // What NPC currently wants/avoids with player (NEW)
+    wantsFromPlayer: v.optional(v.string()),
+    avoidsWithPlayer: v.optional(v.string()),
+
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_npc", ["npcId"])
+    .index("by_character", ["characterId"])
+    .index("by_npc_and_character", ["npcId", "characterId"]),
+
   // ============ WORLD STATE ============
   locations: defineTable({
     campaignId: v.id("campaigns"),
     templateId: v.optional(v.string()),
     name: v.string(),
-    nameFr: v.string(),
     description: v.string(),
-    descriptionFr: v.string(),
     parentLocationId: v.optional(v.id("locations")),
     connectedTo: v.array(v.id("locations")),
     isDiscovered: v.boolean(),
     properties: v.record(v.string(), v.any()),
-    gridData: v.optional(gridData), // Tactical combat grid
+    gridData: v.optional(gridData),
   }).index("by_campaign", ["campaignId"]),
 
   worldState: defineTable({
@@ -445,7 +489,7 @@ export default defineSchema({
 
     locationId: v.optional(v.id("locations")),
 
-    // Exploration grid positions (characterId → {x, y})
+    // Exploration grid positions
     explorationPositions: v.optional(v.record(v.string(), v.object({ x: v.number(), y: v.number() }))),
     movementHistory: v.optional(v.array(v.object({
       timestamp: v.number(),
@@ -456,21 +500,26 @@ export default defineSchema({
     }))),
     currentGridSize: v.optional(v.object({ width: v.number(), height: v.number() })),
 
+    // Suggested actions (simplified - no French)
     suggestedActions: v.optional(v.array(v.object({
-      en: v.string(),
-      fr: v.string(),
+      text: v.string(),
       type: v.string(),
     }))),
 
-    // Pending roll - waits for user to click dice
+    // Pending roll
     pendingRoll: v.optional(v.object({
-      type: v.string(), // skill_check, attack, saving_throw, ability_check
+      type: v.string(),
       skill: v.optional(v.string()),
       ability: v.string(),
       dc: v.number(),
       reason: v.string(),
       characterId: v.id("characters"),
-      actionContext: v.string(), // The original player action that triggered this
+      actionContext: v.string(),
+      // Stakes for the roll (NEW)
+      stakes: v.optional(v.object({
+        onSuccess: v.string(),
+        onFailure: v.string(),
+      })),
     })),
 
     // LLM provider selection
@@ -495,8 +544,7 @@ export default defineSchema({
       v.literal("movement")
     ),
 
-    contentEn: v.string(),
-    contentFr: v.string(),
+    content: v.string(),
 
     actorType: v.optional(
       v.union(v.literal("dm"), v.literal("character"), v.literal("npc"))
@@ -505,16 +553,6 @@ export default defineSchema({
     actorName: v.optional(v.string()),
 
     roll: v.optional(rollDetails),
-
-    annotations: v.optional(
-      v.object({
-        vocabulary: v.array(vocabAnnotation),
-        grammar: v.optional(v.string()),
-      })
-    ),
-
-    // Enhanced French learning analysis
-    linguisticAnalysis: v.optional(linguisticAnalysis),
 
     // Movement data for movement log entries
     movementData: v.optional(v.object({
@@ -532,9 +570,7 @@ export default defineSchema({
     slug: v.string(),
     version: v.string(),
     name: v.string(),
-    nameFr: v.string(),
     description: v.string(),
-    descriptionFr: v.string(),
     setting: v.string(),
 
     classes: v.array(v.any()),
@@ -564,21 +600,6 @@ export default defineSchema({
     .index("by_campaign", ["campaignId"])
     .index("by_user", ["userId"]),
 
-  // ============ VOCABULARY (French Learning) ============
-  vocabulary: defineTable({
-    userId: v.id("users"),
-    word: v.string(),
-    translation: v.string(),
-    context: v.optional(v.string()),
-    timesSeen: v.number(),
-    timesReviewed: v.number(),
-    lastReviewedAt: v.optional(v.number()),
-    nextReviewAt: v.optional(v.number()),
-    ease: v.number(),
-  })
-    .index("by_user", ["userId"])
-    .index("by_user_and_next_review", ["userId", "nextReviewAt"]),
-
   // ============ STREAMING SESSIONS ============
   streamingSessions: defineTable({
     campaignId: v.id("campaigns"),
@@ -594,79 +615,20 @@ export default defineSchema({
     createdAt: v.number(),
   }).index("by_campaign", ["campaignId"]),
 
-  // ============ FRENCH LEARNING NOTEBOOK ============
-  notebook: defineTable({
-    userId: v.id("users"),
-    frenchText: v.string(),
-    englishText: v.string(),
-    grammarNotes: v.array(v.string()),
-    vocabularyItems: v.array(
-      v.object({
-        word: v.string(),
-        translation: v.string(),
-        partOfSpeech: v.string(),
-      })
+  // ============ KINK TAXONOMY ============
+  kinkDefinitions: defineTable({
+    id: v.string(),           // e.g., "foot_worship"
+    name: v.string(),         // e.g., "Foot Worship"
+    category: v.string(),     // e.g., "worship"
+    description: v.string(),
+    intensity: v.union(
+      v.literal("mild"),
+      v.literal("moderate"),
+      v.literal("intense"),
+      v.literal("extreme")
     ),
-    usageNote: v.string(),
-    gameLogId: v.id("gameLog"),
-    campaignId: v.id("campaigns"),
-    sceneSummary: v.string(),
-    tags: v.array(v.string()),
-    userNotes: v.string(),
-    // Spaced repetition fields (SM-2 algorithm)
-    nextReviewDate: v.number(),
-    intervalDays: v.number(),
-    easeFactor: v.number(),
-    reviewCount: v.number(),
-    lastReviewDate: v.optional(v.number()),
-    createdAt: v.number(),
-  })
-    .index("by_user", ["userId"])
-    .index("by_user_and_review", ["userId", "nextReviewDate"])
-    .index("by_game_log", ["gameLogId"])
-    .index("by_campaign", ["campaignId"]),
-
-  // ============ NPC MEMORIES ============
-  npcMemories: defineTable({
-    npcId: v.id("npcs"),
-    characterId: v.id("characters"), // Memories are per-NPC per-character
-
-    // Key moments (5-10 max, pruned by significance)
-    keyMoments: v.array(
-      v.object({
-        date: v.number(),
-        summary: v.string(),
-        emotionalImpact: v.number(), // -10 to +10
-        tags: v.array(v.string()), // e.g., "first_meeting", "trust_building"
-      })
-    ),
-
-    // Emotional summary
-    emotionalState: v.object({
-      currentMood: v.string(),
-      feelingsTowardCharacter: v.string(),
-      trustLevel: v.number(), // 0-100
-      attractionLevel: v.number(), // 0-100
-      lastUpdated: v.number(),
-    }),
-
-    // Relationship status
-    relationshipStatus: v.object({
-      type: v.union(
-        v.literal("stranger"),
-        v.literal("acquaintance"),
-        v.literal("friend"),
-        v.literal("intimate"),
-        v.literal("rival")
-      ),
-      dynamicEstablished: v.boolean(), // BDSM dynamic agreed
-      sharedSecrets: v.array(v.string()),
-    }),
-
-    createdAt: v.number(),
-    updatedAt: v.number(),
-  })
-    .index("by_npc", ["npcId"])
-    .index("by_character", ["characterId"])
-    .index("by_npc_and_character", ["npcId", "characterId"]),
+    keywords: v.array(v.string()),
+    writingGuidance: v.string(),  // AI guidance for writing this kink
+    safetyNotes: v.optional(v.string()),
+  }).index("by_category", ["category"]),
 });
