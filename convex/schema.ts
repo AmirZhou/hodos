@@ -442,6 +442,17 @@ export default defineSchema({
 
     locationId: v.optional(v.id("locations")),
 
+    // Exploration grid positions (characterId → {x, y})
+    explorationPositions: v.optional(v.record(v.string(), v.object({ x: v.number(), y: v.number() }))),
+    movementHistory: v.optional(v.array(v.object({
+      timestamp: v.number(),
+      characterId: v.string(),
+      from: v.object({ x: v.number(), y: v.number() }),
+      to: v.object({ x: v.number(), y: v.number() }),
+      logEntryId: v.string(),
+    }))),
+    currentGridSize: v.optional(v.object({ width: v.number(), height: v.number() })),
+
     suggestedActions: v.optional(v.array(v.object({
       en: v.string(),
       fr: v.string(),
