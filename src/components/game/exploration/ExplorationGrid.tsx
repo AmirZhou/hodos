@@ -104,12 +104,10 @@ export function ExplorationGrid({
   const svgHeight = gridSize.height * CELL_SIZE + AXIS_SIZE;
 
   return (
-    <div className="overflow-auto rounded-lg border border-[var(--border)] bg-[var(--background-secondary)]">
+    <div className="rounded-lg border border-[var(--border)] bg-[var(--background-secondary)]">
       <svg
-        width={svgWidth}
-        height={svgHeight}
         viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-        className="block"
+        className="block w-full h-auto"
       >
         {/* Background */}
         <rect width={svgWidth} height={svgHeight} fill="var(--background-tertiary)" />
