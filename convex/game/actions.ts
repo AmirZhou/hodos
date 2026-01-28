@@ -460,13 +460,8 @@ export const executeRoll = action({
     await ctx.runMutation(api.game.log.add, {
       campaignId,
       type: "narration",
-      contentEn: rollNarration.response.narration?.en || "",
-      contentFr: rollNarration.response.narration?.fr || "",
+      content: rollNarration.response.narration || "",
       actorType: "dm",
-      annotations: {
-        vocabulary: sanitizeVocabulary(rollNarration.response.vocabularyHighlights),
-      },
-      linguisticAnalysis: sanitizeLinguisticAnalysis(rollNarration.response.linguisticAnalysis),
     });
 
     // Clear the pending roll
