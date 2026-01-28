@@ -87,6 +87,20 @@ function resolveItems(ids: string[]) {
 async function seedBdsmDungeon(ctx: MutationCtx, campaignId: Id<"campaigns">, characterId: Id<"characters">, character: { inventory: any[] }) {
   const now = Date.now();
 
+  // Build a 12x10 grid with some interesting terrain
+  const gridCells = [];
+  for (let y = 0; y < 10; y++) {
+    for (let x = 0; x < 12; x++) {
+      let terrain: "normal" | "difficult" | "impassable" = "normal";
+      // Walls along edges (impassable)
+      if (x === 0 || x === 11 || y === 0 || y === 9) terrain = "impassable";
+      // Furniture: cross at (3,2), throne at (8,2), frame at (5,5)
+      if ((x === 3 && y === 2) || (x === 8 && y === 2)) terrain = "difficult";
+      if (x === 5 && y === 5) terrain = "difficult";
+      gridCells.push({ x, y, terrain });
+    }
+  }
+
   const locationId = await ctx.db.insert("locations", {
     campaignId,
     name: "The Velvet Sanctum",
@@ -98,6 +112,7 @@ async function seedBdsmDungeon(ctx: MutationCtx, campaignId: Id<"campaigns">, ch
     connectedTo: [],
     isDiscovered: true,
     properties: { type: "dungeon", lighting: "candlelight", mood: "intimate", privacy: "private" },
+    gridData: { width: 12, height: 10, cells: gridCells },
   });
 
   const vivienneId = await ctx.db.insert("npcs", {
