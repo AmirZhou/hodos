@@ -5,8 +5,8 @@ describe("extractNPCsFromResponse", () => {
   it("extracts NPC names from dialogue", () => {
     const response = {
       npcDialogue: [
-        { name: "Elara", en: "Hello", fr: "Bonjour" },
-        { name: "Kael", en: "Welcome", fr: "Bienvenue" },
+        { name: "Elara", text: "Hello" },
+        { name: "Kael", text: "Welcome" },
       ],
     };
 
@@ -28,8 +28,8 @@ describe("extractNPCsFromResponse", () => {
   it("deduplicates NPC names", () => {
     const response = {
       npcDialogue: [
-        { name: "Elara", en: "Hello", fr: "Bonjour" },
-        { name: "Elara", en: "Again", fr: "Encore" },
+        { name: "Elara", text: "Hello" },
+        { name: "Elara", text: "Again" },
       ],
     };
 
