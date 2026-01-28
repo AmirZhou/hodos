@@ -11,10 +11,10 @@ export const add = mutation({
       v.literal("action"),
       v.literal("roll"),
       v.literal("system"),
-      v.literal("ooc")
+      v.literal("ooc"),
+      v.literal("movement")
     ),
-    contentEn: v.string(),
-    contentFr: v.string(),
+    content: v.string(),
     actorType: v.optional(
       v.union(v.literal("dm"), v.literal("character"), v.literal("npc"))
     ),
@@ -29,18 +29,10 @@ export const add = mutation({
         success: v.optional(v.boolean()),
       })
     ),
-    annotations: v.optional(
-      v.object({
-        vocabulary: v.array(
-          v.object({
-            word: v.string(),
-            translation: v.string(),
-            note: v.optional(v.string()),
-          })
-        ),
-        grammar: v.optional(v.string()),
-      })
-    ),
+    movementData: v.optional(v.object({
+      from: v.object({ x: v.number(), y: v.number() }),
+      to: v.object({ x: v.number(), y: v.number() }),
+    })),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("gameLog", {
