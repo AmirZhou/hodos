@@ -32,7 +32,7 @@ describe("npcMemories helpers", () => {
     it("adds moment to empty memory", () => {
       const memory = createDefaultMemory();
       const moment = {
-        date: Date.now(),
+        timestamp: Date.now(),
         summary: "Hero saved Elara from bandits",
         emotionalImpact: 8,
         tags: ["rescue", "trust-building"],
@@ -49,13 +49,13 @@ describe("npcMemories helpers", () => {
     it("adds moment to existing moments", () => {
       const memory = createDefaultMemory();
       const moment1 = {
-        date: Date.now(),
+        timestamp: Date.now(),
         summary: "First meeting",
         emotionalImpact: 3,
         tags: ["introduction"],
       };
       const moment2 = {
-        date: Date.now() + 1000,
+        timestamp: Date.now() + 1000,
         summary: "Shared a meal",
         emotionalImpact: 5,
         tags: ["bonding"],
@@ -74,7 +74,7 @@ describe("npcMemories helpers", () => {
       // Add more than MAX_KEY_MOMENTS
       for (let i = 0; i < MAX_KEY_MOMENTS + 5; i++) {
         memory = addKeyMomentToMemory(memory, {
-          date: Date.now() + i * 1000,
+          timestamp: Date.now() + i * 1000,
           summary: `Moment ${i}`,
           emotionalImpact: i % 10,
           tags: [],
@@ -90,7 +90,7 @@ describe("npcMemories helpers", () => {
     it("does not mutate original memory", () => {
       const memory = createDefaultMemory();
       const moment = {
-        date: Date.now(),
+        timestamp: Date.now(),
         summary: "Test",
         emotionalImpact: 5,
         tags: [],
