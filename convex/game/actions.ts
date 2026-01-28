@@ -164,13 +164,8 @@ async function executeAction(
       await ctx.runMutation(api.game.log.add, {
         campaignId,
         type: "narration",
-        contentEn: response.narration.en,
-        contentFr: response.narration.fr,
+        content: response.narration,
         actorType: "dm",
-        annotations: {
-          vocabulary: sanitizeVocabulary(response.vocabularyHighlights),
-        },
-        linguisticAnalysis: sanitizeLinguisticAnalysis(response.linguisticAnalysis),
       });
     }
 
@@ -184,6 +179,7 @@ async function executeAction(
           ability: roll.ability,
           dc: roll.dc,
           reason: roll.reason,
+          stakes: roll.stakes,
           characterId,
           actionContext: input,
         },
@@ -200,6 +196,7 @@ async function executeAction(
         ability: roll.ability,
         dc: roll.dc,
         reason: roll.reason,
+        stakes: roll.stakes,
       },
     };
   } else {
@@ -208,13 +205,8 @@ async function executeAction(
       await ctx.runMutation(api.game.log.add, {
         campaignId,
         type: "narration",
-        contentEn: response.narration.en,
-        contentFr: response.narration.fr,
+        content: response.narration,
         actorType: "dm",
-        annotations: {
-          vocabulary: sanitizeVocabulary(response.vocabularyHighlights),
-        },
-        linguisticAnalysis: sanitizeLinguisticAnalysis(response.linguisticAnalysis),
       });
     }
   }
