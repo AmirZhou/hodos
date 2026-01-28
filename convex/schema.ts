@@ -137,30 +137,8 @@ const equipmentItem = v.object({
     wisdom: v.optional(v.number()),
     charisma: v.optional(v.number()),
   }),
-  specialAttributes: v.optional(v.object({
-    critChance: v.optional(v.number()),
-    damageBonus: v.optional(v.number()),
-    spellPower: v.optional(v.number()),
-    healingPower: v.optional(v.number()),
-    stealthBonus: v.optional(v.number()),
-    perceptionBonus: v.optional(v.number()),
-    persuasionBonus: v.optional(v.number()),
-    xpBonus: v.optional(v.number()),
-    // Adult attributes
-    seduction: v.optional(v.number()),
-    intimidation: v.optional(v.number()),
-    bondageArts: v.optional(v.number()),
-    sensationMastery: v.optional(v.number()),
-    composureBonus: v.optional(v.number()),
-    arousalControl: v.optional(v.number()),
-    dominanceBonus: v.optional(v.number()),
-    submissionBonus: v.optional(v.number()),
-    allure: v.optional(v.number()),
-    commandPresence: v.optional(v.number()),
-    trustBuilding: v.optional(v.number()),
-    aftercarePower: v.optional(v.number()),
-    painThreshold: v.optional(v.number()),
-  })),
+  // Flexible record to allow any special attributes
+  specialAttributes: v.optional(v.record(v.string(), v.number())),
   passive: v.optional(v.string()),
 });
 
