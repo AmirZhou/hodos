@@ -458,11 +458,11 @@ export default function NewCharacterPage() {
                     onClick={() =>
                       setCharacter({
                         ...character,
-                        intimacyProfile: { ...character.intimacyProfile, orientation: o },
+                        orientation: o,
                       })
                     }
                     className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-                      character.intimacyProfile.orientation === o
+                      character.orientation === o
                         ? "bg-[var(--accent-gold)] text-[var(--background)]"
                         : "bg-[var(--background-tertiary)] hover:bg-[var(--border)]"
                     }`}
