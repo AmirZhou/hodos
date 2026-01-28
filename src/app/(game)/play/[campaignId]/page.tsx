@@ -592,11 +592,16 @@ function ExplorationView({
 
 interface GameLogEntry {
   _id: Id<"gameLog">;
-  type: "narration" | "dialogue" | "action" | "roll" | "system" | "ooc";
+  type: "narration" | "dialogue" | "action" | "roll" | "system" | "ooc" | "movement";
   contentEn: string;
   contentFr: string;
   actorName?: string;
+  actorId?: string;
   actorType?: "dm" | "character" | "npc";
+  movementData?: {
+    from: { x: number; y: number };
+    to: { x: number; y: number };
+  };
   roll?: {
     type: string;
     dice: string;
