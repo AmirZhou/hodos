@@ -429,12 +429,11 @@ Player says: "${args.playerSaid}"
 
 Respond with JSON:
 {
-  "dialogue": { "en": "...", "fr": "..." },
+  "dialogue": "What the NPC says",
   "internalThought": "What the NPC is really thinking",
   "emotionalState": "happy/sad/angry/flirty/nervous/etc",
   "bodyLanguage": "Description of non-verbal cues",
-  "relationshipShift": { "affinity": +/-0, "trust": +/-0, "attraction": +/-0 },
-  "vocabularyHighlights": [{ "word": "...", "translation": "...", "note": "..." }]
+  "relationshipShift": { "affinity": +/-0, "trust": +/-0, "attraction": +/-0 }
 }`;
 
     const messages: LLMMessage[] = [
