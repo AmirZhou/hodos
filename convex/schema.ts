@@ -499,6 +499,12 @@ export default defineSchema({
     // Enhanced French learning analysis
     linguisticAnalysis: v.optional(linguisticAnalysis),
 
+    // Movement data for movement log entries
+    movementData: v.optional(v.object({
+      from: v.object({ x: v.number(), y: v.number() }),
+      to: v.object({ x: v.number(), y: v.number() }),
+    })),
+
     createdAt: v.number(),
   })
     .index("by_campaign", ["campaignId"])
