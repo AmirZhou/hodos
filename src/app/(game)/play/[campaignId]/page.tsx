@@ -321,14 +321,12 @@ function MapPanel({
   currentLocationId,
   currentCharacterId,
   currentCharacterName,
-  showMap,
 }: {
   campaignId: Id<"campaigns">;
   sessionId?: Id<"gameSessions">;
   currentLocationId?: Id<"locations">;
   currentCharacterId?: Id<"characters">;
   currentCharacterName?: string;
-  showMap?: boolean;
 }) {
   const [activeTab, setActiveTab] = useState<"location" | "world">("location");
 
