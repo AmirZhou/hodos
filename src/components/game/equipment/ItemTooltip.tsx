@@ -6,7 +6,6 @@ import type { EquipmentSlot, Rarity } from "../../../../convex/data/equipmentIte
 interface ItemData {
   id: string;
   name: string;
-  nameFr: string;
   description: string;
   type: EquipmentSlot;
   rarity: Rarity;
