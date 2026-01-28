@@ -462,16 +462,10 @@ function GameHeader({
 }
 
 function GameModeRouter({
-  showFrench,
   characterId,
-  onSaveEntry,
-  savedEntries,
   onNpcNameClick,
 }: {
-  showFrench: boolean;
   characterId?: Id<"characters">;
-  onSaveEntry: (entry: GameLogEntry) => void;
-  savedEntries: Set<string>;
   onNpcNameClick?: (npcId: Id<"npcs">) => void;
 }) {
   const { gameState } = useGame();
@@ -503,9 +497,6 @@ function GameModeRouter({
   // Exploration / Dialogue mode (default)
   return (
     <ExplorationView
-      showFrench={showFrench}
-      onSaveEntry={onSaveEntry}
-      savedEntries={savedEntries}
       onNpcNameClick={onNpcNameClick}
     />
   );
