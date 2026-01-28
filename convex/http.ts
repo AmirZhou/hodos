@@ -36,8 +36,7 @@ http.route({
     await ctx.runMutation(api.game.log.add, {
       campaignId,
       type: "action",
-      contentEn: input,
-      contentFr: input,
+      content: input,
       actorType: "character",
       actorId: characterId,
       actorName: character.name,
