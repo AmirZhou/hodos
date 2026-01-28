@@ -868,37 +868,10 @@ function LogEntry({
         {!isRoll && (
           <div className="space-y-2">
             <p className="text-[var(--foreground)] leading-relaxed">
-              {entry.contentEn}
+              {entry.content}
             </p>
-            {showFrench && entry.contentFr && (
-              <p className="text-[var(--accent-blue)] text-sm leading-relaxed">
-                {entry.contentFr}
-              </p>
-            )}
           </div>
         )}
-
-        {/* Vocabulary annotations (legacy) */}
-        {entry.annotations?.vocabulary &&
-          entry.annotations.vocabulary.length > 0 &&
-          !entry.linguisticAnalysis &&
-          showFrench && (
-            <div className="mt-3 pt-3 border-t border-[var(--border)]">
-              <div className="flex flex-wrap gap-2">
-                {entry.annotations.vocabulary.map((v, i) => (
-                  <span
-                    key={i}
-                    className="inline-flex items-center gap-1 px-2 py-1 rounded bg-[var(--background-tertiary)] text-xs"
-                    title={v.note}
-                  >
-                    <span className="text-[var(--accent-blue)]">{v.word}</span>
-                    <span className="text-[var(--foreground-muted)]">=</span>
-                    <span>{v.translation}</span>
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
       </div>
 
       {/* Action buttons (on hover) */}
