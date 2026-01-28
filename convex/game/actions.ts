@@ -114,8 +114,7 @@ async function executeAction(
   await ctx.runMutation(api.game.log.add, {
     campaignId,
     type: "action",
-    contentEn: input,
-    contentFr: input, // Player input stays as-is
+    content: input,
     actorType: "character",
     actorId: characterId,
     actorName: character.name,
@@ -130,8 +129,7 @@ async function executeAction(
     context: {
       recentHistory: recentLogs.map((log: Doc<"gameLog">) => ({
         type: log.type,
-        contentEn: log.contentEn,
-        contentFr: log.contentFr,
+        content: log.content,
         actorName: log.actorName,
       })),
       currentLocation: session?.locationId ? "Current Location" : undefined,
