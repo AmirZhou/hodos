@@ -9,6 +9,7 @@
  */
 
 import type * as ai_dm from "../ai/dm.js";
+import type * as ai_llmProvider from "../ai/llmProvider.js";
 import type * as campaigns from "../campaigns.js";
 import type * as characters from "../characters.js";
 import type * as data_equipmentItems from "../data/equipmentItems.js";
@@ -44,6 +45,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   "ai/dm": typeof ai_dm;
+  "ai/llmProvider": typeof ai_llmProvider;
   campaigns: typeof campaigns;
   characters: typeof characters;
   "data/equipmentItems": typeof data_equipmentItems;

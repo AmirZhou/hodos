@@ -3,8 +3,7 @@ import { action, internalAction } from "../_generated/server";
 import { internal } from "../_generated/api";
 import type { NpcMemoryData } from "../npcMemories";
 import { getItemCatalogForPrompt } from "../data/itemCatalog";
-
-const DEEPSEEK_API_URL = "https://api.deepseek.com/chat/completions";
+import { callLLM, type LLMMessage, type LLMResponse } from "./llmProvider";
 
 // Strip non-ASCII characters from object keys (Convex requires ASCII-only field names)
 function sanitizeKey(key: string): string {
