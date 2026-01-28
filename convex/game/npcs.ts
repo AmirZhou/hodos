@@ -66,20 +66,15 @@ export const getOrCreate = mutation({
       memories: [],
       autoCreated: true,
       firstMetAt: now,
-      // Default intimacy profile
-      intimacyProfile: {
-        orientation: "unknown",
-        roleIdentity: {
-          power: 50,
-          action: 50,
-          sensation: 50,
-          service: 50,
-          flexibility: 50,
-        },
-        kinks: {},
-        aftercareNeed: 50,
-        trustThreshold: 50,
+      // Default adult stats
+      adultStats: {
+        composure: 75,
+        arousal: 0,
+        dominance: 50,
+        submission: 50,
       },
+      kinkPreferences: {},
+      hardLimits: [],
     });
   },
 });
