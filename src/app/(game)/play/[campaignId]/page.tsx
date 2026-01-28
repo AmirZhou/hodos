@@ -503,14 +503,8 @@ function GameModeRouter({
 }
 
 function ExplorationView({
-  showFrench,
-  onSaveEntry,
-  savedEntries,
   onNpcNameClick,
 }: {
-  showFrench: boolean;
-  onSaveEntry: (entry: GameLogEntry) => void;
-  savedEntries: Set<string>;
   onNpcNameClick?: (npcId: Id<"npcs">) => void;
 }) {
   const { gameState, currentCharacter, campaign } = useGame();
