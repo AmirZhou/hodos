@@ -121,25 +121,21 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
 
   const handleSaveEntry = useCallback(
     async (entry: GameLogEntry) => {
-      if (!userId || !entry.linguisticAnalysis) return;
+      if (!userId) return;
 
       try {
         await saveToNotebook({
           userId,
-          frenchText: entry.contentFr || "",
-          englishText: entry.contentEn,
-          grammarNotes: entry.linguisticAnalysis.grammar,
-          vocabularyItems: entry.linguisticAnalysis.vocabulary.map((v) => ({
-            word: v.word,
-            translation: v.translation,
-            partOfSpeech: v.partOfSpeech,
-          })),
-          usageNote: entry.linguisticAnalysis.usageNotes.join(" "),
+          frenchText: "",
+          englishText: entry.content,
+          grammarNotes: [],
+          vocabularyItems: [],
+          usageNote: "",
           gameLogId: entry._id,
           campaignId,
           sceneSummary: entry.actorName
-            ? `${entry.actorName}: ${entry.contentEn.slice(0, 100)}`
-            : entry.contentEn.slice(0, 100),
+            ? `${entry.actorName}: ${entry.content.slice(0, 100)}`
+            : entry.content.slice(0, 100),
           tags: [],
         });
         setSavedEntries((prev) => new Set(prev).add(entry._id));
