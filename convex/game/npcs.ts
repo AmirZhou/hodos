@@ -138,7 +138,6 @@ export const getByCampaign = query({
       name: npc.name,
       portrait: npc.portrait,
       description: npc.description,
-      descriptionFr: npc.descriptionFr,
       currentLocationId: npc.currentLocationId,
       autoCreated: npc.autoCreated,
       firstMetAt: npc.firstMetAt,
