@@ -7,20 +7,9 @@ import { validateItemGrants } from "./itemGrants";
 import { findMatchingNpc } from "./npcNameResolver";
 
 // Type definitions for the response
-interface LinguisticAnalysis {
-  grammar: string[];
-  vocabulary: Array<{
-    word: string;
-    translation: string;
-    partOfSpeech: string;
-    usage?: string;
-  }>;
-  usageNotes: string[];
-}
-
 interface DMResponse {
-  narration?: { en: string; fr: string };
-  npcDialogue?: Array<{ name: string; en: string; fr: string }>;
+  narration?: string;
+  npcDialogue?: Array<{ name: string; text: string }>;
   requiresRoll?: {
     needed: boolean;
     type: string;
@@ -28,16 +17,15 @@ interface DMResponse {
     ability: string;
     dc: number;
     reason: string;
+    stakes?: string;
   };
-  suggestedActions?: Array<{ en: string; fr: string; type: string }>;
+  suggestedActions?: Array<{ text: string; type: string }>;
   worldStateChanges?: {
     npcMood?: Record<string, string>;
     flags?: Record<string, boolean>;
     relationshipChanges?: Record<string, { affinity?: number; trust?: number; attraction?: number }>;
   };
   itemsGranted?: Array<{ itemId: string; source: string; reason: string }>;
-  vocabularyHighlights?: Array<{ word: string; translation: string; note?: string }>;
-  linguisticAnalysis?: LinguisticAnalysis;
 }
 
 interface RollResult {
