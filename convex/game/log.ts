@@ -14,8 +14,7 @@ export const add = mutation({
       v.literal("ooc"),
       v.literal("movement")
     ),
-    contentEn: v.string(),
-    contentFr: v.string(),
+    content: v.string(),
     actorType: v.optional(
       v.union(v.literal("dm"), v.literal("character"), v.literal("npc"))
     ),
@@ -28,32 +27,6 @@ export const add = mutation({
         result: v.number(),
         dc: v.optional(v.number()),
         success: v.optional(v.boolean()),
-      })
-    ),
-    annotations: v.optional(
-      v.object({
-        vocabulary: v.array(
-          v.object({
-            word: v.string(),
-            translation: v.string(),
-            note: v.optional(v.string()),
-          })
-        ),
-        grammar: v.optional(v.string()),
-      })
-    ),
-    linguisticAnalysis: v.optional(
-      v.object({
-        grammar: v.array(v.string()),
-        vocabulary: v.array(
-          v.object({
-            word: v.string(),
-            translation: v.string(),
-            partOfSpeech: v.string(),
-            usage: v.optional(v.string()),
-          })
-        ),
-        usageNotes: v.array(v.string()),
       })
     ),
     movementData: v.optional(v.object({
