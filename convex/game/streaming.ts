@@ -99,25 +99,14 @@ export const completeStream = mutation({
         v.literal("action"),
         v.literal("roll"),
         v.literal("system"),
-        v.literal("ooc")
+        v.literal("ooc"),
+        v.literal("movement")
       ),
-      contentEn: v.string(),
-      contentFr: v.string(),
+      content: v.string(),
       actorType: v.optional(
         v.union(v.literal("dm"), v.literal("character"), v.literal("npc"))
       ),
       actorName: v.optional(v.string()),
-      annotations: v.optional(
-        v.object({
-          vocabulary: v.array(
-            v.object({
-              word: v.string(),
-              translation: v.string(),
-              note: v.optional(v.string()),
-            })
-          ),
-        })
-      ),
     }),
   },
   handler: async (ctx, args) => {
