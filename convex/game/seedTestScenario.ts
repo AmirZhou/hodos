@@ -493,43 +493,37 @@ async function seedMidScene(ctx: MutationCtx, campaignId: Id<"campaigns">, chara
   // Build the log: show a history of how the scene got here
   await ctx.db.insert("gameLog", {
     campaignId, sessionId, type: "system",
-    contentEn: "Scene in progress — The Moonlit Suite. Intensity: High.",
-    contentFr: "Scene en cours — La Suite au Clair de Lune. Intensite : Elevee.",
+    content: "Scene in progress — The Moonlit Suite. Intensity: High.",
     createdAt: now - 1200000,
   });
 
   await ctx.db.insert("gameLog", {
     campaignId, sessionId, type: "narration", actorType: "dm",
-    contentEn: "She pulled you through the door before it even closed, her mouth on yours, hands pulling at your shirt. You stumbled together toward the bed, undressing each other between kisses — buttons, clasps, fabric falling away. By the time the back of her knees hit the mattress, there was nothing between you.",
-    contentFr: "Elle vous a tire a travers la porte avant meme qu'elle ne se ferme, sa bouche sur la votre, ses mains tirant sur votre chemise. Vous avez trebuche ensemble vers le lit, vous deshabillant mutuellement entre les baisers — boutons, agrafes, tissu tombant. Quand l'arriere de ses genoux a touche le matelas, il n'y avait plus rien entre vous.",
+    content: "She pulled you through the door before it even closed, her mouth on yours, hands pulling at your shirt. You stumbled together toward the bed, undressing each other between kisses — buttons, clasps, fabric falling away. By the time the back of her knees hit the mattress, there was nothing between you.",
     createdAt: now - 1100000,
   });
 
   await ctx.db.insert("gameLog", {
     campaignId, sessionId, type: "dialogue", actorType: "npc", actorId: sofiaId, actorName: "Sofia",
-    contentEn: "I've wanted this... I've wanted you... since that first night...",
-    contentFr: "J'ai voulu cela... je t'ai voulu... depuis cette premiere nuit...",
+    content: "I've wanted this... I've wanted you... since that first night...",
     createdAt: now - 1000000,
   });
 
   await ctx.db.insert("gameLog", {
     campaignId, sessionId, type: "narration", actorType: "dm",
-    contentEn: "You took your time exploring her — kissing down her throat, across her collarbone, lower. She arched into you, fingers threading through your hair, guiding without rushing. When you finally came together, she cried out softly and pulled you close, her legs wrapping tight around you.",
-    contentFr: "Vous avez pris votre temps pour l'explorer — embrassant le long de sa gorge, sur sa clavicule, plus bas. Elle s'est cambree vers vous, ses doigts se glissant dans vos cheveux, guidant sans presser. Quand vous vous etes enfin rejoints, elle a pousse un cri doux et vous a attire contre elle, ses jambes s'enroulant fermement autour de vous.",
+    content: "You took your time exploring her — kissing down her throat, across her collarbone, lower. She arched into you, fingers threading through your hair, guiding without rushing. When you finally came together, she cried out softly and pulled you close, her legs wrapping tight around you.",
     createdAt: now - 600000,
   });
 
   await ctx.db.insert("gameLog", {
     campaignId, sessionId, type: "narration", actorType: "dm",
-    contentEn: "Now — twenty minutes in — the rhythm has found itself. Deep, steady, building. Her hips rise to meet yours with every thrust. The sheets are tangled around your legs. Her nails trace lines down your back. She pulls you down for a kiss, biting your lower lip, whispering something breathless against your mouth. The moonlight paints her body in silver and shadow. You can feel her getting close.",
-    contentFr: "Maintenant — vingt minutes plus tard — le rythme s'est trouve. Profond, regulier, montant. Ses hanches se levent a la rencontre des votres a chaque poussee. Les draps sont emmeles autour de vos jambes. Ses ongles tracent des lignes le long de votre dos. Elle vous attire pour un baiser, mordant votre levre inferieure, murmurant quelque chose d'essouffle contre votre bouche. Le clair de lune peint son corps d'argent et d'ombre. Vous sentez qu'elle approche.",
+    content: "Now — twenty minutes in — the rhythm has found itself. Deep, steady, building. Her hips rise to meet yours with every thrust. The sheets are tangled around your legs. Her nails trace lines down your back. She pulls you down for a kiss, biting your lower lip, whispering something breathless against your mouth. The moonlight paints her body in silver and shadow. You can feel her getting close.",
     createdAt: now - 10000,
   });
 
   await ctx.db.insert("gameLog", {
     campaignId, sessionId, type: "dialogue", actorType: "npc", actorId: sofiaId, actorName: "Sofia",
-    contentEn: "Don't stop... right there... god, right there...",
-    contentFr: "N'arrete pas... juste la... mon dieu, juste la...",
+    content: "Don't stop... right there... god, right there...",
     createdAt: now,
   });
 
