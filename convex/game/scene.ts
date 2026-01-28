@@ -580,7 +580,7 @@ export const _getSceneStateInternal = query({
           const npc = await ctx.db.get(participant.entityId as Id<"npcs">);
           return {
             ...participant,
-            entity: npc ? { name: npc.name, intimacyProfile: npc.intimacyProfile } : null,
+            entity: npc ? { name: npc.name, adultStats: npc.adultStats } : null,
           };
         }
         return { ...participant, entity: null };
