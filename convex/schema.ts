@@ -166,6 +166,26 @@ const gridData = v.object({
   cells: v.array(gridCell),
 });
 
+// City-level grid cell (distinct from location-level gridCell)
+const cityGridCell = v.object({
+  x: v.number(),
+  y: v.number(),
+  terrain: v.union(
+    v.literal("road"), v.literal("building"), v.literal("water"),
+    v.literal("wall"), v.literal("gate"), v.literal("plaza"),
+    v.literal("garden"), v.literal("dock"), v.literal("bridge")
+  ),
+  walkable: v.boolean(),
+  locationTemplateId: v.optional(v.string()),
+});
+
+const cityGridData = v.object({
+  width: v.number(),
+  height: v.number(),
+  cells: v.array(cityGridCell),
+  backgroundImage: v.optional(v.string()),
+});
+
 const condition = v.object({
   name: v.string(),
   duration: v.optional(v.number()), // turns remaining, or undefined for permanent
