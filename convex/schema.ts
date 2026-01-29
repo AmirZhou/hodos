@@ -443,9 +443,35 @@ export default defineSchema({
     .index("by_character", ["characterId"])
     .index("by_npc_and_character", ["npcId", "characterId"]),
 
+  // ============ MAPS ============
+  maps: defineTable({
+    slug: v.string(),
+    name: v.string(),
+    description: v.string(),
+    properties: v.record(v.string(), v.any()),
+    createdAt: v.number(),
+  }).index("by_slug", ["slug"]),
+
+  campaignMaps: defineTable({
+    campaignId: v.id("campaigns"),
+    mapId: v.id("maps"),
+    addedAt: v.number(),
+  })
+    .index("by_campaign", ["campaignId"])
+    .index("by_map", ["mapId"])
+    .index("by_campaign_and_map", ["campaignId", "mapId"]),
+
+  campaignLocationDiscovery: defineTable({
+    campaignId: v.id("campaigns"),
+    locationId: v.id("locations"),
+    discoveredAt: v.number(),
+  })
+    .index("by_campaign", ["campaignId"])
+    .index("by_campaign_and_location", ["campaignId", "locationId"]),
+
   // ============ WORLD STATE ============
   locations: defineTable({
-    campaignId: v.id("campaigns"),
+    mapId: v.id("maps"),
     templateId: v.optional(v.string()),
     name: v.string(),
     nameFr: v.optional(v.string()), // DEPRECATED
@@ -453,10 +479,9 @@ export default defineSchema({
     descriptionFr: v.optional(v.string()), // DEPRECATED
     parentLocationId: v.optional(v.id("locations")),
     connectedTo: v.array(v.id("locations")),
-    isDiscovered: v.boolean(),
     properties: v.record(v.string(), v.any()),
     gridData: v.optional(gridData),
-  }).index("by_campaign", ["campaignId"]),
+  }).index("by_map", ["mapId"]),
 
   worldState: defineTable({
     campaignId: v.id("campaigns"),
