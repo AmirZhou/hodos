@@ -174,11 +174,11 @@ async function executeAction(
         sessionId: session._id,
         pendingRoll: {
           type: roll.type,
-          skill: roll.skill,
+          skill: roll.skill ?? undefined,
           ability: roll.ability,
           dc: roll.dc,
           reason: roll.reason,
-          stakes: roll.stakes,
+          stakes: roll.stakes ?? undefined,
           characterId,
           actionContext: input,
         },
