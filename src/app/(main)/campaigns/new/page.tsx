@@ -32,6 +32,13 @@ const settings = [
     icon: Users,
   },
   {
+    id: "rivermoot-city",
+    name: "Rivermoot City",
+    description: "A fantasy city at the confluence of two rivers — explore four quadrants, 17 locations, and the streets between them",
+    icon: Map,
+    seedScenario: "rivermoot-city",
+  },
+  {
     id: "foot-fetish-spa",
     name: "Foot Fetish Spa",
     description: "A private spa suite with two NPCs who share a love of feet — massage, worship, and pampering",
