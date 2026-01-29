@@ -502,6 +502,9 @@ export default defineSchema({
     connectedTo: v.array(v.id("locations")),
     properties: v.record(v.string(), v.any()),
     gridData: v.optional(gridData),
+    // Temporarily optional for data migration (stale fields from old schema)
+    campaignId: v.optional(v.any()),
+    isDiscovered: v.optional(v.boolean()),
   }).index("by_map", ["mapId"]),
 
   worldState: defineTable({
