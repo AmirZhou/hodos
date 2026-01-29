@@ -85,9 +85,17 @@ interface CharacterData {
 }
 
 export default function NewCharacterPage() {
+  return (
+    <RequireAuth>
+      <NewCharacterPageContent />
+    </RequireAuth>
+  );
+}
+
+function NewCharacterPageContent() {
   const params = useParams();
   const router = useRouter();
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { user } = useAuth();
   const campaignId = params.campaignId as Id<"campaigns">;
   const createCharacter = useMutation(api.characters.create);
 
@@ -127,17 +135,6 @@ export default function NewCharacterPage() {
     wisdom: null,
     charisma: null,
   });
-
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      router.push("/login");
-    }
-  }, [authLoading, isAuthenticated, router]);
-
-  if (!authLoading && !isAuthenticated) {
-    return null;
-  }
 
   const currentStepIndex = STEPS.findIndex((s) => s.id === currentStep);
 
