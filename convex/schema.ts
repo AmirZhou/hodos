@@ -492,7 +492,7 @@ export default defineSchema({
 
   // ============ WORLD STATE ============
   locations: defineTable({
-    mapId: v.id("maps"),
+    mapId: v.optional(v.id("maps")), // temporarily optional for data migration
     templateId: v.optional(v.string()),
     name: v.string(),
     nameFr: v.optional(v.string()), // DEPRECATED
