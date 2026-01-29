@@ -42,17 +42,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     clerkUser?.id ? { clerkId: clerkUser.id } : "skip"
   );
 
-  // Debug auth state
-  useEffect(() => {
-    console.log("[AuthProvider]", {
-      clerkLoaded,
-      clerkUser: clerkUser?.id ?? null,
-      convexAuthed,
-      convexLoading,
-      convexUser: convexUser === undefined ? "loading" : convexUser,
-    });
-  }, [clerkLoaded, clerkUser, convexAuthed, convexLoading, convexUser]);
-
   // Sync Clerk user into Convex on sign-in
   useEffect(() => {
     if (convexAuthed && clerkUser) {
