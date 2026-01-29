@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useMutation } from "convex/react";
 import { api } from "../../../../../../../convex/_generated/api";
@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ArrowLeft, ArrowRight, Check, User, Dices, Heart, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/components/providers/auth-provider";
+import { RequireAuth } from "@/components/auth/RequireAuth";
 
 type Step = "basics" | "abilities" | "class" | "intimacy" | "review";
 
