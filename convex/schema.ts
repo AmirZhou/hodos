@@ -532,6 +532,11 @@ export default defineSchema({
 
     locationId: v.optional(v.id("locations")),
 
+    // City navigation
+    cityPosition: v.optional(v.object({ x: v.number(), y: v.number() })),
+    currentMapId: v.optional(v.id("maps")),
+    navigationMode: v.optional(v.union(v.literal("city"), v.literal("location"))),
+
     // Exploration grid positions
     explorationPositions: v.optional(v.record(v.string(), v.object({ x: v.number(), y: v.number() }))),
     movementHistory: v.optional(v.array(v.object({
