@@ -162,6 +162,7 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
                 <option value="bdsm-dungeon">BDSM Dungeon</option>
                 <option value="servant-serving">Devoted Servant</option>
                 <option value="mid-scene">In Medias Res</option>
+                <option value="rivermoot-city">Rivermoot City</option>
               </select>
               <Button
                 variant="outline"
