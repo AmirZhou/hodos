@@ -85,7 +85,7 @@ export function LocationGraph({
   const locationGraph = useQuery(api.game.travel.getLocationGraph, { campaignId });
   const selectedDetails = useQuery(
     api.game.travel.getLocationDetails,
-    selectedLocation ? { locationId: selectedLocation } : "skip"
+    selectedLocation ? { locationId: selectedLocation, campaignId } : "skip"
   );
 
   // Mutations
