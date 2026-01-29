@@ -1,10 +1,11 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "../../../../../convex/_generated/api";
 import { Id } from "../../../../../convex/_generated/dataModel";
 import { useAuth } from "@/components/providers/auth-provider";
+import { RequireAuth } from "@/components/auth/RequireAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -18,28 +19,24 @@ import {
   Heart,
 } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 export default function CampaignDetailPage() {
+  return (
+    <RequireAuth>
+      <CampaignDetailPageContent />
+    </RequireAuth>
+  );
+}
+
+function CampaignDetailPageContent() {
   const params = useParams();
-  const router = useRouter();
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { user } = useAuth();
   const campaignId = params.campaignId as Id<"campaigns">;
   const [copied, setCopied] = useState(false);
 
   const campaign = useQuery(api.campaigns.get, { id: campaignId });
   const characters = useQuery(api.characters.listByCampaign, { campaignId });
-
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      router.push("/login");
-    }
-  }, [authLoading, isAuthenticated, router]);
-
-  if (!authLoading && !isAuthenticated) {
-    return null;
-  }
 
   if (!campaign) {
     return (
