@@ -751,6 +751,7 @@ export const seedTestScenario = mutation({
       v.literal("foot-fetish-spa"),
       v.literal("servant-serving"),
       v.literal("mid-scene"),
+      v.literal("rivermoot-city"),
     )),
   },
   handler: async (ctx, args) => {
