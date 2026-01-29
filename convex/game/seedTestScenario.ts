@@ -777,6 +777,8 @@ export const seedTestScenario = mutation({
         return await seedServantServing(ctx, campaignId, characterId, freshCharacter);
       case "mid-scene":
         return await seedMidScene(ctx, campaignId, characterId, freshCharacter);
+      case "rivermoot-city":
+        return await seedRivermootScenario(ctx, campaignId, characterId);
       default:
         throw new Error(`Unknown scenario: ${scenario}`);
     }
