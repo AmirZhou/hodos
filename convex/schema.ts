@@ -469,6 +469,7 @@ export default defineSchema({
     name: v.string(),
     description: v.string(),
     properties: v.record(v.string(), v.any()),
+    cityGridData: v.optional(cityGridData),
     createdAt: v.number(),
   }).index("by_slug", ["slug"]),
 
