@@ -227,6 +227,8 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
             currentLocationId={gameState.locationId}
             currentCharacterId={currentCharacter?._id}
             currentCharacterName={currentCharacter?.name}
+            navigationMode={(gameState.session as { navigationMode?: string } | null)?.navigationMode as "city" | "location" | undefined}
+            currentMapId={(gameState.session as { currentMapId?: string } | null)?.currentMapId as Id<"maps"> | undefined}
           />
 
           {/* Character & World Info below the map */}
