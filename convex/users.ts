@@ -1,6 +1,80 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
+// Sync Clerk user identity into Convex users table.
+// Called on sign-in to upsert the user record.
+export const syncClerkUser = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return null;
+    }
+
+    const clerkId = identity.subject;
+    const email = (identity.email ?? "").toLowerCase().trim();
+    const displayName =
+      identity.name ?? identity.nickname ?? email.split("@")[0];
+
+    // 1. Look up by clerkId
+    const byClerkId = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", clerkId))
+      .first();
+
+    if (byClerkId) {
+      // Update email/displayName if changed
+      const updates: Record<string, string> = {};
+      if (email && byClerkId.email !== email) updates.email = email;
+      if (displayName && byClerkId.displayName !== displayName)
+        updates.displayName = displayName;
+      if (Object.keys(updates).length > 0) {
+        await ctx.db.patch(byClerkId._id, updates);
+      }
+      return await ctx.db.get(byClerkId._id);
+    }
+
+    // 2. Migration path: look up by email, link clerkId
+    if (email) {
+      const byEmail = await ctx.db
+        .query("users")
+        .withIndex("by_email", (q) => q.eq("email", email))
+        .first();
+
+      if (byEmail) {
+        await ctx.db.patch(byEmail._id, { clerkId });
+        return await ctx.db.get(byEmail._id);
+      }
+    }
+
+    // 3. Create new user
+    const userId = await ctx.db.insert("users", {
+      clerkId,
+      email,
+      displayName,
+      settings: {
+        explicitContent: true,
+        videoEnabled: true,
+        intensityPreference: 5,
+      },
+      createdAt: Date.now(),
+    });
+
+    return await ctx.db.get(userId);
+  },
+});
+
+// Query user by Clerk subject ID
+export const getByClerkId = query({
+  args: { clerkId: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", args.clerkId))
+      .first();
+  },
+});
+
 // Get or create user by email (simple auth)
 export const getOrCreateByEmail = mutation({
   args: {
