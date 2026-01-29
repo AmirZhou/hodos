@@ -4,6 +4,12 @@ import { getItemById } from "../data/equipmentItems";
 import type { EquipmentItem } from "../data/equipmentItems";
 import type { Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
+import {
+  RIVERMOOT_MAP,
+  RIVERMOOT_LOCATIONS,
+  RIVERMOOT_START_LOCATION,
+} from "../data/rivermootCity";
+import { RIVERMOOT_CITY_GRID } from "../data/rivermootGrid";
 
 function itemToDoc(item: EquipmentItem) {
   return {
