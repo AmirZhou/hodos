@@ -39,13 +39,40 @@ async function cleanCampaignSeedData(ctx: MutationCtx, campaignId: Id<"campaigns
     await ctx.db.delete(npc._id);
   }
 
-  // Delete locations
-  const locations = await ctx.db
-    .query("locations")
+  // Delete campaignLocationDiscovery entries for this campaign
+  const discoveries = await ctx.db
+    .query("campaignLocationDiscovery")
     .withIndex("by_campaign", (q) => q.eq("campaignId", campaignId))
     .collect();
-  for (const loc of locations) {
-    await ctx.db.delete(loc._id);
+  for (const disc of discoveries) {
+    await ctx.db.delete(disc._id);
+  }
+
+  // Delete campaignMaps entries and their maps/locations (only scenario micro-maps, not shared maps)
+  const campaignMaps = await ctx.db
+    .query("campaignMaps")
+    .withIndex("by_campaign", (q) => q.eq("campaignId", campaignId))
+    .collect();
+  for (const cm of campaignMaps) {
+    // Check if other campaigns use this map
+    const otherLinks = await ctx.db
+      .query("campaignMaps")
+      .withIndex("by_map", (q) => q.eq("mapId", cm.mapId))
+      .collect();
+
+    if (otherLinks.length <= 1) {
+      // Only this campaign uses it — safe to delete map and its locations
+      const locs = await ctx.db
+        .query("locations")
+        .withIndex("by_map", (q) => q.eq("mapId", cm.mapId))
+        .collect();
+      for (const loc of locs) {
+        await ctx.db.delete(loc._id);
+      }
+      await ctx.db.delete(cm.mapId);
+    }
+
+    await ctx.db.delete(cm._id);
   }
 
   // End sessions
@@ -81,6 +108,44 @@ function resolveItems(ids: string[]) {
     .map(itemToDoc);
 }
 
+/** Create a micro-map for a scenario and link it to the campaign. Returns mapId. */
+async function createScenarioMap(
+  ctx: MutationCtx,
+  campaignId: Id<"campaigns">,
+  slug: string,
+  name: string,
+  description: string,
+) {
+  const mapId = await ctx.db.insert("maps", {
+    slug,
+    name,
+    description,
+    properties: { type: "scenario" },
+    createdAt: Date.now(),
+  });
+
+  await ctx.db.insert("campaignMaps", {
+    campaignId,
+    mapId,
+    addedAt: Date.now(),
+  });
+
+  return mapId;
+}
+
+/** Mark a location as discovered for a campaign. */
+async function discoverForCampaign(
+  ctx: MutationCtx,
+  campaignId: Id<"campaigns">,
+  locationId: Id<"locations">,
+) {
+  await ctx.db.insert("campaignLocationDiscovery", {
+    campaignId,
+    locationId,
+    discoveredAt: Date.now(),
+  });
+}
+
 // ─── Scenario: BDSM Dungeon ────────────────────────────────────
 
 async function seedBdsmDungeon(ctx: MutationCtx, campaignId: Id<"campaigns">, characterId: Id<"characters">, character: { inventory: any[] }) {
@@ -100,16 +165,19 @@ async function seedBdsmDungeon(ctx: MutationCtx, campaignId: Id<"campaigns">, ch
     }
   }
 
+  const mapId = await createScenarioMap(ctx, campaignId, `velvet-sanctum-${campaignId}`, "Velvet Sanctum Map", "A luxurious underground chamber.");
+
   const locationId = await ctx.db.insert("locations", {
-    campaignId,
+    mapId,
     name: "The Velvet Sanctum",
     description:
       "A luxurious underground chamber draped in deep crimson and black velvet. Wrought-iron candelabras cast flickering shadows across an array of ornate furniture — a padded St. Andrew's cross, silk-draped suspension frame, and a throne of dark leather. The air is thick with the scent of sandalwood and warm wax. Soft ambient music drifts from unseen sources.",
     connectedTo: [],
-    isDiscovered: true,
     properties: { type: "dungeon", lighting: "candlelight", mood: "intimate", privacy: "private" },
     gridData: { width: 12, height: 10, cells: gridCells },
   });
+
+  await discoverForCampaign(ctx, campaignId, locationId);
 
   const vivienneId = await ctx.db.insert("npcs", {
     campaignId,
@@ -188,15 +256,18 @@ async function seedBdsmDungeon(ctx: MutationCtx, campaignId: Id<"campaigns">, ch
 async function seedFootFetishSpa(ctx: MutationCtx, campaignId: Id<"campaigns">, characterId: Id<"characters">, character: { inventory: any[] }) {
   const now = Date.now();
 
+  const mapId = await createScenarioMap(ctx, campaignId, `silken-step-${campaignId}`, "Silken Step Map", "A lavish private spa suite.");
+
   const locationId = await ctx.db.insert("locations", {
-    campaignId,
+    mapId,
     name: "The Silken Step",
     description:
       "A lavish private spa suite with warm marble floors and the gentle sound of running water. Plush velvet chaise lounges line the walls beside low ottomans draped in silk. Aromatic oils, lotions, and warm towels are arranged on a gilded tray. Soft golden light filters through translucent curtains. In the center, a cushioned pedestal stands invitingly — clearly designed for foot worship and pampering. Ankle bracelets and toe rings glitter in a crystal dish.",
     connectedTo: [],
-    isDiscovered: true,
     properties: { type: "spa", lighting: "warm golden", mood: "sensual", privacy: "private" },
   });
+
+  await discoverForCampaign(ctx, campaignId, locationId);
 
   const isabelleId = await ctx.db.insert("npcs", {
     campaignId,
@@ -304,15 +375,18 @@ async function seedFootFetishSpa(ctx: MutationCtx, campaignId: Id<"campaigns">, 
 async function seedServantServing(ctx: MutationCtx, campaignId: Id<"campaigns">, characterId: Id<"characters">, character: { inventory: any[] }) {
   const now = Date.now();
 
+  const mapId = await createScenarioMap(ctx, campaignId, `private-chambers-${campaignId}`, "Private Chambers Map", "Your personal quarters.");
+
   const locationId = await ctx.db.insert("locations", {
-    campaignId,
+    mapId,
     name: "Your Private Chambers",
     description:
       "Your personal quarters — spacious, warm, and richly appointed. A large canopy bed dominates the room, its curtains half-drawn. A velvet chaise longue sits near the fireplace, where embers glow low. The floor is covered in thick rugs. A side table holds wine, fruit, and oil. Your servant kneels at your feet, already attending to you — collar gleaming, hands working devotedly at the task you gave her.",
     connectedTo: [],
-    isDiscovered: true,
     properties: { type: "bedroom", lighting: "firelight", mood: "intimate", privacy: "private" },
   });
+
+  await discoverForCampaign(ctx, campaignId, locationId);
 
   const etienneId = await ctx.db.insert("npcs", {
     campaignId,
@@ -406,15 +480,18 @@ async function seedServantServing(ctx: MutationCtx, campaignId: Id<"campaigns">,
 async function seedMidScene(ctx: MutationCtx, campaignId: Id<"campaigns">, characterId: Id<"characters">, character: { inventory: any[] }) {
   const now = Date.now();
 
+  const mapId = await createScenarioMap(ctx, campaignId, `moonlit-suite-${campaignId}`, "Moonlit Suite Map", "A lavish bedroom suite on the top floor.");
+
   const locationId = await ctx.db.insert("locations", {
-    campaignId,
+    mapId,
     name: "The Moonlit Suite",
     description:
       "A lavish bedroom suite on the top floor of a private estate. Moonlight pours through tall arched windows, casting silver across tangled silk sheets. The bed is large and disheveled — pillows scattered, the duvet half on the floor. Candles on the nightstand have burned low, wax pooling on brass. The air is hot, thick with the scent of sweat, perfume, and arousal. Clothes are strewn across the floor — your shirt draped over a chair, her dress in a heap by the door.",
     connectedTo: [],
-    isDiscovered: true,
     properties: { type: "bedroom", lighting: "moonlight", mood: "passionate", privacy: "private" },
   });
+
+  await discoverForCampaign(ctx, campaignId, locationId);
 
   const sofiaId = await ctx.db.insert("npcs", {
     campaignId,
