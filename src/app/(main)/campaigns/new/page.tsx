@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Sparkles, Globe, Users, Footprints, Heart, Crown, Flame } from "lucide-react";
+import { ArrowLeft, Sparkles, Globe, Users, Footprints, Heart, Crown, Flame, Map } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
