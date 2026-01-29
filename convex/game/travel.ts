@@ -1,6 +1,73 @@
 import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import { Id } from "../_generated/dataModel";
+import type { QueryCtx, MutationCtx } from "../_generated/server";
+
+// ============ HELPERS ============
+
+/** Get all locations across all maps linked to a campaign. */
+async function getLocationsForCampaign(ctx: QueryCtx, campaignId: Id<"campaigns">) {
+  const campaignMaps = await ctx.db
+    .query("campaignMaps")
+    .withIndex("by_campaign", (q) => q.eq("campaignId", campaignId))
+    .collect();
+
+  const allLocations = [];
+  for (const cm of campaignMaps) {
+    const locs = await ctx.db
+      .query("locations")
+      .withIndex("by_map", (q) => q.eq("mapId", cm.mapId))
+      .collect();
+    allLocations.push(...locs);
+  }
+  return allLocations;
+}
+
+/** Build a set of discovered location IDs for a campaign. */
+async function getDiscoveredSet(ctx: QueryCtx, campaignId: Id<"campaigns">) {
+  const discoveries = await ctx.db
+    .query("campaignLocationDiscovery")
+    .withIndex("by_campaign", (q) => q.eq("campaignId", campaignId))
+    .collect();
+  return new Set(discoveries.map((d) => d.locationId as string));
+}
+
+/** Check if a specific location is discovered for a campaign. */
+async function isLocationDiscovered(
+  ctx: QueryCtx,
+  campaignId: Id<"campaigns">,
+  locationId: Id<"locations">
+) {
+  const discovery = await ctx.db
+    .query("campaignLocationDiscovery")
+    .withIndex("by_campaign_and_location", (q) =>
+      q.eq("campaignId", campaignId).eq("locationId", locationId)
+    )
+    .first();
+  return !!discovery;
+}
+
+/** Ensure a location is discovered for a campaign (idempotent). */
+async function ensureDiscovered(
+  ctx: MutationCtx,
+  campaignId: Id<"campaigns">,
+  locationId: Id<"locations">
+) {
+  const existing = await ctx.db
+    .query("campaignLocationDiscovery")
+    .withIndex("by_campaign_and_location", (q) =>
+      q.eq("campaignId", campaignId).eq("locationId", locationId)
+    )
+    .first();
+
+  if (!existing) {
+    await ctx.db.insert("campaignLocationDiscovery", {
+      campaignId,
+      locationId,
+      discoveredAt: Date.now(),
+    });
+  }
+}
 
 // ============ QUERIES ============
 
@@ -9,18 +76,15 @@ export const getLocationGraph = query({
     campaignId: v.id("campaigns"),
   },
   handler: async (ctx, args) => {
-    // Get all locations for this campaign
-    const locations = await ctx.db
-      .query("locations")
-      .withIndex("by_campaign", (q) => q.eq("campaignId", args.campaignId))
-      .collect();
+    const locations = await getLocationsForCampaign(ctx, args.campaignId);
+    const discoveredSet = await getDiscoveredSet(ctx, args.campaignId);
 
     // Build the graph with connections
     const locationNodes = locations.map((loc) => ({
       id: loc._id,
       name: loc.name,
       description: loc.description,
-      isDiscovered: loc.isDiscovered,
+      isDiscovered: discoveredSet.has(loc._id as string),
       parentLocationId: loc.parentLocationId,
       connectedTo: loc.connectedTo,
       hasGrid: !!loc.gridData,
@@ -49,6 +113,7 @@ export const getLocationGraph = query({
 export const getLocationDetails = query({
   args: {
     locationId: v.id("locations"),
+    campaignId: v.id("campaigns"),
   },
   handler: async (ctx, args) => {
     const location = await ctx.db.get(args.locationId);
@@ -56,10 +121,12 @@ export const getLocationDetails = query({
       return null;
     }
 
-    // Get NPCs at this location
+    const discoveredSet = await getDiscoveredSet(ctx, args.campaignId);
+
+    // Get NPCs at this location (NPCs are per-campaign)
     const npcsAtLocation = await ctx.db
       .query("npcs")
-      .withIndex("by_campaign", (q) => q.eq("campaignId", location.campaignId))
+      .withIndex("by_campaign", (q) => q.eq("campaignId", args.campaignId))
       .filter((q) =>
         q.and(
           q.eq(q.field("currentLocationId"), args.locationId),
@@ -76,7 +143,7 @@ export const getLocationDetails = query({
           ? {
               id: connected._id,
               name: connected.name,
-              isDiscovered: connected.isDiscovered,
+              isDiscovered: discoveredSet.has(connected._id as string),
             }
           : null;
       })
@@ -94,15 +161,16 @@ export const getLocationDetails = query({
       }
     }
 
-    // Get child locations (locations that have this as parent)
+    // Get child locations (locations on the same map that have this as parent)
     const childLocations = await ctx.db
       .query("locations")
-      .withIndex("by_campaign", (q) => q.eq("campaignId", location.campaignId))
+      .withIndex("by_map", (q) => q.eq("mapId", location.mapId))
       .filter((q) => q.eq(q.field("parentLocationId"), args.locationId))
       .collect();
 
     return {
       ...location,
+      isDiscovered: discoveredSet.has(location._id as string),
       npcs: npcsAtLocation.map((npc) => ({
         id: npc._id,
         name: npc.name,
@@ -114,7 +182,7 @@ export const getLocationDetails = query({
       childLocations: childLocations.map((child) => ({
         id: child._id,
         name: child.name,
-        isDiscovered: child.isDiscovered,
+        isDiscovered: discoveredSet.has(child._id as string),
       })),
     };
   },
@@ -135,10 +203,10 @@ export const getCurrentLocation = query({
       return null;
     }
 
-    // Get NPCs at this location
+    // Get NPCs at this location (NPCs are per-campaign)
     const npcsAtLocation = await ctx.db
       .query("npcs")
-      .withIndex("by_campaign", (q) => q.eq("campaignId", location.campaignId))
+      .withIndex("by_campaign", (q) => q.eq("campaignId", session.campaignId))
       .filter((q) =>
         q.and(
           q.eq(q.field("currentLocationId"), session.locationId),
@@ -190,10 +258,8 @@ export const travelTo = mutation({
       }
     }
 
-    // Auto-discover the destination if not already discovered
-    if (!destination.isDiscovered) {
-      await ctx.db.patch(args.destinationId, { isDiscovered: true });
-    }
+    // Auto-discover the destination for this campaign
+    await ensureDiscovered(ctx, session.campaignId, args.destinationId);
 
     // Update session location
     await ctx.db.patch(args.sessionId, {
@@ -214,6 +280,7 @@ export const travelTo = mutation({
 
 export const discoverLocation = mutation({
   args: {
+    campaignId: v.id("campaigns"),
     locationId: v.id("locations"),
   },
   handler: async (ctx, args) => {
@@ -222,11 +289,21 @@ export const discoverLocation = mutation({
       throw new Error("Location not found");
     }
 
-    if (location.isDiscovered) {
+    const alreadyDiscovered = await isLocationDiscovered(
+      ctx,
+      args.campaignId,
+      args.locationId
+    );
+
+    if (alreadyDiscovered) {
       return { alreadyDiscovered: true };
     }
 
-    await ctx.db.patch(args.locationId, { isDiscovered: true });
+    await ctx.db.insert("campaignLocationDiscovery", {
+      campaignId: args.campaignId,
+      locationId: args.locationId,
+      discoveredAt: Date.now(),
+    });
 
     return {
       discovered: true,
@@ -240,12 +317,11 @@ export const discoverLocation = mutation({
 
 export const createLocation = mutation({
   args: {
-    campaignId: v.id("campaigns"),
+    mapId: v.id("maps"),
     name: v.string(),
     description: v.string(),
     parentLocationId: v.optional(v.id("locations")),
     connectedTo: v.optional(v.array(v.id("locations"))),
-    isDiscovered: v.optional(v.boolean()),
     properties: v.optional(v.record(v.string(), v.any())),
     gridData: v.optional(
       v.object({
@@ -274,12 +350,11 @@ export const createLocation = mutation({
   },
   handler: async (ctx, args) => {
     const locationId = await ctx.db.insert("locations", {
-      campaignId: args.campaignId,
+      mapId: args.mapId,
       name: args.name,
       description: args.description,
       parentLocationId: args.parentLocationId,
       connectedTo: args.connectedTo ?? [],
-      isDiscovered: args.isDiscovered ?? false,
       properties: args.properties ?? {},
       gridData: args.gridData,
     });
@@ -367,48 +442,69 @@ export const updateLocationGrid = mutation({
 });
 
 // Seed test locations for a campaign (development helper)
+// Creates a micro-map with 4 connected dungeon locations
 export const seedTestLocations = mutation({
   args: {
     campaignId: v.id("campaigns"),
   },
   handler: async (ctx, args) => {
-    // Check if locations already exist
-    const existingLocations = await ctx.db
-      .query("locations")
+    // Check if campaign already has maps linked
+    const existingMaps = await ctx.db
+      .query("campaignMaps")
       .withIndex("by_campaign", (q) => q.eq("campaignId", args.campaignId))
       .collect();
 
-    if (existingLocations.length > 0) {
-      return { message: "Locations already exist", count: existingLocations.length };
+    if (existingMaps.length > 0) {
+      // Count locations across linked maps
+      let count = 0;
+      for (const cm of existingMaps) {
+        const locs = await ctx.db
+          .query("locations")
+          .withIndex("by_map", (q) => q.eq("mapId", cm.mapId))
+          .collect();
+        count += locs.length;
+      }
+      return { message: "Maps already linked", count };
     }
 
-    // Create a starting dungeon location
-    const dungeonCellId = await ctx.db.insert("locations", {
+    // Create a micro-map for this test
+    const mapId = await ctx.db.insert("maps", {
+      slug: `test-dungeon-${args.campaignId}`,
+      name: "Test Dungeon",
+      description: "A small test dungeon for development.",
+      properties: { type: "dungeon" },
+      createdAt: Date.now(),
+    });
+
+    // Link map to campaign
+    await ctx.db.insert("campaignMaps", {
       campaignId: args.campaignId,
+      mapId,
+      addedAt: Date.now(),
+    });
+
+    // Create locations on the map
+    const dungeonCellId = await ctx.db.insert("locations", {
+      mapId,
       name: "Stone Chamber",
       description: "A dimly lit stone chamber with rough-hewn walls. A single iron door stands on the far side.",
       connectedTo: [],
-      isDiscovered: true,
       properties: { type: "dungeon", lighting: "dim" },
     });
 
-    // Create a corridor
     const corridorId = await ctx.db.insert("locations", {
-      campaignId: args.campaignId,
+      mapId,
       name: "Dark Corridor",
       description: "A long, narrow corridor stretching into darkness. Torches flicker on the walls at irregular intervals.",
       connectedTo: [dungeonCellId],
-      isDiscovered: false,
       properties: { type: "dungeon", lighting: "dim" },
     });
 
-    // Create a guard room with combat grid
     const guardRoomId = await ctx.db.insert("locations", {
-      campaignId: args.campaignId,
+      mapId,
       name: "Guard Room",
       description: "A larger room with weapon racks and a table. Signs of recent activity.",
       connectedTo: [corridorId],
-      isDiscovered: false,
       properties: { type: "dungeon", lighting: "normal" },
       gridData: {
         width: 6,
@@ -421,13 +517,11 @@ export const seedTestLocations = mutation({
       },
     });
 
-    // Create an exit to the surface
     const forestEdgeId = await ctx.db.insert("locations", {
-      campaignId: args.campaignId,
+      mapId,
       name: "Forest Edge",
       description: "Daylight filters through the trees. The dungeon entrance lies behind you.",
       connectedTo: [guardRoomId],
-      isDiscovered: false,
       properties: { type: "outdoor", lighting: "bright" },
     });
 
@@ -435,6 +529,13 @@ export const seedTestLocations = mutation({
     await ctx.db.patch(dungeonCellId, { connectedTo: [corridorId] });
     await ctx.db.patch(corridorId, { connectedTo: [dungeonCellId, guardRoomId] });
     await ctx.db.patch(guardRoomId, { connectedTo: [corridorId, forestEdgeId] });
+
+    // Auto-discover starting location
+    await ctx.db.insert("campaignLocationDiscovery", {
+      campaignId: args.campaignId,
+      locationId: dungeonCellId,
+      discoveredAt: Date.now(),
+    });
 
     return {
       message: "Test locations created",
