@@ -2,44 +2,70 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useSignIn } from "@clerk/nextjs";
+import { useSignIn, useSignUp } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
+type Flow = "email" | "verify";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [pendingVerification, setPendingVerification] = useState(false);
-  const { signIn, setActive, isLoaded } = useSignIn();
+  const [flow, setFlow] = useState<Flow>("email");
+  const [isSignUp, setIsSignUp] = useState(false);
+
+  const { signIn, setActive: setSignInActive, isLoaded: signInLoaded } = useSignIn();
+  const { signUp, setActive: setSignUpActive, isLoaded: signUpLoaded } = useSignUp();
   const router = useRouter();
+
+  const isLoaded = signInLoaded && signUpLoaded;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isLoaded || !signIn) return;
+    if (!isLoaded || !signIn || !signUp) return;
 
     setError("");
     setIsSubmitting(true);
 
     try {
+      // Try sign-in first
       const result = await signIn.create({
         identifier: email,
         strategy: "email_code",
       });
 
       if (result.status === "needs_first_factor") {
-        setPendingVerification(true);
+        setIsSignUp(false);
+        setFlow("verify");
       } else if (result.status === "complete" && result.createdSessionId) {
-        await setActive({ session: result.createdSessionId });
+        await setSignInActive({ session: result.createdSessionId });
         router.push("/");
       }
     } catch (err: unknown) {
-      const clerkError = err as { errors?: { message: string }[] };
-      setError(
-        clerkError.errors?.[0]?.message ?? "An error occurred during sign in"
-      );
+      const clerkError = err as { errors?: { code: string; message: string }[] };
+      const errorCode = clerkError.errors?.[0]?.code;
+
+      // User doesn't exist — fall back to sign-up
+      if (errorCode === "form_identifier_not_found") {
+        try {
+          await signUp.create({ emailAddress: email });
+          await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+          setIsSignUp(true);
+          setFlow("verify");
+        } catch (signUpErr: unknown) {
+          const signUpError = signUpErr as { errors?: { message: string }[] };
+          setError(
+            signUpError.errors?.[0]?.message ?? "An error occurred during sign up"
+          );
+        }
+      } else {
+        setError(
+          clerkError.errors?.[0]?.message ?? "An error occurred during sign in"
+        );
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -47,22 +73,35 @@ export default function LoginPage() {
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isLoaded || !signIn) return;
+    if (!isLoaded) return;
 
     setError("");
     setIsSubmitting(true);
 
     try {
-      const result = await signIn.attemptFirstFactor({
-        strategy: "email_code",
-        code,
-      });
-
-      if (result.status === "complete" && result.createdSessionId) {
-        await setActive({ session: result.createdSessionId });
-        router.push("/");
+      if (isSignUp) {
+        // Verify sign-up
+        if (!signUp) return;
+        const result = await signUp.attemptEmailAddressVerification({ code });
+        if (result.status === "complete" && result.createdSessionId) {
+          await setSignUpActive({ session: result.createdSessionId });
+          router.push("/");
+        } else {
+          setError("Verification failed. Please try again.");
+        }
       } else {
-        setError("Verification failed. Please try again.");
+        // Verify sign-in
+        if (!signIn) return;
+        const result = await signIn.attemptFirstFactor({
+          strategy: "email_code",
+          code,
+        });
+        if (result.status === "complete" && result.createdSessionId) {
+          await setSignInActive({ session: result.createdSessionId });
+          router.push("/");
+        } else {
+          setError("Verification failed. Please try again.");
+        }
       }
     } catch (err: unknown) {
       const clerkError = err as { errors?: { message: string }[] };
@@ -85,13 +124,13 @@ export default function LoginPage() {
           </div>
           <CardTitle className="text-2xl">Welcome to Hodos</CardTitle>
           <CardDescription>
-            {pendingVerification
+            {flow === "verify"
               ? "Check your email for a verification code"
               : "Enter your email to start your adventure"}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {!pendingVerification ? (
+          {flow === "email" ? (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <Input
@@ -141,7 +180,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => {
-                  setPendingVerification(false);
+                  setFlow("email");
                   setCode("");
                   setError("");
                 }}
