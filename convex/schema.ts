@@ -492,7 +492,7 @@ export default defineSchema({
 
   // ============ WORLD STATE ============
   locations: defineTable({
-    mapId: v.optional(v.id("maps")), // temporarily optional for data migration
+    mapId: v.id("maps"),
     templateId: v.optional(v.string()),
     name: v.string(),
     nameFr: v.optional(v.string()), // DEPRECATED
@@ -502,9 +502,6 @@ export default defineSchema({
     connectedTo: v.array(v.id("locations")),
     properties: v.record(v.string(), v.any()),
     gridData: v.optional(gridData),
-    // Temporarily optional for data migration (stale fields from old schema)
-    campaignId: v.optional(v.any()),
-    isDiscovered: v.optional(v.boolean()),
   }).index("by_map", ["mapId"]),
 
   worldState: defineTable({
