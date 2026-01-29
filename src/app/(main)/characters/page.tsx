@@ -23,8 +23,15 @@ interface CharacterInfo {
 }
 
 export default function CharactersPage() {
-  const router = useRouter();
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  return (
+    <RequireAuth>
+      <CharactersPageContent />
+    </RequireAuth>
+  );
+}
+
+function CharactersPageContent() {
+  const { user } = useAuth();
 
   const campaigns = useQuery(
     api.campaigns.list,
@@ -36,25 +43,6 @@ export default function CharactersPage() {
     api.characters.listByUser,
     user?._id ? { userId: user._id } : "skip"
   );
-
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      router.push("/login");
-    }
-  }, [authLoading, isAuthenticated, router]);
-
-  if (!authLoading && !isAuthenticated) {
-    return null;
-  }
-
-  if (authLoading || !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-[var(--foreground-secondary)]">Loading...</p>
-      </div>
-    );
-  }
 
   // Combine character data with campaign names
   const allCharacters: CharacterInfo[] = (characters || []).map((char) => {
