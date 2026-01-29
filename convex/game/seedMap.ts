@@ -6,6 +6,7 @@ import {
   RIVERMOOT_LOCATIONS,
   RIVERMOOT_START_LOCATION,
 } from "../data/rivermootCity";
+import { RIVERMOOT_CITY_GRID } from "../data/rivermootGrid";
 
 /**
  * Idempotent: creates the Rivermoot city map and its 17 locations.
