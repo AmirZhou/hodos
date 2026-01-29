@@ -31,6 +31,7 @@ export const seedRivermootCity = mutation({
       name: RIVERMOOT_MAP.name,
       description: RIVERMOOT_MAP.description,
       properties: RIVERMOOT_MAP.properties,
+      cityGridData: RIVERMOOT_CITY_GRID,
       createdAt: Date.now(),
     });
 
