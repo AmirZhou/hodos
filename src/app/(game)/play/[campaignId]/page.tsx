@@ -287,19 +287,28 @@ function MapPanel({
   currentLocationId,
   currentCharacterId,
   currentCharacterName,
+  navigationMode,
+  currentMapId,
 }: {
   campaignId: Id<"campaigns">;
   sessionId?: Id<"gameSessions">;
   currentLocationId?: Id<"locations">;
   currentCharacterId?: Id<"characters">;
   currentCharacterName?: string;
+  navigationMode?: "city" | "location";
+  currentMapId?: Id<"maps">;
 }) {
   const [activeTab, setActiveTab] = useState<"location" | "world">("location");
+  const exitToCity = useMutation(api.game.cityNavigation.exitToCity);
 
   const currentLocation = useQuery(
     api.game.travel.getCurrentLocation,
     sessionId ? { sessionId } : "skip"
   );
+
+  const hasCityMap = !!currentMapId;
+  const isInCityMode = navigationMode === "city";
+  const isInLocationMode = navigationMode === "location";
 
   return (
     <div className="border-b border-[var(--border)]">
@@ -325,25 +334,59 @@ function MapPanel({
           }`}
         >
           <Globe className="h-4 w-4" />
-          World
+          {hasCityMap ? "City" : "World"}
         </button>
       </div>
 
       {/* Tab Content */}
       {activeTab === "location" ? (
-        <LocationTab
-          sessionId={sessionId}
-          currentLocation={currentLocation}
-          currentCharacterId={currentCharacterId}
-          currentCharacterName={currentCharacterName}
-        />
+        <div>
+          {/* Exit to City button when inside a location and city map exists */}
+          {isInLocationMode && hasCityMap && sessionId && (
+            <div className="p-2 border-b border-[var(--border)]">
+              <button
+                onClick={() => exitToCity({ sessionId })}
+                className="w-full py-1.5 px-3 rounded-lg text-xs font-medium bg-[var(--accent-gold)]/10 text-[var(--accent-gold)] hover:bg-[var(--accent-gold)]/20 transition-colors"
+              >
+                Exit to City
+              </button>
+            </div>
+          )}
+
+          {/* City mode message when no location selected */}
+          {isInCityMode && !currentLocationId ? (
+            <div className="p-4">
+              <p className="text-sm text-[var(--foreground-secondary)]">
+                You are in the city streets. Enter a location to explore.
+              </p>
+            </div>
+          ) : (
+            <LocationTab
+              sessionId={sessionId}
+              currentLocation={currentLocation}
+              currentCharacterId={currentCharacterId}
+              currentCharacterName={currentCharacterName}
+            />
+          )}
+        </div>
       ) : (
         <div className="overflow-auto max-h-[50vh]">
-          <LocationGraph
-            campaignId={campaignId}
-            sessionId={sessionId}
-            currentLocationId={currentLocationId}
-          />
+          {hasCityMap && sessionId ? (
+            <div className="p-3">
+              <CityGrid
+                sessionId={sessionId}
+                campaignId={campaignId}
+                currentCharacterId={currentCharacterId}
+                currentCharacterName={currentCharacterName}
+              />
+            </div>
+          ) : (
+            <LocationGraph
+              campaignId={campaignId}
+              sessionId={sessionId}
+              currentLocationId={currentLocationId}
+            />
+          )}
         </div>
       )}
     </div>
