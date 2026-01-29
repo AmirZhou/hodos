@@ -1,20 +1,21 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
-import { useMutation, useQuery } from "convex/react";
+import { createContext, useContext, useEffect, ReactNode, useCallback } from "react";
+import { useUser, useClerk } from "@clerk/nextjs";
+import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { Id } from "../../../convex/_generated/dataModel";
-import { createAuthStore, User as LocalUser, validateEmail } from "@/lib/auth";
 
 interface User {
   _id: Id<"users">;
   email: string;
   displayName: string;
   settings: {
-    language: "en" | "fr" | "bilingual";
+    language?: string;
     explicitContent: boolean;
     videoEnabled: boolean;
-    frenchLevel: "none" | "beginner" | "intermediate" | "advanced";
+    frenchLevel?: string;
+    intensityPreference?: number;
   };
 }
 
@@ -22,71 +23,43 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [localUser, setLocalUser] = useState<LocalUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [authStore] = useState(() => createAuthStore());
+  const { user: clerkUser, isLoaded: clerkLoaded } = useUser();
+  const { isAuthenticated: convexAuthed, isLoading: convexLoading } =
+    useConvexAuth();
+  const { signOut } = useClerk();
 
-  const getOrCreateByEmail = useMutation(api.users.getOrCreateByEmail);
+  const syncClerkUser = useMutation(api.users.syncClerkUser);
 
-  // Load user from localStorage on mount
-  useEffect(() => {
-    const stored = authStore.getUser();
-    setLocalUser(stored);
-    setIsLoading(false);
-  }, [authStore]);
-
-  // Query Convex for user data when we have a local user
+  // Query Convex user by clerkId when signed in
   const convexUser = useQuery(
-    api.users.getByEmail,
-    localUser?.email ? { email: localUser.email } : "skip"
+    api.users.getByClerkId,
+    clerkUser?.id ? { clerkId: clerkUser.id } : "skip"
   );
 
-  const login = useCallback(async (email: string): Promise<{ success: boolean; error?: string }> => {
-    if (!validateEmail(email)) {
-      return { success: false, error: "Please enter a valid email address" };
+  // Sync Clerk user into Convex on sign-in
+  useEffect(() => {
+    if (convexAuthed && clerkUser) {
+      syncClerkUser().catch(console.error);
     }
-
-    try {
-      setIsLoading(true);
-      const user = await getOrCreateByEmail({ email });
-
-      if (user) {
-        const localUserData: LocalUser = {
-          id: user._id,
-          email: user.email,
-          displayName: user.displayName,
-        };
-        authStore.setUser(localUserData);
-        setLocalUser(localUserData);
-        return { success: true };
-      }
-
-      return { success: false, error: "Failed to create user" };
-    } catch (error) {
-      console.error("Login error:", error);
-      return { success: false, error: "An error occurred during login" };
-    } finally {
-      setIsLoading(false);
-    }
-  }, [getOrCreateByEmail, authStore]);
+  }, [convexAuthed, clerkUser, syncClerkUser]);
 
   const logout = useCallback(() => {
-    authStore.logout();
-    setLocalUser(null);
-  }, [authStore]);
+    signOut();
+  }, [signOut]);
+
+  const isLoading =
+    !clerkLoaded || convexLoading || (clerkUser !== null && convexUser === undefined);
 
   const value: AuthContextType = {
-    user: convexUser as User | null,
-    isLoading: isLoading || (localUser !== null && convexUser === undefined),
-    isAuthenticated: localUser !== null && convexUser !== null,
-    login,
+    user: (convexUser as User | null) ?? null,
+    isLoading,
+    isAuthenticated: !!clerkUser && convexUser !== null && convexUser !== undefined,
     logout,
   };
 
