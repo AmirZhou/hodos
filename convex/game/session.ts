@@ -41,11 +41,34 @@ export const start = mutation({
 
     // Create new session
     const now = Date.now();
+
+    // Check if campaign has a city map with grid data
+    const campaignMaps = await ctx.db
+      .query("campaignMaps")
+      .withIndex("by_campaign", (q) => q.eq("campaignId", args.campaignId))
+      .collect();
+
+    let currentMapId: undefined | typeof campaignMaps[0]["mapId"] = undefined;
+    for (const cm of campaignMaps) {
+      const map = await ctx.db.get(cm.mapId);
+      if (map?.cityGridData) {
+        currentMapId = map._id;
+        break;
+      }
+    }
+
     return await ctx.db.insert("gameSessions", {
       campaignId: args.campaignId,
       status: "active",
       mode: args.mode || "exploration",
       locationId: args.locationId,
+      ...(currentMapId
+        ? {
+            currentMapId,
+            navigationMode: "city" as const,
+            cityPosition: { x: 7, y: 7 },
+          }
+        : {}),
       startedAt: now,
       lastActionAt: now,
     });
