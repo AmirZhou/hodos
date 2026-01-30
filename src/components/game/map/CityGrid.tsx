@@ -175,7 +175,7 @@ export function CityGrid({
                   width={CELL_SIZE}
                   height={CELL_SIZE}
                   fill={colors.fill}
-                  fillOpacity={backgroundImage ? colors.opacity : colors.opacity + 0.2}
+                  fillOpacity={backgroundImage ? colors.bgOpacity : colors.opacity + 0.2}
                   stroke="rgba(255,255,255,0.08)"
                   strokeWidth={0.5}
                   onMouseEnter={() => setHoveredCell({ x: c.x, y: c.y })}
