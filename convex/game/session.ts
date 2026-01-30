@@ -43,6 +43,23 @@ export const start = mutation({
     // Create new session
     const now = Date.now();
 
+    // If campaign has a seedScenario, ensure the map data exists before creating the session
+    const campaign = await ctx.db.get(args.campaignId);
+    if (campaign?.seedScenario === "rivermoot-city") {
+      await ensureRivermootMap(ctx, args.campaignId);
+
+      // Add initial game log entries if this is the first session for the campaign
+      const existingLog = await ctx.db
+        .query("gameLog")
+        .withIndex("by_campaign", (q) => q.eq("campaignId", args.campaignId))
+        .first();
+
+      if (!existingLog) {
+        // We'll insert log entries after creating the session below
+        // so we have a sessionId to reference
+      }
+    }
+
     // Check if campaign has a city map with grid data
     const campaignMaps = await ctx.db
       .query("campaignMaps")
