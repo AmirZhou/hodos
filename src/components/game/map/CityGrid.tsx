@@ -263,19 +263,18 @@ export function CityGrid({
         </svg>
       </div>
 
-      {/* Location hover tooltip */}
-      {hoveredCell && (() => {
-        const hc = cellMap.get(`${hoveredCell.x},${hoveredCell.y}`);
-        if (!hc?.locationTemplateId) return null;
-        const info = locationMap[hc.locationTemplateId];
-        if (!info) return null;
-        const disc = discoveredSet.has(info.locationId);
-        return (
-          <div className="text-xs text-[var(--foreground-secondary)] text-center">
-            {disc ? info.name : "Undiscovered Location"}
-          </div>
-        );
-      })()}
+      {/* Location hover tooltip — fixed height to prevent layout shift */}
+      <div className="text-xs text-[var(--foreground-secondary)] text-center h-4">
+        {(() => {
+          if (!hoveredCell) return null;
+          const hc = cellMap.get(`${hoveredCell.x},${hoveredCell.y}`);
+          if (!hc?.locationTemplateId) return null;
+          const info = locationMap[hc.locationTemplateId];
+          if (!info) return null;
+          const disc = discoveredSet.has(info.locationId);
+          return disc ? info.name : "Undiscovered Location";
+        })()}
+      </div>
 
       {/* Enter location button */}
       {currentLocationInfo && (
