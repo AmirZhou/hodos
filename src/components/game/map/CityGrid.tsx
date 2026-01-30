@@ -261,31 +261,34 @@ export function CityGrid({
             label={currentCharacterName?.[0] ?? "?"}
           />
         </svg>
-      </div>
 
-      {/* Location hover tooltip — fixed height to prevent layout shift */}
-      <div className="text-xs text-[var(--foreground-secondary)] text-center h-4">
-        {(() => {
-          if (!hoveredCell) return null;
-          const hc = cellMap.get(`${hoveredCell.x},${hoveredCell.y}`);
-          if (!hc?.locationTemplateId) return null;
-          const info = locationMap[hc.locationTemplateId];
-          if (!info) return null;
-          const disc = discoveredSet.has(info.locationId);
-          return disc ? info.name : "Undiscovered Location";
-        })()}
-      </div>
+        {/* Overlay: location tooltip + enter button pinned to bottom of map */}
+        <div className="absolute bottom-0 left-0 right-0 pointer-events-none flex flex-col items-center gap-1.5 p-2">
+          {/* Hover tooltip */}
+          <div className="text-xs text-white text-center h-4 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+            {(() => {
+              if (!hoveredCell) return null;
+              const hc = cellMap.get(`${hoveredCell.x},${hoveredCell.y}`);
+              if (!hc?.locationTemplateId) return null;
+              const info = locationMap[hc.locationTemplateId];
+              if (!info) return null;
+              const disc = discoveredSet.has(info.locationId);
+              return disc ? info.name : "Undiscovered Location";
+            })()}
+          </div>
 
-      {/* Enter location button */}
-      {currentLocationInfo && (
-        <button
-          onClick={handleEnterLocation}
-          disabled={isMoving || !currentCharacterId}
-          className="w-full py-2 px-3 rounded-lg text-sm font-medium bg-[var(--accent-gold)]/20 text-[var(--accent-gold)] hover:bg-[var(--accent-gold)]/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Enter {currentLocationInfo.name}
-        </button>
-      )}
+          {/* Enter location button */}
+          {currentLocationInfo && (
+            <button
+              onClick={handleEnterLocation}
+              disabled={isMoving || !currentCharacterId}
+              className="pointer-events-auto w-[90%] py-1.5 px-3 rounded-md text-sm font-medium bg-black/60 backdrop-blur-sm text-[var(--accent-gold)] border border-[var(--accent-gold)]/40 hover:bg-black/75 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Enter {currentLocationInfo.name}
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
