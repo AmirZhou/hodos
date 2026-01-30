@@ -955,10 +955,10 @@ function AbilityCard({ label, score }: { label: string; score: number }) {
   const mod = abilityMod(score);
   const modColor = mod > 0 ? "text-[var(--accent-gold)]" : mod < 0 ? "text-[var(--accent-red)]" : "text-[var(--foreground-muted)]";
   return (
-    <div className="rounded-lg bg-[var(--background-tertiary)] p-1.5 text-center">
-      <div className="text-[9px] text-[var(--foreground-muted)]">{label}</div>
-      <div className="text-sm font-bold">{score}</div>
-      <div className={`text-[10px] ${modColor}`}>{modStr(mod)}</div>
+    <div className="rounded-md bg-[var(--background-tertiary)] py-1.5 px-1 text-center">
+      <div className="text-[8px] text-[var(--foreground-muted)] leading-none">{label}</div>
+      <div className="text-xs font-bold mt-0.5">{score}</div>
+      <div className={`text-[9px] leading-none mt-0.5 ${modColor}`}>{modStr(mod)}</div>
     </div>
   );
 }
