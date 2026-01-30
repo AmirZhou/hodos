@@ -10,11 +10,10 @@ import { Input } from "@/components/ui/input";
 import { GameProvider, useGame } from "@/components/game/engine";
 import { CombatView } from "@/components/game/combat";
 import { SceneView, SafewordButton } from "@/components/game/scene";
-import { ExplorationGrid } from "@/components/game/exploration/ExplorationGrid";
 import { MovementLogEntry } from "@/components/game/exploration/MovementLogEntry";
 import { RollPrompt } from "@/components/game/dice";
 import { ModelSelector } from "@/components/game/settings";
-import { LocationGraph, CityGrid } from "@/components/game/map";
+import { LocationGraph, CityGrid, WorldGraph, LocationView } from "@/components/game/map";
 import { EquipmentPanel } from "@/components/game/equipment/EquipmentPanel";
 import { NpcInteractionModal } from "@/components/game/npc/NpcInteractionModal";
 import {
@@ -48,6 +47,8 @@ import {
   Scroll,
   X,
   MapPin,
+  Building2,
+  ArrowLeft,
 } from "lucide-react";
 import { InventoryModal } from "@/components/game/equipment/InventoryModal";
 import { CharacterSheetModal } from "@/components/game/equipment/CharacterSheetModal";
@@ -81,10 +82,6 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
     userId,
   } = useGame();
 
-  const seedMutation = useMutation(api.game.seedTestScenario.seedTestScenario);
-  const [seeding, setSeeding] = useState(false);
-  const [selectedScenario, setSelectedScenario] = useState<"bdsm-dungeon" | "foot-fetish-spa" | "servant-serving" | "mid-scene" | "rivermoot-city">("foot-fetish-spa");
-
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showMap, setShowMap] = useState(false);
   const [selectedNpcId, setSelectedNpcId] = useState<Id<"npcs"> | null>(null);
@@ -103,18 +100,6 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
     );
   }
 
-  // Auto-seeding in progress
-  if (seeding) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-[var(--background)]">
-        <div className="text-center space-y-4">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto text-[var(--accent-gold)]" />
-          <p className="text-[var(--foreground-secondary)]">Preparing scenario...</p>
-        </div>
-      </div>
-    );
-  }
-
   // No active session - show start button
   if (!gameState.hasActiveSession) {
     return (
@@ -128,46 +113,6 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
             <Play className="h-5 w-5" />
             Start Session
           </Button>
-          {currentCharacter && (
-            <div className="flex flex-col items-center gap-3">
-              <select
-                value={selectedScenario}
-                onChange={(e) => setSelectedScenario(e.target.value as typeof selectedScenario)}
-                className="rounded-md border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm"
-              >
-                <option value="foot-fetish-spa">Foot Fetish Spa</option>
-                <option value="bdsm-dungeon">BDSM Dungeon</option>
-                <option value="servant-serving">Devoted Servant</option>
-                <option value="mid-scene">In Medias Res</option>
-                <option value="rivermoot-city">Rivermoot City</option>
-              </select>
-              <Button
-                variant="outline"
-                size="lg"
-                className="gap-2"
-                disabled={seeding}
-                onClick={async () => {
-                  setSeeding(true);
-                  try {
-                    await seedMutation({
-                      campaignId,
-                      characterId: currentCharacter._id,
-                      scenario: selectedScenario,
-                    });
-                  } finally {
-                    setSeeding(false);
-                  }
-                }}
-              >
-                {seeding ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <Zap className="h-5 w-5" />
-                )}
-                Seed Test Scenario
-              </Button>
-            </div>
-          )}
         </div>
       </div>
     );
@@ -205,7 +150,7 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
             currentLocationId={gameState.locationId}
             currentCharacterId={currentCharacter?._id}
             currentCharacterName={currentCharacter?.name}
-            navigationMode={gameState.navigationMode}
+            navigationMode={gameState.navigationMode as "world" | "city" | "location" | undefined}
             currentMapId={gameState.currentMapId}
           />
 
@@ -273,82 +218,100 @@ function MapPanel({
   currentLocationId?: Id<"locations">;
   currentCharacterId?: Id<"characters">;
   currentCharacterName?: string;
-  navigationMode?: "city" | "location";
+  navigationMode?: "world" | "city" | "location";
   currentMapId?: Id<"maps">;
 }) {
-  const [activeTab, setActiveTab] = useState<"location" | "world">("location");
+  const [activeTab, setActiveTab] = useState<"world" | "city" | "location">(
+    navigationMode === "location" ? "location" : navigationMode === "city" ? "city" : "world"
+  );
   const exitToCity = useMutation(api.game.cityNavigation.exitToCity);
+  const exitToWorld = useMutation(api.game.worldNavigation.exitToWorld);
 
   const currentLocation = useQuery(
     api.game.travel.getCurrentLocation,
     sessionId ? { sessionId } : "skip"
   );
 
+  // Get city map name for tab label
+  const cityMap = useQuery(
+    api.game.cityNavigation.getCityGridState,
+    sessionId ? { sessionId } : "skip"
+  );
+
   const hasCityMap = !!currentMapId;
-  const isInCityMode = navigationMode === "city";
   const isInLocationMode = navigationMode === "location";
+
+  // Auto-switch tab when navigation mode changes
+  useEffect(() => {
+    if (navigationMode === "location") setActiveTab("location");
+    else if (navigationMode === "city") setActiveTab("city");
+    else if (navigationMode === "world") setActiveTab("world");
+  }, [navigationMode]);
+
+  const tabClass = (tab: string) =>
+    `flex-1 flex items-center justify-center gap-1.5 px-2 py-2.5 text-xs font-medium transition-colors ${
+      activeTab === tab
+        ? "text-[var(--accent-gold)] border-b-2 border-[var(--accent-gold)]"
+        : "text-[var(--foreground-secondary)] hover:text-[var(--foreground)]"
+    }`;
 
   return (
     <div className="border-b border-[var(--border)]">
-      {/* Tab Header */}
+      {/* Three-Tab Header */}
       <div className="flex border-b border-[var(--border)]">
-        <button
-          onClick={() => setActiveTab("location")}
-          className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium transition-colors ${
-            activeTab === "location"
-              ? "text-[var(--accent-gold)] border-b-2 border-[var(--accent-gold)]"
-              : "text-[var(--foreground-secondary)] hover:text-[var(--foreground)]"
-          }`}
-        >
-          <MapPin className="h-4 w-4" />
-          {currentLocation?.name ?? "Location"}
+        <button onClick={() => setActiveTab("world")} className={tabClass("world")}>
+          <Globe className="h-3.5 w-3.5" />
+          World
         </button>
         <button
-          onClick={() => setActiveTab("world")}
-          className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium transition-colors ${
-            activeTab === "world"
-              ? "text-[var(--accent-gold)] border-b-2 border-[var(--accent-gold)]"
-              : "text-[var(--foreground-secondary)] hover:text-[var(--foreground)]"
-          }`}
+          onClick={() => setActiveTab("city")}
+          className={tabClass("city")}
+          disabled={!hasCityMap}
+          style={{ opacity: hasCityMap ? 1 : 0.4 }}
         >
-          <Globe className="h-4 w-4" />
-          {hasCityMap ? "City" : "World"}
+          <Building2 className="h-3.5 w-3.5" />
+          City
+        </button>
+        <button
+          onClick={() => setActiveTab("location")}
+          className={tabClass("location")}
+          disabled={!currentLocation}
+          style={{ opacity: currentLocation ? 1 : 0.4 }}
+        >
+          <MapPin className="h-3.5 w-3.5" />
+          Location
         </button>
       </div>
 
       {/* Tab Content */}
-      {activeTab === "location" ? (
+      {activeTab === "world" && (
+        <div className="overflow-auto max-h-[50vh]">
+          <WorldGraph
+            campaignId={campaignId}
+            sessionId={sessionId}
+            currentMapId={currentMapId}
+            onEnterCity={() => setActiveTab("city")}
+          />
+        </div>
+      )}
+
+      {activeTab === "city" && (
         <div>
-          {/* Exit to City button when inside a location and city map exists */}
-          {isInLocationMode && hasCityMap && sessionId && (
-            <div className="p-2 border-b border-[var(--border)]">
+          {/* Back to World button */}
+          {sessionId && (
+            <div className="p-2 border-b border-[var(--border)] flex gap-2">
               <button
-                onClick={() => exitToCity({ sessionId })}
-                className="w-full py-1.5 px-3 rounded-lg text-xs font-medium bg-[var(--accent-gold)]/10 text-[var(--accent-gold)] hover:bg-[var(--accent-gold)]/20 transition-colors"
+                onClick={() => {
+                  exitToWorld({ sessionId });
+                  setActiveTab("world");
+                }}
+                className="flex items-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-medium bg-[var(--background-tertiary)] text-[var(--foreground-secondary)] hover:bg-[var(--background-tertiary)]/80 transition-colors"
               >
-                Exit to City
+                <ArrowLeft className="h-3 w-3" />
+                World
               </button>
             </div>
           )}
-
-          {/* City mode message when no location selected */}
-          {isInCityMode && !currentLocationId ? (
-            <div className="p-4">
-              <p className="text-sm text-[var(--foreground-secondary)]">
-                You are in the city streets. Enter a location to explore.
-              </p>
-            </div>
-          ) : (
-            <LocationTab
-              sessionId={sessionId}
-              currentLocation={currentLocation}
-              currentCharacterId={currentCharacterId}
-              currentCharacterName={currentCharacterName}
-            />
-          )}
-        </div>
-      ) : (
-        <div className="overflow-auto max-h-[50vh]">
           {hasCityMap && sessionId ? (
             <div className="p-3">
               <CityGrid
@@ -359,11 +322,42 @@ function MapPanel({
               />
             </div>
           ) : (
-            <LocationGraph
-              campaignId={campaignId}
+            <div className="p-4">
+              <p className="text-sm text-[var(--foreground-muted)]">No city map available.</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === "location" && (
+        <div>
+          {/* Back to City button */}
+          {isInLocationMode && hasCityMap && sessionId && (
+            <div className="p-2 border-b border-[var(--border)]">
+              <button
+                onClick={() => {
+                  exitToCity({ sessionId });
+                  setActiveTab("city");
+                }}
+                className="flex items-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-medium bg-[var(--accent-gold)]/10 text-[var(--accent-gold)] hover:bg-[var(--accent-gold)]/20 transition-colors"
+              >
+                <ArrowLeft className="h-3 w-3" />
+                Exit to City
+              </button>
+            </div>
+          )}
+
+          {currentLocation ? (
+            <LocationView
+              currentLocation={currentLocation}
               sessionId={sessionId}
-              currentLocationId={currentLocationId}
             />
+          ) : (
+            <div className="p-4">
+              <p className="text-[var(--foreground-muted)] text-sm">
+                No location selected. Enter a location from the City grid.
+              </p>
+            </div>
           )}
         </div>
       )}
@@ -371,62 +365,6 @@ function MapPanel({
   );
 }
 
-function LocationTab({
-  sessionId,
-  currentLocation,
-  currentCharacterId,
-  currentCharacterName,
-}: {
-  sessionId?: Id<"gameSessions">;
-  currentLocation?: { name: string; description: string; npcs?: Array<{ id: string; name: string }> } | null;
-  currentCharacterId?: Id<"characters">;
-  currentCharacterName?: string;
-}) {
-  return (
-    <div className="p-4 space-y-4">
-      {/* Location Info */}
-      {currentLocation ? (
-        <div>
-          <h3 className="font-bold text-lg">{currentLocation.name}</h3>
-          <p className="text-sm text-[var(--foreground-secondary)] mt-2">
-            {currentLocation.description}
-          </p>
-        </div>
-      ) : (
-        <p className="text-[var(--foreground-muted)]">No location set.</p>
-      )}
-
-      {/* Exploration Grid */}
-      {sessionId && (
-        <ExplorationGrid
-          sessionId={sessionId}
-          currentCharacterId={currentCharacterId}
-          currentCharacterName={currentCharacterName}
-        />
-      )}
-
-      {/* NPCs at location */}
-      {currentLocation?.npcs && currentLocation.npcs.length > 0 && (
-        <div>
-          <h4 className="text-sm font-medium mb-2">Characters here:</h4>
-          <div className="space-y-1">
-            {currentLocation.npcs.map((npc) => (
-              <div
-                key={npc.id}
-                className="flex items-center gap-2 text-sm p-2 rounded bg-[var(--background-tertiary)]"
-              >
-                <div className="w-6 h-6 rounded-full bg-[var(--accent-red)] flex items-center justify-center text-white text-xs font-bold">
-                  {npc.name[0]}
-                </div>
-                <span>{npc.name}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 function GameHeader({
   campaignName,
@@ -1037,13 +975,8 @@ function GameSidebar({
 }) {
   const { currentCharacter, gameState } = useGame();
   const [equipExpanded, setEquipExpanded] = useState(true);
+  const [statsExpanded, setStatsExpanded] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
-
-  // Get current location details
-  const currentLocation = useQuery(
-    api.game.travel.getCurrentLocation,
-    gameState.sessionId ? { sessionId: gameState.sessionId } : "skip"
-  );
 
   // Get relationships for current character
   const relationships = useQuery(
@@ -1080,62 +1013,71 @@ function GameSidebar({
 
   return (
     <div className="p-4 space-y-4 h-full">
-      {/* Character Header Card */}
+      {/* Character Card with toggleable stats */}
       {character && (
-        <div
-          onClick={onOpenCharSheet}
-          className="cursor-pointer rounded-xl bg-[var(--card)] p-4 hover:bg-[var(--background-tertiary)] transition-colors"
-        >
-          <div className="flex items-center gap-3">
-            <div className="h-14 w-14 rounded-full border-2 border-[var(--accent-gold)] bg-[var(--background-tertiary)] flex items-center justify-center text-xl font-bold text-[var(--accent-gold)]">
-              {character.name[0]}
+        <div className="rounded-xl bg-[var(--card)] overflow-hidden">
+          <div
+            onClick={onOpenCharSheet}
+            className="cursor-pointer p-4 hover:bg-[var(--background-tertiary)] transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="h-14 w-14 rounded-full border-2 border-[var(--accent-gold)] bg-[var(--background-tertiary)] flex items-center justify-center text-xl font-bold text-[var(--accent-gold)]">
+                {character.name[0]}
+              </div>
+              <div>
+                <h2 className="font-bold">{character.name}</h2>
+                <p className="text-xs text-[var(--foreground-secondary)]">
+                  Level {character.level} {character.class || "Character"}
+                </p>
+              </div>
             </div>
-            <div>
-              <h2 className="font-bold">{character.name}</h2>
-              <p className="text-xs text-[var(--foreground-secondary)]">
-                Level {character.level} {character.class || "Character"}
-              </p>
+
+            {/* HP Bar */}
+            <div className="mt-3">
+              <div className="flex justify-between text-xs mb-1">
+                <span className="text-[var(--accent-red)] flex items-center gap-1">
+                  <Heart className="h-3 w-3" /> HP: {character.hp}/{character.maxHp}
+                </span>
+              </div>
+              <div className="h-2 rounded-full bg-[var(--background-tertiary)]">
+                <div className="h-full rounded-full bg-[var(--accent-red)] transition-all" style={{ width: `${hpPct}%` }} />
+              </div>
+            </div>
+
+            {/* XP Bar */}
+            <div className="mt-2">
+              <div className="flex justify-between text-xs mb-1">
+                <span className="text-[var(--accent-green)]">XP: {character.xp}</span>
+                <span className="text-[var(--foreground-muted)] text-[10px]">{xpNeeded - character.xp} until level {character.level + 1}</span>
+              </div>
+              <div className="h-1.5 rounded-full bg-[var(--background-tertiary)]">
+                <div className="h-full rounded-full bg-[var(--accent-green)] transition-all" style={{ width: `${xpPct}%` }} />
+              </div>
             </div>
           </div>
 
-          {/* HP Bar */}
-          <div className="mt-3">
-            <div className="flex justify-between text-xs mb-1">
-              <span className="text-[var(--accent-red)] flex items-center gap-1">
-                <Heart className="h-3 w-3" /> HP: {character.hp}/{character.maxHp}
-              </span>
+          {/* Toggleable Stats */}
+          <button
+            onClick={() => setStatsExpanded(!statsExpanded)}
+            className="w-full flex items-center justify-between px-4 py-2.5 border-t border-[var(--border)] hover:bg-[var(--background-tertiary)] transition-colors"
+          >
+            <span className="text-sm font-medium">Stats</span>
+            {statsExpanded ? <ChevronUp className="h-4 w-4 text-[var(--foreground-muted)]" /> : <ChevronDown className="h-4 w-4 text-[var(--foreground-muted)]" />}
+          </button>
+          {statsExpanded && (
+            <div className="px-3 pb-3">
+              <div className="grid grid-cols-3 gap-2 mb-2">
+                <StatCard icon={<Shield className="h-3.5 w-3.5" />} label="AC" value={character.ac} />
+                <StatCard icon={<Zap className="h-3.5 w-3.5" />} label="Speed" value={`${character.speed}ft`} />
+                <StatCard icon={<Target className="h-3.5 w-3.5" />} label="PB" value={`+${character.proficiencyBonus}`} />
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {ABILITY_KEYS.map((key, i) => (
+                  <AbilityCard key={key} label={ABILITY_LABELS_SHORT[i]} score={character.abilities[key]} />
+                ))}
+              </div>
             </div>
-            <div className="h-2 rounded-full bg-[var(--background-tertiary)]">
-              <div className="h-full rounded-full bg-[var(--accent-red)] transition-all" style={{ width: `${hpPct}%` }} />
-            </div>
-          </div>
-
-          {/* XP Bar */}
-          <div className="mt-2">
-            <div className="flex justify-between text-xs mb-1">
-              <span className="text-[var(--accent-green)]">XP: {character.xp}</span>
-              <span className="text-[var(--foreground-muted)] text-[10px]">{xpNeeded - character.xp} until level {character.level + 1}</span>
-            </div>
-            <div className="h-1.5 rounded-full bg-[var(--background-tertiary)]">
-              <div className="h-full rounded-full bg-[var(--accent-green)] transition-all" style={{ width: `${xpPct}%` }} />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Stats Grid */}
-      {character && (
-        <div className="rounded-xl bg-[var(--card)] p-3">
-          <div className="grid grid-cols-3 gap-2 mb-2">
-            <StatCard icon={<Shield className="h-3.5 w-3.5" />} label="AC" value={character.ac} />
-            <StatCard icon={<Zap className="h-3.5 w-3.5" />} label="Speed" value={`${character.speed}ft`} />
-            <StatCard icon={<Target className="h-3.5 w-3.5" />} label="PB" value={`+${character.proficiencyBonus}`} />
-          </div>
-          <div className="grid grid-cols-3 gap-2">
-            {ABILITY_KEYS.map((key, i) => (
-              <AbilityCard key={key} label={ABILITY_LABELS_SHORT[i]} score={character.abilities[key]} />
-            ))}
-          </div>
+          )}
         </div>
       )}
 
@@ -1216,30 +1158,6 @@ function GameSidebar({
           onClose={() => setSelectedSlot(null)}
         />
       )}
-
-      {/* Location */}
-      <div className="rounded-xl bg-[var(--card)] p-3">
-        <div className="flex items-center gap-2 mb-2">
-          <Map className="h-4 w-4 text-[var(--foreground-muted)]" />
-          <span className="text-sm font-medium">Location</span>
-        </div>
-        {currentLocation ? (
-          <>
-            <h3 className="font-medium">{currentLocation.name}</h3>
-            <p className="text-xs text-[var(--foreground-secondary)] mt-1 line-clamp-2">{currentLocation.description}</p>
-            {currentLocation.npcs && currentLocation.npcs.length > 0 && (
-              <div className="mt-2 pt-2 border-t border-[var(--border)]">
-                <p className="text-xs text-[var(--foreground-muted)]">{currentLocation.npcs.length} character(s) here</p>
-              </div>
-            )}
-          </>
-        ) : (
-          <>
-            <h3 className="font-medium">Unknown Location</h3>
-            <p className="text-xs text-[var(--foreground-secondary)] mt-1">Open the map to explore</p>
-          </>
-        )}
-      </div>
 
       {/* Relationships */}
       {relationships && relationships.length > 0 && (

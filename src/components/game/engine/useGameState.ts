@@ -39,7 +39,7 @@ export function useGameState({ campaignId }: UseGameStateOptions) {
     locationId: session?.locationId,
 
     // City / map navigation
-    navigationMode: session?.navigationMode,
+    navigationMode: session?.navigationMode as "world" | "city" | "location" | undefined,
     currentMapId: session?.currentMapId,
 
     // Combat state

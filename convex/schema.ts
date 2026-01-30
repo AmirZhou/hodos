@@ -247,6 +247,7 @@ export default defineSchema({
       contentRating: v.literal("explicit"),
     }),
     seedScenario: v.optional(v.string()),
+    worldMapId: v.optional(v.id("maps")),  // root world map for the campaign
     coverImage: v.optional(v.string()),
     createdAt: v.number(),
     lastPlayedAt: v.number(),
@@ -471,6 +472,13 @@ export default defineSchema({
     description: v.string(),
     properties: v.record(v.string(), v.any()),
     cityGridData: v.optional(cityGridData),
+    // World-level graph fields
+    parentMapId: v.optional(v.id("maps")),     // world map → contains city maps
+    connectedMaps: v.optional(v.array(v.id("maps"))),  // connections to other maps
+    visibility: v.optional(v.union(
+      v.literal("visible"),    // shows on world graph (may be undiscovered)
+      v.literal("hidden"),     // doesn't show until revealed
+    )),
     createdAt: v.number(),
   }).index("by_slug", ["slug"]),
 
@@ -490,6 +498,14 @@ export default defineSchema({
   })
     .index("by_campaign", ["campaignId"])
     .index("by_campaign_and_location", ["campaignId", "locationId"]),
+
+  campaignMapDiscovery: defineTable({
+    campaignId: v.id("campaigns"),
+    mapId: v.id("maps"),
+    discoveredAt: v.number(),
+  })
+    .index("by_campaign", ["campaignId"])
+    .index("by_campaign_and_map", ["campaignId", "mapId"]),
 
   // ============ WORLD STATE ============
   locations: defineTable({
@@ -536,7 +552,7 @@ export default defineSchema({
     // City navigation
     cityPosition: v.optional(v.object({ x: v.number(), y: v.number() })),
     currentMapId: v.optional(v.id("maps")),
-    navigationMode: v.optional(v.union(v.literal("city"), v.literal("location"))),
+    navigationMode: v.optional(v.union(v.literal("world"), v.literal("city"), v.literal("location"))),
 
     // Exploration grid positions
     explorationPositions: v.optional(v.record(v.string(), v.object({ x: v.number(), y: v.number() }))),
