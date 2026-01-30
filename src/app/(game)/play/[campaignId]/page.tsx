@@ -1072,23 +1072,14 @@ function GameSidebar({
             </div>
           </div>
 
-          {/* Toggleable Ability Scores */}
-          <button
-            onClick={() => setStatsExpanded(!statsExpanded)}
-            className="w-full flex items-center justify-between px-3 py-2 border-t border-[var(--border)] hover:bg-[var(--background-tertiary)] transition-colors"
-          >
-            <span className="text-xs font-medium text-[var(--foreground-secondary)]">Ability Scores</span>
-            {statsExpanded ? <ChevronUp className="h-3.5 w-3.5 text-[var(--foreground-muted)]" /> : <ChevronDown className="h-3.5 w-3.5 text-[var(--foreground-muted)]" />}
-          </button>
-          {statsExpanded && (
-            <div className="px-3 pb-3">
-              <div className="grid grid-cols-6 gap-1.5">
-                {ABILITY_KEYS.map((key, i) => (
-                  <AbilityCard key={key} label={ABILITY_LABELS_SHORT[i]} score={character.abilities[key]} />
-                ))}
-              </div>
+          {/* Ability Scores */}
+          <div className="px-3 pb-3 pt-2 border-t border-[var(--border)]">
+            <div className="grid grid-cols-6 gap-1.5">
+              {ABILITY_KEYS.map((key, i) => (
+                <AbilityCard key={key} label={ABILITY_LABELS_SHORT[i]} score={character.abilities[key]} />
+              ))}
             </div>
-          )}
+          </div>
         </div>
       )}
 
