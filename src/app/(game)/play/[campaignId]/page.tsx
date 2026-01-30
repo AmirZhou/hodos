@@ -1017,62 +1017,72 @@ function GameSidebar({
       {/* Character Card with toggleable stats */}
       {character && (
         <div className="rounded-xl bg-[var(--card)] overflow-hidden">
+          {/* Header — clickable to open full sheet */}
           <div
             onClick={onOpenCharSheet}
-            className="cursor-pointer p-4 hover:bg-[var(--background-tertiary)] transition-colors"
+            className="cursor-pointer p-3 hover:bg-[var(--background-tertiary)] transition-colors"
           >
             <div className="flex items-center gap-3">
-              <div className="h-14 w-14 rounded-full border-2 border-[var(--accent-gold)] bg-[var(--background-tertiary)] flex items-center justify-center text-xl font-bold text-[var(--accent-gold)]">
+              <div className="h-11 w-11 rounded-full border-2 border-[var(--accent-gold)] bg-[var(--background-tertiary)] flex items-center justify-center text-lg font-bold text-[var(--accent-gold)]">
                 {character.name[0]}
               </div>
-              <div>
-                <h2 className="font-bold">{character.name}</h2>
-                <p className="text-xs text-[var(--foreground-secondary)]">
-                  Level {character.level} {character.class || "Character"}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <h2 className="font-bold text-sm">{character.name}</h2>
+                  <span className="text-[10px] text-[var(--foreground-muted)]">Lv {character.level}</span>
+                </div>
+                <p className="text-[11px] text-[var(--foreground-secondary)]">
+                  {character.class || "Character"}
                 </p>
               </div>
             </div>
 
-            {/* HP Bar */}
-            <div className="mt-3">
-              <div className="flex justify-between text-xs mb-1">
-                <span className="text-[var(--accent-red)] flex items-center gap-1">
-                  <Heart className="h-3 w-3" /> HP: {character.hp}/{character.maxHp}
+            {/* HP + XP compact bars */}
+            <div className="mt-2.5 space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-[var(--accent-red)] w-16 flex items-center gap-1 shrink-0">
+                  <Heart className="h-2.5 w-2.5" /> {character.hp}/{character.maxHp}
                 </span>
+                <div className="flex-1 h-1.5 rounded-full bg-[var(--background-tertiary)]">
+                  <div className="h-full rounded-full bg-[var(--accent-red)] transition-all" style={{ width: `${hpPct}%` }} />
+                </div>
               </div>
-              <div className="h-2 rounded-full bg-[var(--background-tertiary)]">
-                <div className="h-full rounded-full bg-[var(--accent-red)] transition-all" style={{ width: `${hpPct}%` }} />
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-[var(--accent-green)] w-16 shrink-0">
+                  XP {character.xp}
+                </span>
+                <div className="flex-1 h-1.5 rounded-full bg-[var(--background-tertiary)]">
+                  <div className="h-full rounded-full bg-[var(--accent-green)] transition-all" style={{ width: `${xpPct}%` }} />
+                </div>
+                <span className="text-[9px] text-[var(--foreground-muted)] shrink-0">{xpNeeded - character.xp} to Lv {character.level + 1}</span>
               </div>
             </div>
 
-            {/* XP Bar */}
-            <div className="mt-2">
-              <div className="flex justify-between text-xs mb-1">
-                <span className="text-[var(--accent-green)]">XP: {character.xp}</span>
-                <span className="text-[var(--foreground-muted)] text-[10px]">{xpNeeded - character.xp} until level {character.level + 1}</span>
-              </div>
-              <div className="h-1.5 rounded-full bg-[var(--background-tertiary)]">
-                <div className="h-full rounded-full bg-[var(--accent-green)] transition-all" style={{ width: `${xpPct}%` }} />
-              </div>
+            {/* Inline AC / Speed / PB */}
+            <div className="mt-2.5 flex items-center gap-3 text-[11px]">
+              <span className="flex items-center gap-1 text-[var(--accent-blue)]">
+                <Shield className="h-3 w-3" /> {character.ac}
+              </span>
+              <span className="flex items-center gap-1 text-[var(--accent-blue)]">
+                <Zap className="h-3 w-3" /> {character.speed}ft
+              </span>
+              <span className="flex items-center gap-1 text-[var(--accent-blue)]">
+                <Target className="h-3 w-3" /> +{character.proficiencyBonus}
+              </span>
             </div>
           </div>
 
-          {/* Toggleable Stats */}
+          {/* Toggleable Ability Scores */}
           <button
             onClick={() => setStatsExpanded(!statsExpanded)}
-            className="w-full flex items-center justify-between px-4 py-2.5 border-t border-[var(--border)] hover:bg-[var(--background-tertiary)] transition-colors"
+            className="w-full flex items-center justify-between px-3 py-2 border-t border-[var(--border)] hover:bg-[var(--background-tertiary)] transition-colors"
           >
-            <span className="text-sm font-medium">Stats</span>
-            {statsExpanded ? <ChevronUp className="h-4 w-4 text-[var(--foreground-muted)]" /> : <ChevronDown className="h-4 w-4 text-[var(--foreground-muted)]" />}
+            <span className="text-xs font-medium text-[var(--foreground-secondary)]">Ability Scores</span>
+            {statsExpanded ? <ChevronUp className="h-3.5 w-3.5 text-[var(--foreground-muted)]" /> : <ChevronDown className="h-3.5 w-3.5 text-[var(--foreground-muted)]" />}
           </button>
           {statsExpanded && (
             <div className="px-3 pb-3">
-              <div className="grid grid-cols-3 gap-2 mb-2">
-                <StatCard icon={<Shield className="h-3.5 w-3.5" />} label="AC" value={character.ac} />
-                <StatCard icon={<Zap className="h-3.5 w-3.5" />} label="Speed" value={`${character.speed}ft`} />
-                <StatCard icon={<Target className="h-3.5 w-3.5" />} label="PB" value={`+${character.proficiencyBonus}`} />
-              </div>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-6 gap-1.5">
                 {ABILITY_KEYS.map((key, i) => (
                   <AbilityCard key={key} label={ABILITY_LABELS_SHORT[i]} score={character.abilities[key]} />
                 ))}
