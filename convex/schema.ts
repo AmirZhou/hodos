@@ -247,6 +247,7 @@ export default defineSchema({
       contentRating: v.literal("explicit"),
     }),
     seedScenario: v.optional(v.string()),
+    coverImage: v.optional(v.string()),
     createdAt: v.number(),
     lastPlayedAt: v.number(),
   })
