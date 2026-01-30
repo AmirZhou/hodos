@@ -212,5 +212,5 @@ export const RIVERMOOT_CITY_GRID = {
   width: 16,
   height: 16,
   cells: generateCells(),
-  backgroundImage: "/maps/rivermoot-city.jpg",
+  backgroundImage: "/maps/rivermoot-city.png",
 };
