@@ -103,6 +103,7 @@ function CampaignsContent() {
                   status={campaign.status}
                   lastPlayed={formatLastPlayed(campaign.lastPlayedAt)}
                   playerCount={campaign.memberCount}
+                  imageUrl={campaign.coverImage}
                 />
               </Link>
             ))}
