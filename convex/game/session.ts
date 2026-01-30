@@ -47,7 +47,6 @@ export const start = mutation({
     const campaign = await ctx.db.get(args.campaignId);
     if (campaign?.seedScenario === "rivermoot-city") {
       await ensureRivermootMap(ctx, args.campaignId);
-
     }
 
     // Check if campaign has a city map with grid data
