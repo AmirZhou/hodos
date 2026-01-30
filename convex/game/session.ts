@@ -75,7 +75,7 @@ export const start = mutation({
       }
     }
 
-    return await ctx.db.insert("gameSessions", {
+    const sessionId = await ctx.db.insert("gameSessions", {
       campaignId: args.campaignId,
       status: "active",
       mode: args.mode || "exploration",
@@ -90,6 +90,44 @@ export const start = mutation({
       startedAt: now,
       lastActionAt: now,
     });
+
+    // Add initial game log for rivermoot-city seed scenario on first session
+    if (campaign?.seedScenario === "rivermoot-city") {
+      const existingLog = await ctx.db
+        .query("gameLog")
+        .withIndex("by_campaign", (q) => q.eq("campaignId", args.campaignId))
+        .first();
+
+      if (!existingLog) {
+        await ctx.db.insert("gameLog", {
+          campaignId: args.campaignId,
+          sessionId,
+          type: "system",
+          content:
+            "You arrive at The Crossroads — the beating heart of Rivermoot, where the four great bridges converge above the river junction.",
+          createdAt: now,
+        });
+        await ctx.db.insert("gameLog", {
+          campaignId: args.campaignId,
+          sessionId,
+          type: "narration",
+          actorType: "dm",
+          content:
+            "Merchant carts rumble across cobblestones around you. Street performers juggle flame nearby, and the city watch keeps a wary eye from the central watchtower. Four arched gateways mark the entrances to each quadrant — the noble temples to the northwest, the bustling markets to the northeast, the arcane towers to the southwest, and the shadowy docks to the southeast. The city of Rivermoot stretches before you in every direction.",
+          createdAt: now + 1,
+        });
+        await ctx.db.insert("gameLog", {
+          campaignId: args.campaignId,
+          sessionId,
+          type: "system",
+          content:
+            "Use the City tab in the sidebar to navigate the 16×16 city grid. Step on a location tile and click Enter to explore it.",
+          createdAt: now + 2,
+        });
+      }
+    }
+
+    return sessionId;
   },
 });
 
