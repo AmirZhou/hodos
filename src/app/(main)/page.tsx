@@ -53,7 +53,7 @@ export default function HomePage() {
               <Link href="/campaigns/new">
                 <Button size="lg" className="w-full sm:w-auto">
                   <Plus className="mr-2 h-5 w-5" />
-                  Start Your Adventure
+                  Enter Rivermoot
                 </Button>
               </Link>
               <Link href="/campaigns">
