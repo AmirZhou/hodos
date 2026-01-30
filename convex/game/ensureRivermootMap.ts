@@ -27,6 +27,8 @@ export async function ensureRivermootMap(
 
   if (existingMap) {
     mapId = existingMap._id;
+    // Keep cityGridData in sync with source (e.g. backgroundImage path)
+    await ctx.db.patch(mapId, { cityGridData: RIVERMOOT_CITY_GRID });
   } else {
     mapId = await ctx.db.insert("maps", {
       slug: RIVERMOOT_MAP.slug,
