@@ -976,7 +976,6 @@ function GameSidebar({
 }) {
   const { currentCharacter, gameState } = useGame();
   const [equipExpanded, setEquipExpanded] = useState(true);
-  const [statsExpanded, setStatsExpanded] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
 
   // Get relationships for current character
