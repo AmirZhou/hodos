@@ -14,7 +14,7 @@ import { RequireAuth } from "@/components/auth/RequireAuth";
 const CAMPAIGN_NAME = "Chains of Rivermoot";
 const CAMPAIGN_DESCRIPTION =
   "A fantasy city at the confluence of two rivers, where magic and martial arts shape the balance of power. Slavery is woven into the institutions of Rivermoot — alliances shift, debts are called in, and freedom is never guaranteed. Navigate four quadrants, 17 locations, and the dangerous streets between them.";
-const COVER_IMAGE = "/campaign-cover.svg";
+const COVER_IMAGE = "/campaign-cover.png";
 const SEED_SCENARIO = "rivermoot-city";
 
 export default function NewCampaignPage() {
