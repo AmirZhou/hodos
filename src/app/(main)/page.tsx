@@ -100,9 +100,13 @@ export default function HomePage() {
                 <Link key={campaign._id} href={`/campaigns/${campaign._id}`}>
                   <Card className="overflow-hidden cursor-pointer hover:border-[var(--accent-gold)] transition-colors h-full">
                     <div className="aspect-video bg-[var(--background-tertiary)] relative">
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Swords className="h-10 w-10 text-[var(--foreground-muted)]" />
-                      </div>
+                      {campaign.coverImage ? (
+                        <img src={campaign.coverImage} alt={campaign.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Swords className="h-10 w-10 text-[var(--foreground-muted)]" />
+                        </div>
+                      )}
                       <div className={`absolute top-2 right-2 px-2 py-1 rounded text-xs text-white ${
                         campaign.status === "active" ? "bg-[var(--accent-green)]" :
                         campaign.status === "lobby" ? "bg-[var(--accent-gold)]" :
