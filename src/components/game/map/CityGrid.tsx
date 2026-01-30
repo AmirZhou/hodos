@@ -126,8 +126,8 @@ export function CityGrid({
   const svgHeight = gridSize.height * CELL_SIZE;
 
   return (
-    <div className="space-y-2">
-      <div className="rounded-lg border border-[var(--border)] bg-[var(--background-secondary)] overflow-hidden">
+    <div>
+      <div className="relative rounded-lg border border-[var(--border)] bg-[var(--background-secondary)] overflow-hidden">
         <svg
           viewBox={`0 0 ${svgWidth} ${svgHeight}`}
           className="block w-full h-auto"
