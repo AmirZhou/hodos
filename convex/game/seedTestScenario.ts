@@ -601,100 +601,10 @@ async function seedMidScene(ctx: MutationCtx, campaignId: Id<"campaigns">, chara
 async function seedRivermootScenario(ctx: MutationCtx, campaignId: Id<"campaigns">, characterId: Id<"characters">) {
   const now = Date.now();
 
-  // 1. Idempotent map creation — reuse existing map if it exists
-  let mapId: Id<"maps">;
-  const existingMap = await ctx.db
-    .query("maps")
-    .withIndex("by_slug", (q) => q.eq("slug", RIVERMOOT_MAP.slug))
-    .first();
+  // Ensure map + locations + campaign link + starting discovery exist
+  const { mapId } = await ensureRivermootMap(ctx, campaignId);
 
-  if (existingMap) {
-    mapId = existingMap._id;
-  } else {
-    mapId = await ctx.db.insert("maps", {
-      slug: RIVERMOOT_MAP.slug,
-      name: RIVERMOOT_MAP.name,
-      description: RIVERMOOT_MAP.description,
-      properties: RIVERMOOT_MAP.properties,
-      cityGridData: RIVERMOOT_CITY_GRID,
-      createdAt: now,
-    });
-
-    // Pass 1: Insert all locations (without connections)
-    const templateToId = new Map<string, Id<"locations">>();
-
-    for (const loc of RIVERMOOT_LOCATIONS) {
-      const locationId = await ctx.db.insert("locations", {
-        mapId,
-        templateId: loc.templateId,
-        name: loc.name,
-        description: loc.description,
-        properties: loc.properties,
-        connectedTo: [],
-        parentLocationId: undefined,
-      });
-      templateToId.set(loc.templateId, locationId);
-    }
-
-    // Pass 2: Wire bidirectional connections
-    for (const loc of RIVERMOOT_LOCATIONS) {
-      const locationId = templateToId.get(loc.templateId)!;
-      const connectedTo = loc.connections
-        .map((tpl) => templateToId.get(tpl))
-        .filter((id): id is Id<"locations"> => id !== undefined);
-
-      await ctx.db.patch(locationId, { connectedTo });
-
-      if (loc.parentTemplateId) {
-        const parentId = templateToId.get(loc.parentTemplateId);
-        if (parentId) {
-          await ctx.db.patch(locationId, { parentLocationId: parentId });
-        }
-      }
-    }
-  }
-
-  // 2. Attach map to campaign (idempotent — check for existing link)
-  const existingLink = await ctx.db
-    .query("campaignMaps")
-    .withIndex("by_campaign_and_map", (q) =>
-      q.eq("campaignId", campaignId).eq("mapId", mapId)
-    )
-    .first();
-
-  if (!existingLink) {
-    await ctx.db.insert("campaignMaps", {
-      campaignId,
-      mapId,
-      addedAt: now,
-    });
-  }
-
-  // 3. Discover the starting location (The Crossroads)
-  const startLocation = await ctx.db
-    .query("locations")
-    .withIndex("by_map", (q) => q.eq("mapId", mapId))
-    .filter((q) => q.eq(q.field("templateId"), RIVERMOOT_START_LOCATION))
-    .first();
-
-  if (startLocation) {
-    const existingDiscovery = await ctx.db
-      .query("campaignLocationDiscovery")
-      .withIndex("by_campaign_and_location", (q) =>
-        q.eq("campaignId", campaignId).eq("locationId", startLocation._id)
-      )
-      .first();
-
-    if (!existingDiscovery) {
-      await ctx.db.insert("campaignLocationDiscovery", {
-        campaignId,
-        locationId: startLocation._id,
-        discoveredAt: now,
-      });
-    }
-  }
-
-  // 4. Create game session with city navigation mode
+  // Create game session with city navigation mode
   const sessionId = await ctx.db.insert("gameSessions", {
     campaignId,
     status: "active",
