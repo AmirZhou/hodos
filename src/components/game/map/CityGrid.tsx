@@ -19,16 +19,17 @@ type CityTerrain =
   | "road" | "building" | "water" | "wall"
   | "gate" | "plaza" | "garden" | "dock" | "bridge";
 
-const TERRAIN_COLORS: Record<CityTerrain, { fill: string; opacity: number }> = {
-  road:     { fill: "#8B7355", opacity: 0.3 },
-  building: { fill: "#555555", opacity: 0.4 },
-  water:    { fill: "#2266AA", opacity: 0.5 },
-  wall:     { fill: "#333333", opacity: 0.6 },
-  gate:     { fill: "#AA8844", opacity: 0.4 },
-  plaza:    { fill: "#CCAA66", opacity: 0.35 },
-  garden:   { fill: "#336633", opacity: 0.4 },
-  dock:     { fill: "#5D4E37", opacity: 0.35 },
-  bridge:   { fill: "#9B7B4B", opacity: 0.45 },
+// Opacities for when no background image is present
+const TERRAIN_COLORS: Record<CityTerrain, { fill: string; opacity: number; bgOpacity: number }> = {
+  road:     { fill: "#8B7355", opacity: 0.3,  bgOpacity: 0 },
+  building: { fill: "#555555", opacity: 0.4,  bgOpacity: 0 },
+  water:    { fill: "#2266AA", opacity: 0.5,  bgOpacity: 0 },
+  wall:     { fill: "#333333", opacity: 0.6,  bgOpacity: 0 },
+  gate:     { fill: "#AA8844", opacity: 0.4,  bgOpacity: 0 },
+  plaza:    { fill: "#CCAA66", opacity: 0.35, bgOpacity: 0 },
+  garden:   { fill: "#336633", opacity: 0.4,  bgOpacity: 0 },
+  dock:     { fill: "#5D4E37", opacity: 0.35, bgOpacity: 0 },
+  bridge:   { fill: "#9B7B4B", opacity: 0.45, bgOpacity: 0 },
 };
 
 export function CityGrid({
