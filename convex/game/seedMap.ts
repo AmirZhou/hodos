@@ -22,6 +22,8 @@ export const seedRivermootCity = mutation({
       .first();
 
     if (existing) {
+      // Sync grid data (e.g. backgroundImage path changes)
+      await ctx.db.patch(existing._id, { cityGridData: RIVERMOOT_CITY_GRID });
       return { mapId: existing._id, alreadyExists: true };
     }
 
