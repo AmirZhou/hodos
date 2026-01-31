@@ -1,5 +1,5 @@
-import { getItemById } from "../data/equipmentItems";
-import type { Rarity } from "../data/equipmentItems";
+import { getItemById, getBindingRule } from "../data/equipmentItems";
+import type { Rarity, BindingRule } from "../data/equipmentItems";
 
 export interface RawItemGrant {
   itemId: string;
@@ -13,6 +13,7 @@ export interface ValidatedGrant {
   reason: string;
   itemName: string;
   rarity: Rarity;
+  bindingRule: BindingRule;
 }
 
 export interface ValidationResult {
