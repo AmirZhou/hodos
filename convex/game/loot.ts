@@ -116,6 +116,7 @@ export const openContainer = mutation({
   handler: async (ctx, args) => {
     const container = await ctx.db.get(args.containerId);
     if (!container) throw new Error("Container not found");
+    await requireCampaignMember(ctx, container.campaignId);
 
     if (container.lock?.isLocked) {
       throw new Error("Container is locked");
