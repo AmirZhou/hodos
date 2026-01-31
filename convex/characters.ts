@@ -222,7 +222,17 @@ export const get = query({
       portraitUrl = (await ctx.storage.getUrl(character.portrait)) ?? undefined;
     }
 
-    return { ...character, portraitUrl };
+    // Compute derived stats from equipped items
+    const equippedItems = await ctx.db
+      .query("items")
+      .withIndex("by_owner", (q) => q.eq("ownerId", args.characterId))
+      .filter((q) => q.eq(q.field("status"), "equipped"))
+      .collect();
+
+    const bonuses = computeEquipmentBonuses(equippedItems);
+    const derivedStats = computeDerivedStats(character, bonuses);
+
+    return { ...character, portraitUrl, derivedStats };
   },
 });
 
