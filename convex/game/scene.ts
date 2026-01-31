@@ -302,7 +302,12 @@ export const performSceneAction = mutation({
     }
     await requireCampaignMember(ctx, session.campaignId);
 
-    if (session.scene.phase !== "active") {
+    // Block actions after red safeword (must go through aftercare)
+    if (session.scene.phase === "aftercare" && args.actionType !== "aftercare" && args.actionType !== "check_in") {
+      throw new Error("Scene is in aftercare — only aftercare and check-in actions are allowed");
+    }
+
+    if (session.scene.phase !== "active" && session.scene.phase !== "aftercare") {
       throw new Error("Scene not active");
     }
 
@@ -312,6 +317,32 @@ export const performSceneAction = mutation({
 
     if (!actor) {
       throw new Error("Invalid actor");
+    }
+
+    // Validate action against participant hard limits
+    if (args.targetIndex !== undefined) {
+      const target = participants[args.targetIndex];
+      if (target && target.limits.length > 0) {
+        const actionStr = args.actionType.toLowerCase();
+        for (const limit of target.limits) {
+          if (actionStr.includes(limit.toLowerCase()) || limit.toLowerCase().includes(actionStr)) {
+            throw new Error(`Action "${args.actionType}" conflicts with participant's hard limit: "${limit}"`);
+          }
+        }
+      }
+
+      // Also check character/NPC hard limits from their profile
+      if (target.entityType === "character") {
+        const charDoc = await ctx.db.get(target.entityId as Id<"characters">);
+        if (charDoc?.hardLimits) {
+          for (const limit of charDoc.hardLimits) {
+            const actionStr = args.actionType.toLowerCase();
+            if (actionStr.includes(limit.toLowerCase()) || limit.toLowerCase().includes(actionStr)) {
+              throw new Error(`Action "${args.actionType}" violates character's hard limit: "${limit}"`);
+            }
+          }
+        }
+      }
     }
 
     // Calculate intensity change based on action
@@ -345,10 +376,23 @@ export const performSceneAction = mutation({
       if (target) {
         // Higher intensity actions can reduce comfort
         const comfortDelta = intensityChange > 5 ? -Math.floor(intensityChange / 2) : 0;
+        const newComfort = Math.max(0, Math.min(100, target.currentComfort + comfortDelta));
         participants[args.targetIndex] = {
           ...target,
-          currentComfort: Math.max(0, Math.min(100, target.currentComfort + comfortDelta)),
+          currentComfort: newComfort,
         };
+
+        // Auto-insert check-in when comfort drops below 40
+        if (newComfort < 40 && target.currentComfort >= 40) {
+          // Log a system check-in message
+          await ctx.db.insert("gameLog", {
+            campaignId: session.campaignId,
+            type: "system",
+            content: `[Comfort Check] A participant's comfort has dropped below 40%. Consider checking in or using a safeword.`,
+            actorType: "dm",
+            createdAt: Date.now(),
+          });
+        }
       }
     }
 
@@ -365,21 +409,12 @@ export const performSceneAction = mutation({
 
     const now = Date.now();
 
-    await ctx.db.patch(args.sessionId, {
-      scene: {
-        ...scene,
-        participants,
-        intensity: newIntensity,
-        peakIntensity: newPeakIntensity,
-        mood,
-        currentActorIndex: nextActorIndex,
-        lastActionAt: now,
-      },
-      lastActionAt: now,
-    });
+    // Track aftercare actions count
+    let aftercareCount = scene.aftercareActionsCompleted ?? 0;
 
     // Check if aftercare was initiated
     if (args.actionType === "aftercare") {
+      aftercareCount++;
       await ctx.db.patch(args.sessionId, {
         scene: {
           ...scene,
@@ -388,6 +423,7 @@ export const performSceneAction = mutation({
           peakIntensity: newPeakIntensity,
           mood: "aftercare",
           phase: "aftercare",
+          aftercareActionsCompleted: aftercareCount,
           currentActorIndex: nextActorIndex,
           lastActionAt: now,
         },
@@ -395,6 +431,25 @@ export const performSceneAction = mutation({
       });
       return { actionType: args.actionType, phase: "aftercare", intensity: newIntensity };
     }
+
+    // Increment aftercare count during aftercare phase
+    if (scene.phase === "aftercare" && args.actionType === "check_in") {
+      aftercareCount++;
+    }
+
+    await ctx.db.patch(args.sessionId, {
+      scene: {
+        ...scene,
+        participants,
+        intensity: newIntensity,
+        peakIntensity: newPeakIntensity,
+        mood,
+        aftercareActionsCompleted: aftercareCount,
+        currentActorIndex: nextActorIndex,
+        lastActionAt: now,
+      },
+      lastActionAt: now,
+    });
 
     return { actionType: args.actionType, intensity: newIntensity, mood, nextActor: nextActorIndex };
   },
