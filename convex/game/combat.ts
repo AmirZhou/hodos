@@ -203,12 +203,24 @@ export const initiateCombat = mutation({
     // Copy exploration positions to combatants if available
     const explorationPositions = session.explorationPositions ?? {};
 
-    const combatantStates = args.combatants.map((c) => {
+    const combatantStates = await Promise.all(args.combatants.map(async (c) => {
       // Use exploration position if combatant didn't specify one, or if position is (0,0) default
       const explorationPos = explorationPositions[c.entityId];
       const position = (c.position.x === 0 && c.position.y === 0 && explorationPos)
         ? explorationPos
         : c.position;
+
+      // Look up effective speed for the entity
+      let speed = 30;
+      if (c.entityType === "character") {
+        try {
+          const stats = await getEffectiveStats(ctx, c.entityId as Id<"characters">);
+          speed = stats.effectiveSpeed;
+        } catch { /* default 30 */ }
+      } else {
+        const npc = await ctx.db.get(c.entityId as Id<"npcs">);
+        if (npc) speed = 30; // NPCs use base 30
+      }
 
       return {
         entityId: c.entityId,
@@ -218,9 +230,9 @@ export const initiateCombat = mutation({
         hasAction: true,
         hasBonusAction: true,
         hasReaction: true,
-        movementRemaining: 30,
+        movementRemaining: speed,
       };
-    });
+    }));
 
     const now = Date.now();
 
