@@ -87,6 +87,7 @@ export function validateItemGrants(
       reason: reason || item.name,
       itemName: item.name,
       rarity: item.rarity,
+      bindingRule: getBindingRule(item),
     });
   }
 
