@@ -217,7 +217,6 @@ function NewCharacterPageContent() {
 
     try {
       await createCharacter({
-        userId: user._id,
         campaignId,
         name: character.name,
         pronouns: character.pronouns,
