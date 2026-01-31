@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
-import { getItemById } from "../data/equipmentItems";
+import { createItemInstance, logItemEvent } from "../equipment";
+import { getBindingRule } from "../data/equipmentItems";
 
 // ============ QUERIES ============
 
@@ -24,17 +25,44 @@ export const getContainersAtLocation = query({
       )
       .collect();
 
-    return containers.map((c) => ({
-      _id: c._id,
-      containerType: c.containerType,
-      name: c.name,
-      description: c.description,
-      items: c.containerType === "ground" || c.isOpened ? c.items : [],
-      itemCount: c.items.length,
-      lock: c.lock,
-      isOpened: c.isOpened,
-      isLooted: c.isLooted,
-    }));
+    // For each container, fetch its items from the items table
+    const results = [];
+    for (const c of containers) {
+      const containerItems = await ctx.db
+        .query("items")
+        .withIndex("by_container", (q) => q.eq("containerId", c._id))
+        .collect();
+
+      const shouldShowItems = c.containerType === "ground" || c.isOpened;
+
+      results.push({
+        _id: c._id,
+        containerType: c.containerType,
+        name: c.name,
+        description: c.description,
+        items: shouldShowItems
+          ? containerItems.map((item) => ({
+              _id: item._id,
+              templateId: item.templateId,
+              name: item.name,
+              description: item.description,
+              type: item.type,
+              rarity: item.rarity,
+              stats: item.stats,
+              specialAttributes: item.specialAttributes,
+              passive: item.passive,
+              bindingRule: item.bindingRule,
+              boundTo: item.boundTo,
+            }))
+          : [],
+        itemCount: containerItems.length,
+        lock: c.lock,
+        isOpened: c.isOpened,
+        isLooted: c.isLooted,
+      });
+    }
+
+    return results;
   },
 });
 
@@ -54,14 +82,26 @@ export const getContainersForDMContext = query({
       )
       .collect();
 
-    return containers.map((c) => ({
-      name: c.name,
-      containerType: c.containerType,
-      isLocked: c.lock?.isLocked ?? false,
-      isOpened: c.isOpened,
-      isLooted: c.isLooted,
-      itemCount: c.items.length,
-    }));
+    const results = [];
+    for (const c of containers) {
+      const itemCount = (
+        await ctx.db
+          .query("items")
+          .withIndex("by_container", (q) => q.eq("containerId", c._id))
+          .collect()
+      ).length;
+
+      results.push({
+        name: c.name,
+        containerType: c.containerType,
+        isLocked: c.lock?.isLocked ?? false,
+        isOpened: c.isOpened,
+        isLooted: c.isLooted,
+        itemCount,
+      });
+    }
+
+    return results;
   },
 });
 
@@ -86,7 +126,6 @@ export const openContainer = mutation({
 
 /**
  * Unlock a container via key or skill check.
- * For "skillCheck", the caller is trusted (DM/roll system handles DC externally).
  */
 export const unlockContainer = mutation({
   args: {
@@ -97,24 +136,28 @@ export const unlockContainer = mutation({
   handler: async (ctx, args) => {
     const container = await ctx.db.get(args.containerId);
     if (!container) throw new Error("Container not found");
-    if (!container.lock?.isLocked) return; // already unlocked
+    if (!container.lock?.isLocked) return;
 
     if (args.method === "key") {
       if (!container.lock.keyItemId) {
         throw new Error("This lock cannot be opened with a key");
       }
-      // Check character inventory for the key item
-      const character = await ctx.db.get(args.characterId);
-      if (!character) throw new Error("Character not found");
+      // Check character's items for the key
+      const keyItem = await ctx.db
+        .query("items")
+        .withIndex("by_owner", (q) => q.eq("ownerId", args.characterId))
+        .filter((q) =>
+          q.and(
+            q.eq(q.field("status"), "inventory"),
+            q.eq(q.field("templateId"), container.lock!.keyItemId!)
+          )
+        )
+        .first();
 
-      const hasKey = character.inventory.some(
-        (item) => item.id === container.lock!.keyItemId
-      );
-      if (!hasKey) {
+      if (!keyItem) {
         throw new Error("You don't have the required key");
       }
     }
-    // For "skillCheck", trust the caller
 
     await ctx.db.patch(args.containerId, {
       lock: { ...container.lock, isLocked: false },
@@ -123,13 +166,13 @@ export const unlockContainer = mutation({
 });
 
 /**
- * Take a single item from a container by index.
+ * Take a single item from a container by item ID.
  */
 export const takeItem = mutation({
   args: {
     containerId: v.id("lootContainers"),
     characterId: v.id("characters"),
-    itemIndex: v.number(),
+    itemId: v.id("items"),
   },
   handler: async (ctx, args) => {
     const container = await ctx.db.get(args.containerId);
@@ -139,31 +182,53 @@ export const takeItem = mutation({
       throw new Error("Container is not open");
     }
 
-    if (args.itemIndex < 0 || args.itemIndex >= container.items.length) {
-      throw new Error("Invalid item index");
-    }
-
     const character = await ctx.db.get(args.characterId);
     if (!character) throw new Error("Character not found");
 
-    const item = container.items[args.itemIndex];
-    const newItems = [...container.items];
-    newItems.splice(args.itemIndex, 1);
+    const item = await ctx.db.get(args.itemId);
+    if (!item) throw new Error("Item not found");
+    if (item.containerId !== args.containerId) {
+      throw new Error("Item is not in this container");
+    }
 
-    const isEmpty = newItems.length === 0;
-
-    // Add item to character inventory
-    await ctx.db.patch(args.characterId, {
-      inventory: [...character.inventory, item] as typeof character.inventory,
+    // Move item to character inventory
+    const isBop = item.bindingRule === "bop";
+    await ctx.db.patch(args.itemId, {
+      status: "inventory",
+      ownerId: args.characterId,
+      containerId: undefined,
+      ...(isBop ? { boundTo: args.characterId } : {}),
     });
 
-    // Remove item from container
-    await ctx.db.patch(args.containerId, {
-      items: newItems,
-      isLooted: isEmpty,
+    await logItemEvent(ctx, {
+      itemId: args.itemId,
+      campaignId: container.campaignId,
+      event: "looted",
+      actorId: args.characterId,
+      metadata: `Looted from ${container.name}`,
     });
 
-    return { itemName: item.name, isEmpty };
+    if (isBop) {
+      await logItemEvent(ctx, {
+        itemId: args.itemId,
+        campaignId: container.campaignId,
+        event: "bound",
+        actorId: args.characterId,
+        metadata: "Bind on Pickup",
+      });
+    }
+
+    // Check if container is now empty
+    const remaining = await ctx.db
+      .query("items")
+      .withIndex("by_container", (q) => q.eq("containerId", args.containerId))
+      .first();
+
+    if (!remaining) {
+      await ctx.db.patch(args.containerId, { isLooted: true });
+    }
+
+    return { itemName: item.name, isEmpty: !remaining };
   },
 });
 
@@ -183,31 +248,56 @@ export const takeAllItems = mutation({
       throw new Error("Container is not open");
     }
 
-    if (container.items.length === 0) return { itemNames: [] };
-
     const character = await ctx.db.get(args.characterId);
     if (!character) throw new Error("Character not found");
 
-    const itemNames = container.items.map((i) => i.name);
+    const items = await ctx.db
+      .query("items")
+      .withIndex("by_container", (q) => q.eq("containerId", args.containerId))
+      .collect();
 
-    // Move all items to character inventory
-    await ctx.db.patch(args.characterId, {
-      inventory: [...character.inventory, ...container.items] as typeof character.inventory,
-    });
+    if (items.length === 0) return { itemNames: [] };
 
-    // Clear container
-    await ctx.db.patch(args.containerId, {
-      items: [],
-      isLooted: true,
-    });
+    const itemNames: string[] = [];
+    for (const item of items) {
+      const isBop = item.bindingRule === "bop";
+      await ctx.db.patch(item._id, {
+        status: "inventory",
+        ownerId: args.characterId,
+        containerId: undefined,
+        ...(isBop ? { boundTo: args.characterId } : {}),
+      });
+
+      await logItemEvent(ctx, {
+        itemId: item._id,
+        campaignId: container.campaignId,
+        event: "looted",
+        actorId: args.characterId,
+        metadata: `Looted from ${container.name}`,
+      });
+
+      if (isBop) {
+        await logItemEvent(ctx, {
+          itemId: item._id,
+          campaignId: container.campaignId,
+          event: "bound",
+          actorId: args.characterId,
+          metadata: "Bind on Pickup",
+        });
+      }
+
+      itemNames.push(item.name);
+    }
+
+    await ctx.db.patch(args.containerId, { isLooted: true });
 
     return { itemNames };
   },
 });
 
 /**
- * Seed a new loot container. For admin/test/DM use.
- * Converts item IDs to full item documents via getItemById().
+ * Seed a new loot container with items. For admin/test/DM use.
+ * Creates item instances in the items table linked to the container.
  */
 export const seedContainer = mutation({
   args: {
@@ -233,39 +323,41 @@ export const seedContainer = mutation({
     sourceEntityId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const items = [];
-    for (const itemId of args.itemIds) {
-      const itemData = getItemById(itemId);
-      if (!itemData) {
-        console.warn(`[seedContainer] Unknown item ID: ${itemId}`);
-        continue;
-      }
-      items.push({
-        id: itemData.id,
-        name: itemData.name,
-        description: itemData.description,
-        type: itemData.type,
-        rarity: itemData.rarity,
-        stats: itemData.stats,
-        specialAttributes: itemData.specialAttributes,
-        passive: itemData.passive,
-      });
-    }
-
+    // Create the container first
     const containerId = await ctx.db.insert("lootContainers", {
       campaignId: args.campaignId,
       locationId: args.locationId,
       containerType: args.containerType,
       name: args.name,
       description: args.description,
-      items,
       lock: args.lock,
-      isOpened: args.containerType === "ground", // ground items are always "open"
+      isOpened: args.containerType === "ground",
       isLooted: false,
       sourceType: args.sourceType,
       sourceEntityId: args.sourceEntityId,
       createdAt: Date.now(),
     });
+
+    // Create item instances linked to the container
+    for (const templateId of args.itemIds) {
+      try {
+        const itemId = await createItemInstance(ctx, {
+          templateId,
+          campaignId: args.campaignId,
+          status: "container",
+          containerId,
+        });
+
+        await logItemEvent(ctx, {
+          itemId,
+          campaignId: args.campaignId,
+          event: "created",
+          metadata: `Seeded in ${args.name}`,
+        });
+      } catch (e) {
+        console.warn(`[seedContainer] Failed to create item: ${templateId}`, e);
+      }
+    }
 
     return containerId;
   },
