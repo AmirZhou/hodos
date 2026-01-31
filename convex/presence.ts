@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { requireAuth } from "./lib/auth";
 
 // Time in ms after which a player is considered offline
 const OFFLINE_THRESHOLD_MS = 90000; // 90 seconds
