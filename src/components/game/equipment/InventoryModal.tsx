@@ -44,18 +44,18 @@ export function InventoryModal({ characterId, onClose }: InventoryModalProps) {
   const [filter, setFilter] = useState<FilterTab>("all");
   const [search, setSearch] = useState("");
 
-  // Build set of equipped item IDs
+  // Build set of equipped item _ids
   const equippedIds = new Set<string>();
   if (equipment) {
-    const eq = equipment as Record<string, { id?: string } | null>;
+    const eq = equipment as Record<string, { _id?: string } | null>;
     for (const val of Object.values(eq)) {
-      if (val && typeof val === "object" && "id" in val && val.id) {
-        equippedIds.add(val.id);
+      if (val && typeof val === "object" && "_id" in val && val._id) {
+        equippedIds.add(val._id);
       }
     }
   }
 
-  const filteredItems = (inventory ?? []).filter((item) => {
+  const filteredItems = (inventory ?? []).filter((item: any) => {
     if (search && !item.name.toLowerCase().includes(search.toLowerCase())) return false;
     const slots = FILTER_SLOTS[filter];
     if (slots && !slots.includes(item.type)) return false;
@@ -63,14 +63,14 @@ export function InventoryModal({ characterId, onClose }: InventoryModalProps) {
   });
 
   const handleEquip = (itemId: string) => {
-    equipItem({ characterId, itemId });
+    equipItem({ characterId, itemId: itemId as any });
   };
 
   const handleUnequip = (itemId: string) => {
     if (!equipment) return;
-    const eq = equipment as Record<string, { id?: string } | null>;
+    const eq = equipment as Record<string, { _id?: string } | null>;
     for (const [slot, val] of Object.entries(eq)) {
-      if (val && typeof val === "object" && "id" in val && val.id === itemId) {
+      if (val && typeof val === "object" && "_id" in val && val._id === itemId) {
         unequipItem({ characterId, slot: slot as never });
         return;
       }
