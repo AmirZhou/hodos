@@ -199,6 +199,7 @@ export const updateStatus = mutation({
     ),
   },
   handler: async (ctx, args) => {
+    await requireCampaignMember(ctx, args.campaignId, "owner");
     await ctx.db.patch(args.campaignId, {
       status: args.status,
       lastPlayedAt: Date.now(),
