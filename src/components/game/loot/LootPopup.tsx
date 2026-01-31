@@ -8,13 +8,15 @@ import { RARITY_COLORS, RARITY_BORDER_COLORS } from "@/lib/equipment";
 import type { Rarity } from "../../../../convex/data/equipmentItems";
 
 interface LootItem {
-  id: string;
+  _id: string;
   name: string;
   description: string;
   type: string;
   rarity: string;
   stats: Record<string, unknown>;
   passive?: string;
+  bindingRule?: string;
+  boundTo?: string;
 }
 
 interface LootPopupProps {
