@@ -74,6 +74,18 @@ export async function logItemEvent(
   });
 }
 
+/** Returns true if the item is soulbound to a character. */
+export function isItemBound(item: { boundTo?: Id<"characters"> }): boolean {
+  return item.boundTo !== undefined;
+}
+
+/** Throws if the item is soulbound. Use as a guard before trade mutations. */
+export function assertNotBound(item: { boundTo?: Id<"characters">; name: string }): void {
+  if (item.boundTo !== undefined) {
+    throw new Error(`Cannot trade ${item.name} — it is soulbound`);
+  }
+}
+
 function getSlotForItem(itemType: string, equippedItems: Doc<"items">[]): EquipedSlot | null {
   if (itemType === "ring") {
     const occupiedSlots = new Set(equippedItems.map((i) => i.equippedSlot));
