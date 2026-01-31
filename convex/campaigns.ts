@@ -141,10 +141,10 @@ export const getMembership = query({
 
 export const join = mutation({
   args: {
-    userId: v.id("users"),
     inviteCode: v.string(),
   },
   handler: async (ctx, args) => {
+    const { userId } = await requireAuth(ctx);
     const campaign = await ctx.db
       .query("campaigns")
       .withIndex("by_invite_code", (q) => q.eq("inviteCode", args.inviteCode.toUpperCase()))
@@ -158,7 +158,7 @@ export const join = mutation({
     const existing = await ctx.db
       .query("campaignMembers")
       .withIndex("by_campaign_and_user", (q) =>
-        q.eq("campaignId", campaign._id).eq("userId", args.userId)
+        q.eq("campaignId", campaign._id).eq("userId", userId)
       )
       .first();
 
@@ -178,7 +178,7 @@ export const join = mutation({
 
     await ctx.db.insert("campaignMembers", {
       campaignId: campaign._id,
-      userId: args.userId,
+      userId,
       role: "player",
       isOnline: false,
       lastSeenAt: Date.now(),
