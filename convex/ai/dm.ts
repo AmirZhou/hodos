@@ -250,6 +250,7 @@ export const processPlayerInput = action({
         inventoryCount: v.optional(v.number()),
       }),
       sessionMode: v.string(),
+      lootContainers: v.optional(v.string()),
     }),
   },
   handler: async (ctx, args) => {
