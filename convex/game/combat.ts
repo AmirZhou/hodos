@@ -978,9 +978,11 @@ export const _getCombatStateInternal = query({
       session.combat.combatants.map(async (combatant) => {
         if (combatant.entityType === "character") {
           const character = await ctx.db.get(combatant.entityId as Id<"characters">);
+          if (!character) return { ...combatant, entity: null };
+          const derivedStats = await getEffectiveStats(ctx, combatant.entityId as Id<"characters">);
           return {
             ...combatant,
-            entity: character ? { hp: character.hp, ac: character.ac } : null,
+            entity: { hp: character.hp, ac: derivedStats.effectiveAc },
           };
         } else {
           const npc = await ctx.db.get(combatant.entityId as Id<"npcs">);
