@@ -346,7 +346,31 @@ async function executeAction(
     }
   }
 
-  // 12. Update session timestamp and suggested actions
+  // 12. Process container creation from DM
+  if (response.containersCreated && session?.locationId) {
+    for (const containerSpec of response.containersCreated) {
+      try {
+        await ctx.runMutation(api.game.loot.seedContainer, {
+          campaignId,
+          locationId: session.locationId,
+          containerType: containerSpec.containerType,
+          name: containerSpec.name,
+          description: containerSpec.description,
+          itemIds: containerSpec.itemIds,
+          sourceType: "dm",
+        });
+        await ctx.runMutation(api.game.log.add, {
+          campaignId,
+          type: "system",
+          content: `A ${containerSpec.containerType === "ground" ? "pile of items" : containerSpec.name} appeared.`,
+        });
+      } catch (e) {
+        console.warn("[ContainerCreation] Failed:", containerSpec.name, e);
+      }
+    }
+  }
+
+  // 13. Update session timestamp and suggested actions
   if (session) {
     await ctx.runMutation(api.game.session.updateLastAction, {
       sessionId: session._id,
