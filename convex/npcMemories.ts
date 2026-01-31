@@ -241,6 +241,10 @@ export const updateEmotionalState = mutation({
     }),
   },
   handler: async (ctx, args) => {
+    const npc = await ctx.db.get(args.npcId);
+    if (!npc) throw new Error("NPC not found");
+    await requireCampaignMember(ctx, npc.campaignId);
+
     const memory = await ctx.db
       .query("npcMemories")
       .withIndex("by_npc_and_character", (q) =>
