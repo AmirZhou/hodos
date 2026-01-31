@@ -110,7 +110,7 @@ export function LootPopup({
 
                 return (
                   <div
-                    key={`${item.id}-${idx}`}
+                    key={item._id}
                     className="flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--background-tertiary)] transition-colors"
                     style={{ borderLeft: `3px solid ${borderColor}` }}
                   >
@@ -135,7 +135,7 @@ export function LootPopup({
                       )}
                     </div>
                     <button
-                      onClick={() => handleTake(idx)}
+                      onClick={() => handleTake(item._id)}
                       className="text-xs px-3 py-1 rounded-lg bg-[var(--accent-gold)]/20 text-[var(--accent-gold)] hover:bg-[var(--accent-gold)]/30 transition-colors font-medium shrink-0"
                     >
                       Take
