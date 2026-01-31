@@ -273,7 +273,7 @@ export default defineSchema({
     campaignId: v.id("campaigns"),
     name: v.string(),
     pronouns: v.string(),
-    portrait: v.optional(v.string()),
+    portrait: v.optional(v.id("_storage")),
 
     // Core Stats
     level: v.number(),

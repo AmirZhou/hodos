@@ -21,6 +21,7 @@ import type * as data_rivermootGrid from "../data/rivermootGrid.js";
 import type * as data_worldMap from "../data/worldMap.js";
 import type * as dice from "../dice.js";
 import type * as equipment from "../equipment.js";
+import type * as files from "../files.js";
 import type * as game_actions from "../game/actions.js";
 import type * as game_cityNavigation from "../game/cityNavigation.js";
 import type * as game_combat from "../game/combat.js";
@@ -64,6 +65,7 @@ declare const fullApi: ApiFromModules<{
   "data/worldMap": typeof data_worldMap;
   dice: typeof dice;
   equipment: typeof equipment;
+  files: typeof files;
   "game/actions": typeof game_actions;
   "game/cityNavigation": typeof game_cityNavigation;
   "game/combat": typeof game_combat;
