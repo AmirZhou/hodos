@@ -12,6 +12,7 @@ export const create = mutation({
     initialAttraction: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    await requireCampaignMember(ctx, args.campaignId);
     // Check if relationship already exists
     const existing = await ctx.db
       .query("relationships")
