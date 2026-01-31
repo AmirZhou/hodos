@@ -42,13 +42,13 @@ export function InventoryGrid({ items, onEquip }: InventoryGridProps) {
 
         return (
           <div
-            key={`${item.id}-${index}`}
+            key={`${item._id}-${index}`}
             className="relative"
             onMouseEnter={() => setHoveredIndex(index)}
             onMouseLeave={() => setHoveredIndex(null)}
           >
             <button
-              onClick={() => onEquip(item.id)}
+              onClick={() => onEquip(item._id)}
               className="w-full aspect-square rounded border flex flex-col items-center justify-center p-1 transition-all hover:brightness-125 cursor-pointer"
               style={{
                 borderColor,
