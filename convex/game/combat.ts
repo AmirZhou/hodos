@@ -58,25 +58,28 @@ export const getCombatState = query({
       return null;
     }
 
-    // Enrich combatants with entity details
+    // Enrich combatants with entity details and derived stats
     const enrichedCombatants = await Promise.all(
       session.combat.combatants.map(async (combatant) => {
         if (combatant.entityType === "character") {
           const character = await ctx.db.get(
             combatant.entityId as Id<"characters">
           );
+          if (!character) return { ...combatant, entity: null };
+
+          const derivedStats = await getEffectiveStats(ctx, combatant.entityId as Id<"characters">);
           return {
             ...combatant,
-            entity: character
-              ? {
-                  name: character.name,
-                  hp: character.hp,
-                  maxHp: character.maxHp,
-                  ac: character.ac,
-                  portrait: character.portrait,
-                  conditions: character.conditions,
-                }
-              : null,
+            entity: {
+              name: character.name,
+              hp: character.hp,
+              maxHp: derivedStats.effectiveMaxHp,
+              ac: derivedStats.effectiveAc,
+              portrait: character.portrait,
+              conditions: character.conditions,
+              deathSaves: character.deathSaves,
+              concentration: character.concentration,
+            },
           };
         } else {
           const npc = await ctx.db.get(combatant.entityId as Id<"npcs">);
