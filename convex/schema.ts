@@ -772,6 +772,28 @@ export default defineSchema({
     .index("by_item", ["itemId"])
     .index("by_campaign", ["campaignId", "createdAt"]),
 
+  // ============ TRADE LISTINGS ============
+  tradeListings: defineTable({
+    campaignId: v.id("campaigns"),
+    itemId: v.id("items"),
+    sellerId: v.id("characters"),
+    sellerName: v.string(),
+    askingPrice: v.optional(v.string()),
+    note: v.optional(v.string()),
+    status: v.union(
+      v.literal("active"),
+      v.literal("completed"),
+      v.literal("cancelled"),
+    ),
+    buyerId: v.optional(v.id("characters")),
+    buyerName: v.optional(v.string()),
+    completedAt: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index("by_campaign_and_status", ["campaignId", "status"])
+    .index("by_seller", ["sellerId"])
+    .index("by_item", ["itemId"]),
+
   // ============ STREAMING SESSIONS ============
   streamingSessions: defineTable({
     campaignId: v.id("campaigns"),
