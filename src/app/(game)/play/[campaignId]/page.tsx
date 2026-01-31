@@ -52,6 +52,7 @@ import {
 } from "lucide-react";
 import { InventoryModal } from "@/components/game/equipment/InventoryModal";
 import { CharacterSheetModal } from "@/components/game/equipment/CharacterSheetModal";
+import { TradeBoardModal } from "@/components/game/trade/TradeBoardModal";
 import {
   getRarityColor, RARITY_BORDER_COLORS, RARITY_BG_COLORS,
   getSlotLabel, formatStatValue,
