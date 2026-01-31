@@ -143,6 +143,10 @@ export const getOrCreate = mutation({
     characterId: v.id("characters"),
   },
   handler: async (ctx, args) => {
+    const npc = await ctx.db.get(args.npcId);
+    if (!npc) throw new Error("NPC not found");
+    await requireCampaignMember(ctx, npc.campaignId);
+
     // Check if memory exists
     const existing = await ctx.db
       .query("npcMemories")
