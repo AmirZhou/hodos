@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import { Id } from "../_generated/dataModel";
 import type { QueryCtx, MutationCtx } from "../_generated/server";
+import { requireAuth, requireCampaignMember } from "../lib/auth";
 
 // ============ HELPERS ============
 
