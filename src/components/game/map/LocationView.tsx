@@ -81,12 +81,12 @@ export function LocationView({ currentLocation, sessionId, characterId }: Locati
 
   // Flatten ground items for display
   const groundItems = groundContainers.flatMap((c) =>
-    c.items.map((item, idx) => ({ ...item, containerId: c._id, itemIndex: idx }))
+    c.items.map((item) => ({ ...item, containerId: c._id }))
   );
 
-  const handleTakeGroundItem = async (containerId: Id<"lootContainers">, itemIndex: number) => {
+  const handleTakeGroundItem = async (containerId: Id<"lootContainers">, itemId: string) => {
     if (!characterId) return;
-    await takeItem({ containerId, characterId, itemIndex });
+    await takeItem({ containerId, characterId, itemId: itemId as any });
   };
 
   const handleTakeAllGround = async () => {
