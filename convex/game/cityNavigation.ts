@@ -63,6 +63,7 @@ export const moveCityToken = mutation({
     if (!session || !session.currentMapId) {
       throw new Error("No city map attached to session");
     }
+    await requireCampaignMember(ctx, session.campaignId);
 
     const map = await ctx.db.get(session.currentMapId);
     if (!map || !map.cityGridData) {
