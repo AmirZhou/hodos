@@ -173,9 +173,6 @@ export const create = mutation({
       background: args.background,
       classFeatures: [],
 
-      inventory: [],
-      equipped: {},
-
       conditions: [],
       exhaustionLevel: 0,
       deathSaves: { successes: 0, failures: 0 },
