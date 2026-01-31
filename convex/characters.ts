@@ -313,12 +313,27 @@ export const addXp = mutation({
 
     if (newLevel > character.level) {
       const newMaxHp = calculateMaxHp(character.abilities.constitution, newLevel);
+      const charClass = character.class || "";
+      const newSpellSlots = isCaster(charClass)
+        ? initializeSpellSlots(charClass, newLevel)
+        : character.spellSlots;
+      const newClassResources = charClass
+        ? initializeClassResources(charClass, newLevel)
+        : character.classResources;
+
       await ctx.db.patch(args.characterId, {
         xp: newXp,
         level: newLevel,
         maxHp: newMaxHp,
         hp: character.hp + (newMaxHp - character.maxHp), // Heal for the HP gained
         proficiencyBonus: calculateProficiencyBonus(newLevel),
+        hitDice: { max: newLevel, used: character.hitDice?.used ?? 0 },
+        ...(newSpellSlots && Object.keys(newSpellSlots).length > 0
+          ? { spellSlots: newSpellSlots }
+          : {}),
+        ...(newClassResources && Object.keys(newClassResources).length > 0
+          ? { classResources: newClassResources }
+          : {}),
       });
     } else {
       await ctx.db.patch(args.characterId, { xp: newXp });
