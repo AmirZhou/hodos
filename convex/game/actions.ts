@@ -177,11 +177,11 @@ async function executeAction(
         hp: character.hp,
         maxHp: character.maxHp,
         abilities: character.abilities,
-        equipped: Object.entries(character.equipped)
-          .filter(([, v]) => v)
+        equipped: Object.entries(equippedSlotMap)
+          .filter(([, item]) => item)
           .map(([slot, item]) => `${slot}: ${(item as any).name}`)
           .join(", "),
-        inventoryCount: character.inventory.length,
+        inventoryCount: inventoryItems.length,
       },
       sessionMode: session?.mode || "exploration",
       lootContainers: lootContainersContext,
