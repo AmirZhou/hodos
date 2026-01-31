@@ -211,7 +211,15 @@ export const create = mutation({
 export const get = query({
   args: { characterId: v.id("characters") },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.characterId);
+    const character = await ctx.db.get(args.characterId);
+    if (!character) return null;
+
+    let portraitUrl: string | undefined;
+    if (character.portrait) {
+      portraitUrl = (await ctx.storage.getUrl(character.portrait)) ?? undefined;
+    }
+
+    return { ...character, portraitUrl };
   },
 });
 
