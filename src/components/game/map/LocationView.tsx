@@ -168,11 +168,11 @@ export function LocationView({ currentLocation, sessionId, characterId }: Locati
         <div className="px-4 pb-4">
           <h4 className="text-sm font-medium mb-2">Items on the ground:</h4>
           <div className="space-y-1">
-            {groundItems.map((item, i) => {
+            {groundItems.map((item) => {
               const rarityColor = RARITY_COLORS[item.rarity as Rarity] ?? "#fff";
               return (
                 <div
-                  key={`${item.containerId}-${item.itemIndex}-${i}`}
+                  key={item._id}
                   className="flex items-center gap-2 text-sm p-2 rounded bg-[var(--background-tertiary)]"
                 >
                   <div
@@ -184,7 +184,7 @@ export function LocationView({ currentLocation, sessionId, characterId }: Locati
                   </span>
                   {characterId && (
                     <button
-                      onClick={() => handleTakeGroundItem(item.containerId, item.itemIndex)}
+                      onClick={() => handleTakeGroundItem(item.containerId, item._id)}
                       className="text-xs px-2 py-0.5 rounded bg-[var(--accent-gold)]/20 text-[var(--accent-gold)] hover:bg-[var(--accent-gold)]/30 transition-colors shrink-0"
                     >
                       Take
