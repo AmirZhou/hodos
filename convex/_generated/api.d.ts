@@ -45,6 +45,7 @@ import type * as http from "../http.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_statHelpers from "../lib/statHelpers.js";
 import type * as lib_stats from "../lib/stats.js";
+import type * as lib_validation from "../lib/validation.js";
 import type * as npcMemories from "../npcMemories.js";
 import type * as npcs from "../npcs.js";
 import type * as presence from "../presence.js";
@@ -95,6 +96,7 @@ declare const fullApi: ApiFromModules<{
   "lib/auth": typeof lib_auth;
   "lib/statHelpers": typeof lib_statHelpers;
   "lib/stats": typeof lib_stats;
+  "lib/validation": typeof lib_validation;
   npcMemories: typeof npcMemories;
   npcs: typeof npcs;
   presence: typeof presence;

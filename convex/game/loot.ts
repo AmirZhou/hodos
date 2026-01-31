@@ -181,6 +181,7 @@ export const takeItem = mutation({
   handler: async (ctx, args) => {
     const container = await ctx.db.get(args.containerId);
     if (!container) throw new Error("Container not found");
+    await requireCharacterOwner(ctx, args.characterId);
 
     if (container.containerType !== "ground" && !container.isOpened) {
       throw new Error("Container is not open");
