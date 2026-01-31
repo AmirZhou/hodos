@@ -115,6 +115,30 @@ async function executeAction(
     };
   });
 
+  // 5b. Get loot containers at current location for DM context
+  let lootContainersContext: string | undefined;
+  if (session?.locationId) {
+    const containers = await ctx.runQuery(api.game.loot.getContainersForDMContext, {
+      campaignId,
+      locationId: session.locationId,
+    }) as Array<{ name: string; containerType: string; isLocked: boolean; isOpened: boolean; isLooted: boolean; itemCount: number }>;
+
+    if (containers.length > 0) {
+      lootContainersContext = containers
+        .map((c) => {
+          const status = c.isLooted
+            ? "looted"
+            : c.isLocked
+              ? "locked"
+              : c.isOpened
+                ? `open, ${c.itemCount} items`
+                : `closed, ${c.itemCount} items`;
+          return `- ${c.name} (${c.containerType}): ${status}`;
+        })
+        .join("\n");
+    }
+  }
+
   // 6. Log the player action
   await ctx.runMutation(api.game.log.add, {
     campaignId,
