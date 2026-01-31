@@ -673,6 +673,42 @@ export default defineSchema({
     .index("by_campaign", ["campaignId"])
     .index("by_user", ["userId"]),
 
+  // ============ LOOT CONTAINERS ============
+  lootContainers: defineTable({
+    campaignId: v.id("campaigns"),
+    locationId: v.id("locations"),
+
+    containerType: v.union(
+      v.literal("ground"),     // loose items, no "open" needed
+      v.literal("chest"),      // chest, crate, barrel
+      v.literal("corpse"),     // dead enemy
+      v.literal("container")   // cart, shelf, bag, etc.
+    ),
+
+    name: v.string(),
+    description: v.optional(v.string()),
+
+    items: v.array(equipmentItem),
+
+    // Lock (optional)
+    lock: v.optional(v.object({
+      isLocked: v.boolean(),
+      dc: v.optional(v.number()),          // lockpick DC
+      keyItemId: v.optional(v.string()),   // key item ID
+    })),
+
+    // State
+    isOpened: v.boolean(),
+    isLooted: v.boolean(),
+
+    // Source tracking (for corpses, quest rewards, DM-created)
+    sourceType: v.optional(v.string()),
+    sourceEntityId: v.optional(v.string()),
+
+    createdAt: v.number(),
+  })
+    .index("by_campaign_and_location", ["campaignId", "locationId"]),
+
   // ============ STREAMING SESSIONS ============
   streamingSessions: defineTable({
     campaignId: v.id("campaigns"),
