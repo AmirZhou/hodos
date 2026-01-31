@@ -582,6 +582,12 @@ export const completeAftercare = mutation({
 
     const scene = session.scene;
 
+    // Require minimum aftercare actions before completing
+    const aftercareCount = scene.aftercareActionsCompleted ?? 0;
+    if (aftercareCount < 2) {
+      throw new Error(`Aftercare requires at least 2 care actions before completion (current: ${aftercareCount})`);
+    }
+
     // Apply relationship bonuses based on scene intensity and whether safeword was used
     const relationshipBonus = scene.usedSafeword
       ? Math.floor(scene.peakIntensity / 10) // Smaller bonus if safeword used, but still positive for respecting boundaries
