@@ -37,6 +37,7 @@ import type * as game_scene from "../game/scene.js";
 import type * as game_seedMap from "../game/seedMap.js";
 import type * as game_session from "../game/session.js";
 import type * as game_streaming from "../game/streaming.js";
+import type * as game_trade from "../game/trade.js";
 import type * as game_travel from "../game/travel.js";
 import type * as game_worldNavigation from "../game/worldNavigation.js";
 import type * as gameLog from "../gameLog.js";
@@ -83,6 +84,7 @@ declare const fullApi: ApiFromModules<{
   "game/seedMap": typeof game_seedMap;
   "game/session": typeof game_session;
   "game/streaming": typeof game_streaming;
+  "game/trade": typeof game_trade;
   "game/travel": typeof game_travel;
   "game/worldNavigation": typeof game_worldNavigation;
   gameLog: typeof gameLog;
