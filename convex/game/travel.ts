@@ -239,6 +239,7 @@ export const travelTo = mutation({
     if (!session) {
       throw new Error("Session not found");
     }
+    await requireCampaignMember(ctx, session.campaignId);
 
     // Verify destination exists
     const destination = await ctx.db.get(args.destinationId);
