@@ -60,6 +60,7 @@ export const addChunk = mutation({
   handler: async (ctx, args) => {
     const session = await ctx.db.get(args.sessionId);
     if (!session) throw new Error("Streaming session not found");
+    await requireCampaignMember(ctx, session.campaignId);
 
     const newChunks = [...session.chunks, args.chunk];
 
