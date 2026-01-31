@@ -167,6 +167,7 @@ export const proposeScene = mutation({
     if (!session) {
       throw new Error("Session not found");
     }
+    await requireCampaignMember(ctx, session.campaignId);
 
     if (session.scene) {
       throw new Error("A scene is already in progress");
