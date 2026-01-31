@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import { Id } from "../_generated/dataModel";
+import { requireCampaignMember } from "../lib/auth";
 
 interface NPCDialogue {
   name: string;
