@@ -25,6 +25,12 @@ interface DMResponse {
     relationshipChanges?: Record<string, { affinity?: number; trust?: number; attraction?: number }>;
   };
   itemsGranted?: Array<{ itemId: string; source: string; reason: string }>;
+  containersCreated?: Array<{
+    containerType: "ground" | "chest" | "corpse" | "container";
+    name: string;
+    description?: string;
+    itemIds: string[];
+  }>;
 }
 
 interface RollResult {
