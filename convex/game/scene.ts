@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { mutation, query, action } from "../_generated/server";
 import { api } from "../_generated/api";
 import { Id } from "../_generated/dataModel";
+import { requireCampaignMember } from "../lib/auth";
 
 // ============ VALIDATORS ============
 
