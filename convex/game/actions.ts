@@ -194,6 +194,44 @@ async function executeAction(
   // Debug: log the requiresRoll response
   console.log("[DM Response] requiresRoll:", JSON.stringify(response.requiresRoll));
 
+  // === AI Output Validation ===
+  // Validate narration length (max 5000 chars)
+  if (response.narration && response.narration.length > 5000) {
+    response.narration = response.narration.slice(0, 5000);
+    console.warn("[Validation] Narration truncated to 5000 chars");
+  }
+
+  // Validate NPC creation rate (max 2 new NPCs per response)
+  if (response.npcDialogue) {
+    const existingNames = new Set(npcs.map((n: Doc<"npcs">) => n.name.toLowerCase()));
+    const newNpcNames = [...new Set(response.npcDialogue.map((d) => d.name))]
+      .filter((name) => !findMatchingNpc(name, npcs));
+    if (newNpcNames.length > 2) {
+      console.warn(`[Validation] AI tried to create ${newNpcNames.length} NPCs, limiting to 2`);
+      // Keep only dialogue from existing NPCs + first 2 new ones
+      const allowedNewNames = new Set(newNpcNames.slice(0, 2));
+      response.npcDialogue = response.npcDialogue.filter((d) => {
+        const isExisting = existingNames.has(d.name.toLowerCase()) || !!findMatchingNpc(d.name, npcs);
+        return isExisting || allowedNewNames.has(d.name);
+      });
+    }
+  }
+
+  // Validate relationship changes are within valid ranges
+  if (response.worldStateChanges?.relationshipChanges) {
+    for (const [npcName, changes] of Object.entries(response.worldStateChanges.relationshipChanges)) {
+      if (changes.affinity !== undefined) {
+        changes.affinity = Math.max(-20, Math.min(20, changes.affinity));
+      }
+      if (changes.trust !== undefined) {
+        changes.trust = Math.max(-20, Math.min(20, changes.trust));
+      }
+      if (changes.attraction !== undefined) {
+        changes.attraction = Math.max(-20, Math.min(20, changes.attraction));
+      }
+    }
+  }
+
   // 8. Handle dice rolls if needed
   if (response.requiresRoll?.needed) {
     const roll = response.requiresRoll;
