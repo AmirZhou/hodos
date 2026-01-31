@@ -316,9 +316,9 @@ export const seed = mutation({
       });
 
       const chestItems = [
-        "main_rare_02",
-        "ring_rare_01",
-        "book_green_01",
+        "main_blue_02",    // rare mainhand
+        "ring_blue_01",    // rare ring
+        "book_green_01",   // uncommon book
       ];
 
       for (const templateId of chestItems) {
