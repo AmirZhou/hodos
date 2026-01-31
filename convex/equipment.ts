@@ -1,95 +1,170 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { getItemById } from "./data/equipmentItems";
-import type { EquipmentItem, EquipedSlot } from "./data/equipmentItems";
+import type { MutationCtx } from "./_generated/server";
+import { Id, Doc } from "./_generated/dataModel";
+import { getItemById, getBindingRule } from "./data/equipmentItems";
+import type { EquipmentItem, EquipedSlot, BindingRule } from "./data/equipmentItems";
 
-// One-time migration: convert old equipped shape to new 11-slot system
-export const migrateEquippedSlots = mutation({
-  args: {},
-  handler: async (ctx) => {
-    const characters = await ctx.db.query("characters").collect();
-    let migrated = 0;
-    for (const character of characters) {
-      const equipped = character.equipped as Record<string, unknown>;
-      if ("accessories" in equipped || "armor" in equipped) {
-        await ctx.db.patch(character._id, {
-          equipped: {} as typeof character.equipped,
-          inventory: [] as typeof character.inventory,
-        });
-        migrated++;
-      }
-    }
-    return { migrated, total: characters.length };
-  },
-});
+// ============ HELPERS ============
 
-function itemToDoc(item: EquipmentItem) {
-  return {
-    id: item.id,
-    name: item.name,
-    description: item.description,
-    type: item.type as "head" | "chest" | "hands" | "boots" | "cloak" | "ring" | "necklace" | "mainHand" | "offHand" | "book",
-    rarity: item.rarity as "mundane" | "common" | "uncommon" | "rare" | "epic" | "legendary",
-    stats: item.stats,
-    specialAttributes: item.specialAttributes,
-    passive: item.passive,
-  };
+/** Create a new item instance in the items table. Returns the item doc ID. */
+export async function createItemInstance(
+  ctx: MutationCtx,
+  opts: {
+    templateId: string;
+    campaignId: Id<"campaigns">;
+    status: "inventory" | "equipped" | "container" | "ground";
+    ownerId?: Id<"characters">;
+    equippedSlot?: string;
+    containerId?: Id<"lootContainers">;
+    locationId?: Id<"locations">;
+    bindingRuleOverride?: BindingRule;
+    boundTo?: Id<"characters">;
+  }
+): Promise<Id<"items">> {
+  const template = getItemById(opts.templateId);
+  if (!template) throw new Error("Unknown item: " + opts.templateId);
+
+  const bindingRule = opts.bindingRuleOverride ?? getBindingRule(template);
+
+  const itemId = await ctx.db.insert("items", {
+    templateId: opts.templateId,
+    instanceId: crypto.randomUUID(),
+    status: opts.status,
+    ownerId: opts.ownerId,
+    equippedSlot: opts.equippedSlot,
+    containerId: opts.containerId,
+    locationId: opts.locationId,
+    campaignId: opts.campaignId,
+    bindingRule,
+    boundTo: opts.boundTo,
+    name: template.name,
+    description: template.description,
+    type: template.type,
+    rarity: template.rarity,
+    stats: template.stats,
+    specialAttributes: template.specialAttributes,
+    passive: template.passive,
+    createdAt: Date.now(),
+  });
+
+  return itemId;
 }
 
-type EquipDoc = ReturnType<typeof itemToDoc>;
+/** Log an event to the itemHistory table. */
+export async function logItemEvent(
+  ctx: MutationCtx,
+  opts: {
+    itemId: Id<"items">;
+    campaignId: Id<"campaigns">;
+    event: "created" | "looted" | "equipped" | "unequipped" | "traded" | "bound" | "destroyed" | "listed" | "delisted";
+    actorId?: Id<"characters">;
+    targetId?: Id<"characters">;
+    metadata?: string;
+  }
+) {
+  await ctx.db.insert("itemHistory", {
+    itemId: opts.itemId,
+    campaignId: opts.campaignId,
+    event: opts.event,
+    actorId: opts.actorId,
+    targetId: opts.targetId,
+    metadata: opts.metadata,
+    createdAt: Date.now(),
+  });
+}
 
-function getSlotForItem(itemType: string, equipped: Record<string, unknown>): EquipedSlot | null {
+function getSlotForItem(itemType: string, equippedItems: Doc<"items">[]): EquipedSlot | null {
   if (itemType === "ring") {
-    if (!equipped.ring1) return "ring1";
-    if (!equipped.ring2) return "ring2";
+    const occupiedSlots = new Set(equippedItems.map((i) => i.equippedSlot));
+    if (!occupiedSlots.has("ring1")) return "ring1";
+    if (!occupiedSlots.has("ring2")) return "ring2";
     return "ring1";
   }
   const slotMap: Record<string, EquipedSlot> = {
     head: "head", chest: "chest", hands: "hands", boots: "boots",
     cloak: "cloak", necklace: "necklace", mainHand: "mainHand",
     offHand: "offHand", book: "book",
+    collar: "collar", restraints: "restraints", toy: "toy",
   };
   return slotMap[itemType] || null;
 }
 
+// ============ MUTATIONS ============
+
 export const equipItem = mutation({
   args: {
     characterId: v.id("characters"),
-    itemId: v.string(),
+    itemId: v.id("items"),
     targetSlot: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const character = await ctx.db.get(args.characterId);
     if (!character) throw new Error("Character not found");
 
-    const inventoryIndex = character.inventory.findIndex(
-      (i) => i.id === args.itemId
-    );
-    if (inventoryIndex === -1) throw new Error("Item not in inventory");
-
-    const item = character.inventory[inventoryIndex];
-    const slot = (args.targetSlot as EquipedSlot) || getSlotForItem(
-      item.type,
-      character.equipped as Record<string, unknown>
-    );
-    if (!slot) throw new Error("No valid slot for item type: " + item.type);
-
-    const newInventory = [...character.inventory];
-    newInventory.splice(inventoryIndex, 1);
-
-    // Unequip existing item in slot
-    const existingItem = character.equipped[slot as keyof typeof character.equipped];
-    if (existingItem) {
-      newInventory.push(existingItem);
+    const item = await ctx.db.get(args.itemId);
+    if (!item) throw new Error("Item not found");
+    if (item.ownerId !== args.characterId || item.status !== "inventory") {
+      throw new Error("Item not in your inventory");
     }
 
-    await ctx.db.patch(args.characterId, {
-      inventory: newInventory,
-      equipped: {
-        ...character.equipped,
-        [slot]: item,
-      } as typeof character.equipped,
+    // Determine target slot
+    const equippedItems = await ctx.db
+      .query("items")
+      .withIndex("by_owner", (q) => q.eq("ownerId", args.characterId))
+      .filter((q) => q.eq(q.field("status"), "equipped"))
+      .collect();
+
+    const slot = (args.targetSlot as EquipedSlot) || getSlotForItem(item.type, equippedItems);
+    if (!slot) throw new Error("No valid slot for item type: " + item.type);
+
+    // Unequip existing item in that slot
+    const existingItem = equippedItems.find((i) => i.equippedSlot === slot);
+    if (existingItem) {
+      await ctx.db.patch(existingItem._id, {
+        status: "inventory",
+        equippedSlot: undefined,
+      });
+      await logItemEvent(ctx, {
+        itemId: existingItem._id,
+        campaignId: character.campaignId,
+        event: "unequipped",
+        actorId: args.characterId,
+        metadata: `Swapped out from ${slot}`,
+      });
+    }
+
+    // Equip the new item
+    const patchData: Record<string, unknown> = {
+      status: "equipped",
+      equippedSlot: slot,
+    };
+
+    // BOE binding: bind on first equip
+    if (item.bindingRule === "boe" && !item.boundTo) {
+      patchData.boundTo = args.characterId;
+    }
+
+    await ctx.db.patch(args.itemId, patchData);
+
+    await logItemEvent(ctx, {
+      itemId: args.itemId,
+      campaignId: character.campaignId,
+      event: "equipped",
+      actorId: args.characterId,
+      metadata: `Equipped to ${slot}`,
     });
+
+    // Log binding if it happened
+    if (item.bindingRule === "boe" && !item.boundTo) {
+      await logItemEvent(ctx, {
+        itemId: args.itemId,
+        campaignId: character.campaignId,
+        event: "bound",
+        actorId: args.characterId,
+        metadata: "Bind on Equip",
+      });
+    }
   },
 });
 
@@ -102,16 +177,26 @@ export const unequipItem = mutation({
     const character = await ctx.db.get(args.characterId);
     if (!character) throw new Error("Character not found");
 
-    const slot = args.slot as keyof typeof character.equipped;
-    const item = character.equipped[slot];
+    const equippedItems = await ctx.db
+      .query("items")
+      .withIndex("by_owner", (q) => q.eq("ownerId", args.characterId))
+      .filter((q) => q.eq(q.field("status"), "equipped"))
+      .collect();
+
+    const item = equippedItems.find((i) => i.equippedSlot === args.slot);
     if (!item) throw new Error("No item in slot: " + args.slot);
 
-    await ctx.db.patch(args.characterId, {
-      inventory: [...character.inventory, item],
-      equipped: {
-        ...character.equipped,
-        [slot]: undefined,
-      } as typeof character.equipped,
+    await ctx.db.patch(item._id, {
+      status: "inventory",
+      equippedSlot: undefined,
+    });
+
+    await logItemEvent(ctx, {
+      itemId: item._id,
+      campaignId: character.campaignId,
+      event: "unequipped",
+      actorId: args.characterId,
+      metadata: `Unequipped from ${args.slot}`,
     });
   },
 });
@@ -119,41 +204,72 @@ export const unequipItem = mutation({
 export const addItemToInventory = mutation({
   args: {
     characterId: v.id("characters"),
-    itemId: v.string(),
+    itemId: v.string(), // template ID
   },
   handler: async (ctx, args) => {
     const character = await ctx.db.get(args.characterId);
     if (!character) throw new Error("Character not found");
 
-    const itemData = getItemById(args.itemId);
-    if (!itemData) throw new Error("Unknown item: " + args.itemId);
+    const template = getItemById(args.itemId);
+    if (!template) throw new Error("Unknown item: " + args.itemId);
 
-    const doc = itemToDoc(itemData);
-    await ctx.db.patch(args.characterId, {
-      inventory: [...character.inventory, doc] as typeof character.inventory,
+    const bindingRule = getBindingRule(template);
+    const isBop = bindingRule === "bop";
+
+    const newItemId = await createItemInstance(ctx, {
+      templateId: args.itemId,
+      campaignId: character.campaignId,
+      status: "inventory",
+      ownerId: args.characterId,
+      boundTo: isBop ? args.characterId : undefined,
     });
+
+    await logItemEvent(ctx, {
+      itemId: newItemId,
+      campaignId: character.campaignId,
+      event: "created",
+      actorId: args.characterId,
+    });
+
+    if (isBop) {
+      await logItemEvent(ctx, {
+        itemId: newItemId,
+        campaignId: character.campaignId,
+        event: "bound",
+        actorId: args.characterId,
+        metadata: "Bind on Pickup",
+      });
+    }
   },
 });
 
 export const removeItemFromInventory = mutation({
   args: {
     characterId: v.id("characters"),
-    inventoryIndex: v.number(),
+    itemId: v.id("items"),
   },
   handler: async (ctx, args) => {
-    const character = await ctx.db.get(args.characterId);
-    if (!character) throw new Error("Character not found");
-
-    if (args.inventoryIndex < 0 || args.inventoryIndex >= character.inventory.length) {
-      throw new Error("Invalid inventory index");
+    const item = await ctx.db.get(args.itemId);
+    if (!item) throw new Error("Item not found");
+    if (item.ownerId !== args.characterId || item.status !== "inventory") {
+      throw new Error("Item not in your inventory");
     }
 
-    const newInventory = [...character.inventory];
-    newInventory.splice(args.inventoryIndex, 1);
+    await ctx.db.patch(args.itemId, {
+      status: "destroyed",
+      ownerId: undefined,
+    });
 
-    await ctx.db.patch(args.characterId, { inventory: newInventory });
+    await logItemEvent(ctx, {
+      itemId: args.itemId,
+      campaignId: item.campaignId,
+      event: "destroyed",
+      actorId: args.characterId,
+    });
   },
 });
+
+// ============ STARTING GEAR ============
 
 const CLASS_STARTING_GEAR: Record<string, { equip: Record<string, string>; inventory: string[] }> = {
   warrior: {
@@ -221,40 +337,84 @@ export const giveStartingGear = mutation({
     const className = (args.className || "default").toLowerCase();
     const gear = CLASS_STARTING_GEAR[className] || CLASS_STARTING_GEAR.default;
 
-    const equipped: Record<string, EquipDoc> = {};
-    for (const [slot, itemId] of Object.entries(gear.equip)) {
-      const item = getItemById(itemId);
-      if (item) {
-        equipped[slot] = itemToDoc(item);
-      }
+    // Create equipped items
+    for (const [slot, templateId] of Object.entries(gear.equip)) {
+      const template = getItemById(templateId);
+      if (!template) continue;
+
+      const itemId = await createItemInstance(ctx, {
+        templateId,
+        campaignId: character.campaignId,
+        status: "equipped",
+        ownerId: args.characterId,
+        equippedSlot: slot,
+      });
+
+      await logItemEvent(ctx, {
+        itemId,
+        campaignId: character.campaignId,
+        event: "created",
+        actorId: args.characterId,
+        metadata: "Starting gear",
+      });
     }
 
-    const inventoryItems = gear.inventory
-      .map((id) => getItemById(id))
-      .filter((i): i is EquipmentItem => i !== undefined)
-      .map(itemToDoc);
+    // Create inventory items
+    for (const templateId of gear.inventory) {
+      const template = getItemById(templateId);
+      if (!template) continue;
 
-    await ctx.db.patch(args.characterId, {
-      equipped: { ...character.equipped, ...equipped } as typeof character.equipped,
-      inventory: [...character.inventory, ...inventoryItems] as typeof character.inventory,
-    });
+      const itemId = await createItemInstance(ctx, {
+        templateId,
+        campaignId: character.campaignId,
+        status: "inventory",
+        ownerId: args.characterId,
+      });
+
+      await logItemEvent(ctx, {
+        itemId,
+        campaignId: character.campaignId,
+        event: "created",
+        actorId: args.characterId,
+        metadata: "Starting gear",
+      });
+    }
   },
 });
+
+// ============ QUERIES ============
 
 export const getEquipment = query({
   args: { characterId: v.id("characters") },
   handler: async (ctx, args) => {
-    const character = await ctx.db.get(args.characterId);
-    if (!character) return null;
-    return character.equipped;
+    const equippedItems = await ctx.db
+      .query("items")
+      .withIndex("by_owner", (q) => q.eq("ownerId", args.characterId))
+      .filter((q) => q.eq(q.field("status"), "equipped"))
+      .collect();
+
+    // Build slot map matching the old shape: { head: item | null, chest: item | null, ... }
+    const slotMap: Record<string, Doc<"items"> | null> = {};
+    const allSlots = [
+      "head", "chest", "hands", "boots", "cloak",
+      "ring1", "ring2", "necklace", "mainHand", "offHand", "book",
+      "collar", "restraints", "toy",
+    ];
+    for (const slot of allSlots) {
+      slotMap[slot] = equippedItems.find((i) => i.equippedSlot === slot) ?? null;
+    }
+
+    return slotMap;
   },
 });
 
 export const getInventory = query({
   args: { characterId: v.id("characters") },
   handler: async (ctx, args) => {
-    const character = await ctx.db.get(args.characterId);
-    if (!character) return null;
-    return character.inventory;
+    return await ctx.db
+      .query("items")
+      .withIndex("by_owner", (q) => q.eq("ownerId", args.characterId))
+      .filter((q) => q.eq(q.field("status"), "inventory"))
+      .collect();
   },
 });
