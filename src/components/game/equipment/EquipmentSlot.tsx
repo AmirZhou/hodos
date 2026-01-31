@@ -25,14 +25,16 @@ const SLOT_ICONS: Record<string, React.ComponentType<{ className?: string }>> = 
 };
 
 interface ItemData {
-  id: string;
+  _id: string;
   name: string;
   description: string;
-  type: SlotType;
-  rarity: Rarity;
+  type: string;
+  rarity: string;
   stats: Record<string, number | string | undefined>;
   specialAttributes?: Record<string, number | undefined>;
   passive?: string;
+  bindingRule?: string;
+  boundTo?: string;
 }
 
 interface EquipmentSlotProps {
