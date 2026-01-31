@@ -30,6 +30,8 @@ export const start = mutation({
     locationId: v.optional(v.id("locations")),
   },
   handler: async (ctx, args) => {
+    await requireCampaignMember(ctx, args.campaignId);
+
     // End any existing active sessions
     const existingSessions = await ctx.db
       .query("gameSessions")
