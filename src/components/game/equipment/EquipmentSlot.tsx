@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { getRarityColor, RARITY_BORDER_COLORS, getSlotLabel } from "@/lib/equipment";
 import { ItemTooltip } from "./ItemTooltip";
-import type { EquipmentSlot as SlotType, EquipedSlot, Rarity } from "../../../../convex/data/equipmentItems";
+import type { EquipedSlot } from "../../../../convex/data/equipmentItems";
 import {
   Crown, Shield, Hand, Footprints, Scroll, CircleDot,
   Gem, Sword, BookOpen, Shirt,
