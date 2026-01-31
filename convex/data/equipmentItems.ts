@@ -5,6 +5,8 @@ export type EquipmentSlot = "head" | "chest" | "hands" | "boots" | "cloak" | "ri
 export type EquipedSlot = "head" | "chest" | "hands" | "boots" | "cloak" | "ring1" | "ring2" | "necklace" | "mainHand" | "offHand" | "book" | "collar" | "restraints" | "toy";
 export type Rarity = "mundane" | "common" | "uncommon" | "rare" | "epic" | "legendary";
 
+export type BindingRule = "boe" | "bop" | "none";
+
 export interface EquipmentItem {
   id: string;
   name: string;
@@ -12,6 +14,7 @@ export interface EquipmentItem {
   description: string;
   type: EquipmentSlot;
   rarity: Rarity;
+  bindingRule?: BindingRule; // bop = legendary, boe = epic, none = everything else
   stats: {
     ac?: number;
     hp?: number;
