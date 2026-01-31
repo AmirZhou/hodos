@@ -838,6 +838,19 @@ export default defineSchema({
     createdAt: v.number(),
   }).index("by_campaign", ["campaignId"]),
 
+  // ============ AUDIT LOG ============
+  auditLog: defineTable({
+    userId: v.id("users"),
+    action: v.string(),
+    resourceType: v.string(),
+    resourceId: v.optional(v.string()),
+    metadata: v.optional(v.record(v.string(), v.any())),
+    createdAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_action", ["action", "createdAt"])
+    .index("by_time", ["createdAt"]),
+
   // ============ KINK TAXONOMY ============
   kinkDefinitions: defineTable({
     id: v.string(),           // e.g., "foot_worship"
