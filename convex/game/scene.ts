@@ -498,6 +498,7 @@ export const startAftercare = mutation({
     if (!session || !session.scene) {
       throw new Error("No active scene");
     }
+    await requireCampaignMember(ctx, session.campaignId);
 
     await ctx.db.patch(args.sessionId, {
       scene: {
