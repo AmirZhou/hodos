@@ -50,6 +50,7 @@ export const create = mutation({
     currentLocationId: v.optional(v.id("locations")),
   },
   handler: async (ctx, args) => {
+    await requireCampaignMember(ctx, args.campaignId);
     const level = args.level || 1;
     const abilities = args.abilities || defaultAbilities;
     const conMod = Math.floor((abilities.constitution - 10) / 2);
