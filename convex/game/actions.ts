@@ -176,6 +176,7 @@ async function executeAction(
         inventoryCount: character.inventory.length,
       },
       sessionMode: session?.mode || "exploration",
+      lootContainers: lootContainersContext,
     },
   }) as { response: DMResponse; usage: any };
 
