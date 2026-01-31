@@ -6,14 +6,16 @@ import { ItemTooltip } from "./ItemTooltip";
 import type { EquipmentSlot, Rarity } from "../../../../convex/data/equipmentItems";
 
 interface ItemData {
-  id: string;
+  _id: string;
   name: string;
   description: string;
-  type: EquipmentSlot;
-  rarity: Rarity;
+  type: string;
+  rarity: string;
   stats: Record<string, number | string | undefined>;
   specialAttributes?: Record<string, number | undefined>;
   passive?: string;
+  bindingRule?: string;
+  boundTo?: string;
 }
 
 interface InventoryGridProps {
