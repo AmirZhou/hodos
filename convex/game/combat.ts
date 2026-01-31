@@ -719,6 +719,50 @@ export const endTurn = mutation({
     const combat = session.combat;
     const combatants = [...combat.combatants];
 
+    // Process end-of-turn condition durations for current combatant
+    const currentCombatant = combatants[combat.currentTurnIndex];
+    if (currentCombatant.entityType === "character") {
+      const char = await ctx.db.get(currentCombatant.entityId as Id<"characters">);
+      if (char) {
+        const updatedConditions = processConditionDurations(
+          char.conditions.map(c => ({
+            name: c.name,
+            duration: c.duration,
+            source: c.source,
+            expiresOn: "end" as const,
+          })),
+          "end",
+        );
+        await ctx.db.patch(currentCombatant.entityId as Id<"characters">, {
+          conditions: updatedConditions.map(c => ({
+            name: c.name,
+            ...(c.duration !== undefined ? { duration: c.duration } : {}),
+            ...(c.source ? { source: c.source } : {}),
+          })),
+        });
+      }
+    } else {
+      const npc = await ctx.db.get(currentCombatant.entityId as Id<"npcs">);
+      if (npc) {
+        const updatedConditions = processConditionDurations(
+          npc.conditions.map(c => ({
+            name: c.name,
+            duration: c.duration,
+            source: c.source,
+            expiresOn: "end" as const,
+          })),
+          "end",
+        );
+        await ctx.db.patch(currentCombatant.entityId as Id<"npcs">, {
+          conditions: updatedConditions.map(c => ({
+            name: c.name,
+            ...(c.duration !== undefined ? { duration: c.duration } : {}),
+            ...(c.source ? { source: c.source } : {}),
+          })),
+        });
+      }
+    }
+
     let nextIndex = combat.currentTurnIndex + 1;
     let round = combat.round;
 
@@ -728,13 +772,94 @@ export const endTurn = mutation({
       round += 1;
     }
 
+    // Get next combatant's effective speed
+    const nextCombatant = combatants[nextIndex];
+    let speed = 30;
+    let nextConditions: string[] = [];
+    if (nextCombatant.entityType === "character") {
+      try {
+        const stats = await getEffectiveStats(ctx, nextCombatant.entityId as Id<"characters">);
+        speed = stats.effectiveSpeed;
+      } catch { /* default 30 */ }
+      const char = await ctx.db.get(nextCombatant.entityId as Id<"characters">);
+      if (char) nextConditions = char.conditions.map(c => c.name);
+    } else {
+      const npc = await ctx.db.get(nextCombatant.entityId as Id<"npcs">);
+      if (npc) nextConditions = npc.conditions.map(c => c.name);
+    }
+
+    // Apply condition-based speed reduction
+    speed = getEffectiveSpeed(speed, nextConditions);
+
+    // Process start-of-turn for next combatant
+    if (nextCombatant.entityType === "character") {
+      const char = await ctx.db.get(nextCombatant.entityId as Id<"characters">);
+      if (char) {
+        // Process start-of-turn condition durations
+        const updatedConditions = processConditionDurations(
+          char.conditions.map(c => ({
+            name: c.name,
+            duration: c.duration,
+            source: c.source,
+            expiresOn: "start" as const,
+          })),
+          "start",
+        );
+        const patch: Record<string, unknown> = {
+          conditions: updatedConditions.map(c => ({
+            name: c.name,
+            ...(c.duration !== undefined ? { duration: c.duration } : {}),
+            ...(c.source ? { source: c.source } : {}),
+          })),
+        };
+
+        // Death saves: if at 0 HP, roll death save
+        if (char.hp === 0) {
+          const deathRoll = Math.floor(Math.random() * 20) + 1;
+          const ds = { ...char.deathSaves };
+
+          if (deathRoll === 20) {
+            // Nat 20: regain 1 HP
+            patch.hp = 1;
+            patch.deathSaves = { successes: 0, failures: 0 };
+            // Remove unconscious condition
+            patch.conditions = (updatedConditions as Array<{ name: string; duration?: number; source?: string }>)
+              .filter(c => c.name !== "unconscious")
+              .map(c => ({
+                name: c.name,
+                ...(c.duration !== undefined ? { duration: c.duration } : {}),
+                ...(c.source ? { source: c.source } : {}),
+              }));
+          } else if (deathRoll === 1) {
+            // Nat 1: 2 failures
+            ds.failures = Math.min(3, ds.failures + 2);
+            patch.deathSaves = ds;
+          } else if (deathRoll >= 10) {
+            ds.successes = Math.min(3, ds.successes + 1);
+            patch.deathSaves = ds;
+            if (ds.successes >= 3) {
+              // Stabilized — stays at 0 HP but stops rolling
+              patch.deathSaves = { successes: 3, failures: ds.failures };
+            }
+          } else {
+            ds.failures = Math.min(3, ds.failures + 1);
+            patch.deathSaves = ds;
+          }
+
+          await ctx.db.patch(nextCombatant.entityId as Id<"characters">, patch);
+        } else {
+          await ctx.db.patch(nextCombatant.entityId as Id<"characters">, patch);
+        }
+      }
+    }
+
     // Reset turn resources for next combatant
     combatants[nextIndex] = {
       ...combatants[nextIndex],
       hasAction: true,
       hasBonusAction: true,
       hasReaction: true,
-      movementRemaining: 30,
+      movementRemaining: speed,
       turnStartedAt: Date.now(),
     };
 
