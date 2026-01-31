@@ -19,6 +19,7 @@ import type * as data_itemCatalog from "../data/itemCatalog.js";
 import type * as data_kinkTaxonomy from "../data/kinkTaxonomy.js";
 import type * as data_rivermootCity from "../data/rivermootCity.js";
 import type * as data_rivermootGrid from "../data/rivermootGrid.js";
+import type * as data_spellData from "../data/spellData.js";
 import type * as data_worldMap from "../data/worldMap.js";
 import type * as dice from "../dice.js";
 import type * as equipment from "../equipment.js";
@@ -73,6 +74,7 @@ declare const fullApi: ApiFromModules<{
   "data/kinkTaxonomy": typeof data_kinkTaxonomy;
   "data/rivermootCity": typeof data_rivermootCity;
   "data/rivermootGrid": typeof data_rivermootGrid;
+  "data/spellData": typeof data_spellData;
   "data/worldMap": typeof data_worldMap;
   dice: typeof dice;
   equipment: typeof equipment;
