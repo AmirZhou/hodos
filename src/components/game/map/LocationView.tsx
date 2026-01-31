@@ -5,7 +5,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
 import { Package, Skull, Box, Lock, Check } from "lucide-react";
-import { RARITY_COLORS, RARITY_BORDER_COLORS } from "@/lib/equipment";
+import { RARITY_COLORS } from "@/lib/equipment";
 import type { Rarity } from "../../../../convex/data/equipmentItems";
 import { LootPopup } from "../loot/LootPopup";
 
