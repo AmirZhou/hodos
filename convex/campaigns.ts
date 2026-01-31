@@ -13,18 +13,18 @@ function generateInviteCode(): string {
 
 export const create = mutation({
   args: {
-    userId: v.id("users"),
     name: v.string(),
     storyPackId: v.optional(v.id("storyPacks")),
     seedScenario: v.optional(v.string()),
     coverImage: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const { userId } = await requireAuth(ctx);
     const inviteCode = generateInviteCode();
     const now = Date.now();
 
     const campaignId = await ctx.db.insert("campaigns", {
-      ownerId: args.userId,
+      ownerId: userId,
       name: args.name,
       inviteCode,
       storyPackId: args.storyPackId,
@@ -43,7 +43,7 @@ export const create = mutation({
     // Add owner as member
     await ctx.db.insert("campaignMembers", {
       campaignId,
-      userId: args.userId,
+      userId,
       role: "owner",
       isOnline: false,
       lastSeenAt: now,
