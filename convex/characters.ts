@@ -196,7 +196,7 @@ export const create = mutation({
     const membership = await ctx.db
       .query("campaignMembers")
       .withIndex("by_campaign_and_user", (q) =>
-        q.eq("campaignId", args.campaignId).eq("userId", args.userId)
+        q.eq("campaignId", args.campaignId).eq("userId", userId)
       )
       .first();
 
