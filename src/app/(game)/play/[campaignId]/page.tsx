@@ -351,6 +351,7 @@ function MapPanel({
             <LocationView
               currentLocation={currentLocation}
               sessionId={sessionId}
+              characterId={currentCharacterId}
             />
           ) : (
             <div className="p-4">
