@@ -560,6 +560,7 @@ export const startAftercare = mutation({
         ...session.scene,
         phase: "aftercare",
         mood: "care",
+        aftercareActionsCompleted: session.scene.aftercareActionsCompleted ?? 0,
         lastActionAt: Date.now(),
       },
       lastActionAt: Date.now(),
