@@ -46,9 +46,20 @@ export function ItemTooltip({ item }: { item: ItemData }) {
 
       {/* Slot & Rarity */}
       <div className="flex justify-between text-xs mb-2" style={{ color: "var(--foreground-secondary)" }}>
-        <span>{getSlotLabel(item.type)}</span>
-        <span style={{ color: rarityColor }}>{getRarityLabel(item.rarity)}</span>
+        <span>{getSlotLabel(item.type as EquipmentSlot)}</span>
+        <span style={{ color: rarityColor }}>{getRarityLabel(item.rarity as Rarity)}</span>
       </div>
+
+      {/* Binding Status */}
+      {item.boundTo ? (
+        <div className="text-[10px] mb-2 px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 inline-block font-medium">
+          Soulbound
+        </div>
+      ) : item.bindingRule === "boe" ? (
+        <div className="text-[10px] mb-2 px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 inline-block font-medium">
+          Bind on Equip
+        </div>
+      ) : null}
 
       {/* Divider */}
       {statEntries.length > 0 && (
