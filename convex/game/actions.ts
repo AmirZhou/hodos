@@ -115,7 +115,15 @@ async function executeAction(
     };
   });
 
-  // 5b. Get loot containers at current location for DM context
+  // 5b. Get equipped items and inventory count for DM context
+  const equippedSlotMap = await ctx.runQuery(api.equipment.getEquipment, {
+    characterId,
+  }) as Record<string, any>;
+  const inventoryItems = await ctx.runQuery(api.equipment.getInventory, {
+    characterId,
+  }) as any[];
+
+  // 5c. Get loot containers at current location for DM context
   let lootContainersContext: string | undefined;
   if (session?.locationId) {
     const containers = await ctx.runQuery(api.game.loot.getContainersForDMContext, {
