@@ -243,6 +243,7 @@ export const rollInitiative = mutation({
     if (!session || !session.combat) {
       throw new Error("No active combat");
     }
+    await requireCampaignMember(ctx, session.campaignId);
 
     if (session.combat.phase !== "rolling_initiative") {
       throw new Error("Not in initiative rolling phase");
