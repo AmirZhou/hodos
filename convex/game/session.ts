@@ -154,6 +154,10 @@ export const updateLastAction = mutation({
     }))),
   },
   handler: async (ctx, args) => {
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) throw new Error("Session not found");
+    await requireCampaignMember(ctx, session.campaignId);
+
     const patch: Record<string, unknown> = { lastActionAt: Date.now() };
     if (args.suggestedActions) {
       patch.suggestedActions = args.suggestedActions;
