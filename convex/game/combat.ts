@@ -313,6 +313,7 @@ export const executeAction = mutation({
     if (!session || !session.combat) {
       throw new Error("No active combat");
     }
+    await requireCampaignMember(ctx, session.campaignId);
 
     if (session.combat.phase !== "in_progress") {
       throw new Error("Combat not in progress");
