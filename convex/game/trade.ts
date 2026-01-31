@@ -112,6 +112,8 @@ export const delistItem = mutation({
     characterId: v.id("characters"),
   },
   handler: async (ctx, args) => {
+    await requireCharacterOwner(ctx, args.characterId);
+
     const listing = await ctx.db.get(args.listingId);
     if (!listing) throw new Error("Listing not found");
     if (listing.sellerId !== args.characterId) {
