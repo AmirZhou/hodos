@@ -51,9 +51,9 @@ export function EquipmentSlotComponent({ slot, item, onClick, size = "md" }: Equ
   const iconSize = size === "sm" ? "h-4 w-4" : "h-5 w-5";
 
   const borderColor = item
-    ? RARITY_BORDER_COLORS[item.rarity]
+    ? RARITY_BORDER_COLORS[item.rarity as keyof typeof RARITY_BORDER_COLORS]
     : "rgba(255,255,255,0.1)";
-  const nameColor = item ? getRarityColor(item.rarity) : undefined;
+  const nameColor = item ? getRarityColor(item.rarity as never) : undefined;
 
   return (
     <div
