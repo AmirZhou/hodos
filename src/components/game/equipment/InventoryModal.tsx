@@ -81,6 +81,23 @@ export function InventoryModal({ characterId, onClose }: InventoryModalProps) {
     }
   };
 
+  const handleListForTrade = async (itemId: string) => {
+    setIsListing(true);
+    try {
+      await listItemMut({
+        characterId,
+        itemId: itemId as Id<"items">,
+        askingPrice: tradeAskingPrice || undefined,
+      });
+      setTradingItemId(null);
+      setTradeAskingPrice("");
+    } catch (e: unknown) {
+      console.error("List failed:", e);
+    } finally {
+      setIsListing(false);
+    }
+  };
+
   const getKeyStat = (item: { type: EquipmentSlot; stats: Record<string, number | string | undefined> }) => {
     if (item.type === "mainHand" || item.type === "offHand") {
       if (item.stats.damage) return `${item.stats.damage} dmg`;
