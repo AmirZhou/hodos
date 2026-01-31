@@ -309,6 +309,33 @@ export default defineSchema({
       failures: v.number(),
     }),
 
+    // Hit Dice (for short rests)
+    hitDice: v.optional(v.object({
+      max: v.number(),
+      used: v.number(),
+    })),
+
+    // Spell System
+    spellSlots: v.optional(v.record(v.string(), v.object({
+      max: v.number(),
+      used: v.number(),
+    }))),
+    knownSpells: v.optional(v.array(v.string())),
+    preparedSpells: v.optional(v.array(v.string())),
+    concentration: v.optional(v.object({
+      spellId: v.string(),
+      targetId: v.optional(v.string()),
+    })),
+
+    // Class Resources (ki, rage, action surge, etc.)
+    classResources: v.optional(v.record(v.string(), v.object({
+      max: v.number(),
+      current: v.number(),
+    }))),
+
+    // Currency
+    gold: v.optional(v.number()),
+
     // Adult Stats (NEW)
     adultStats: v.optional(adultStats),
 
