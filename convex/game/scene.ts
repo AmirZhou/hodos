@@ -217,6 +217,7 @@ export const negotiateScene = mutation({
     if (!session || !session.scene) {
       throw new Error("No active scene");
     }
+    await requireCampaignMember(ctx, session.campaignId);
 
     if (session.scene.phase !== "negotiation") {
       throw new Error("Not in negotiation phase");
