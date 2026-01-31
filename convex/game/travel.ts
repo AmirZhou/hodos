@@ -353,6 +353,8 @@ export const createLocation = mutation({
     ),
   },
   handler: async (ctx, args) => {
+    await requireAuth(ctx);
+
     const locationId = await ctx.db.insert("locations", {
       mapId: args.mapId,
       name: args.name,
