@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { getRarityColor, RARITY_BORDER_COLORS, getSlotLabel } from "@/lib/equipment";
 import { ItemTooltip } from "./ItemTooltip";
-import type { EquipmentSlot, Rarity } from "../../../../convex/data/equipmentItems";
+import type { EquipmentSlot } from "../../../../convex/data/equipmentItems";
 
 interface ItemData {
   _id: string;
