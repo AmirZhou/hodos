@@ -188,6 +188,10 @@ export const pause = mutation({
     sessionId: v.id("gameSessions"),
   },
   handler: async (ctx, args) => {
+    const session = await ctx.db.get(args.sessionId);
+    if (!session) throw new Error("Session not found");
+    await requireCampaignMember(ctx, session.campaignId);
+
     await ctx.db.patch(args.sessionId, {
       status: "paused",
     });
