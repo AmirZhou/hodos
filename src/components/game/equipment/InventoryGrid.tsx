@@ -54,7 +54,7 @@ export function InventoryGrid({ items, onEquip }: InventoryGridProps) {
                 borderColor,
                 backgroundColor: "rgba(0,0,0,0.3)",
               }}
-              title={`${item.name} (${getSlotLabel(item.type)}) - Click to equip`}
+              title={`${item.name} (${getSlotLabel(item.type as never)}) - Click to equip`}
             >
               <span
                 className="text-[8px] leading-tight text-center truncate w-full"
