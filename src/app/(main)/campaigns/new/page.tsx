@@ -44,7 +44,6 @@ function NewCampaignContent() {
 
     try {
       const result = await createCampaign({
-        userId: user._id,
         name: CAMPAIGN_NAME,
         seedScenario: SEED_SCENARIO,
         coverImage: COVER_IMAGE,
