@@ -441,6 +441,7 @@ export const useSafeword = mutation({
     if (!session || !session.scene) {
       throw new Error("No active scene");
     }
+    await requireCampaignMember(ctx, session.campaignId);
 
     const participants = [...session.scene.participants];
     const participant = participants[args.participantIndex];
