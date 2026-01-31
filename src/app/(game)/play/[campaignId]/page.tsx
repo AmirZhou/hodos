@@ -194,6 +194,15 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
         />
       )}
 
+      {/* Trade Board Modal */}
+      {showTradeBoard && currentCharacter && (
+        <TradeBoardModal
+          campaignId={campaignId}
+          characterId={currentCharacter._id}
+          onClose={() => setShowTradeBoard(false)}
+        />
+      )}
+
       {/* Global Safeword Button (always visible during scene) */}
       {gameState.isInScene && (
         <SafewordButton
