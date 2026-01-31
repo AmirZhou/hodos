@@ -40,9 +40,13 @@ export function InventoryModal({ characterId, onClose }: InventoryModalProps) {
   const equipment = useQuery(api.equipment.getEquipment, { characterId });
   const equipItem = useMutation(api.equipment.equipItem);
   const unequipItem = useMutation(api.equipment.unequipItem);
+  const listItemMut = useMutation(api.game.trade.listItem);
 
   const [filter, setFilter] = useState<FilterTab>("all");
   const [search, setSearch] = useState("");
+  const [tradingItemId, setTradingItemId] = useState<string | null>(null);
+  const [tradeAskingPrice, setTradeAskingPrice] = useState("");
+  const [isListing, setIsListing] = useState(false);
 
   // Build set of equipped item _ids
   const equippedIds = new Set<string>();
