@@ -835,7 +835,7 @@ const SLOT_ITEM_TYPES: Record<string, string[]> = {
   ring1: ["ring"], ring2: ["ring"], necklace: ["necklace"], book: ["book"],
 };
 
-type EquipSlotItem = { name: string; rarity: string; type: string; stats: Record<string, unknown>; id?: string; description?: string };
+type EquipSlotItem = { name: string; rarity: string; type: string; stats: Record<string, unknown>; _id?: string; description?: string };
 
 function EquipmentSlotPopover({
   slot,
