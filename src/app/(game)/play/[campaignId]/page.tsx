@@ -163,6 +163,7 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
             onNpcClick={setSelectedNpcId}
             onOpenCharSheet={() => setShowCharSheet(true)}
             onOpenInventory={() => setShowInventory(true)}
+            onOpenTradeBoard={() => setShowTradeBoard(true)}
           />
         </aside>
       )}
