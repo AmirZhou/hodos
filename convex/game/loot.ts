@@ -329,6 +329,8 @@ export const seedContainer = mutation({
     sourceEntityId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireCampaignMember(ctx, args.campaignId, "owner");
+
     // Create the container first
     const containerId = await ctx.db.insert("lootContainers", {
       campaignId: args.campaignId,
