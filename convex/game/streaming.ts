@@ -35,6 +35,8 @@ export const createStreamSession = mutation({
     type: v.union(v.literal("narration"), v.literal("dialogue")),
   },
   handler: async (ctx, args) => {
+    await requireCampaignMember(ctx, args.campaignId);
+
     return await ctx.db.insert("streamingSessions", {
       campaignId: args.campaignId,
       type: args.type,
