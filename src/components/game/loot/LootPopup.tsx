@@ -43,8 +43,8 @@ export function LootPopup({
   const takeItem = useMutation(api.game.loot.takeItem);
   const takeAllItems = useMutation(api.game.loot.takeAllItems);
 
-  const handleTake = async (itemIndex: number) => {
-    await takeItem({ containerId, characterId, itemIndex });
+  const handleTake = async (itemId: string) => {
+    await takeItem({ containerId, characterId, itemId: itemId as any });
   };
 
   const handleTakeAll = async () => {
