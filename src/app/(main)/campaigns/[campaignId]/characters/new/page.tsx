@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useMutation } from "convex/react";
 import { api } from "../../../../../../../convex/_generated/api";
@@ -8,20 +8,10 @@ import { Id } from "../../../../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, ArrowRight, Check, User, Dices, Heart, Sparkles } from "lucide-react";
+import { ArrowLeft, Camera, ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/components/providers/auth-provider";
 import { RequireAuth } from "@/components/auth/RequireAuth";
-
-type Step = "basics" | "abilities" | "class" | "intimacy" | "review";
-
-const STEPS: { id: Step; title: string; icon: React.ElementType }[] = [
-  { id: "basics", title: "Basics", icon: User },
-  { id: "abilities", title: "Abilities", icon: Dices },
-  { id: "class", title: "Class", icon: Sparkles },
-  { id: "intimacy", title: "Intimacy", icon: Heart },
-  { id: "review", title: "Review", icon: Check },
-];
 
 const ABILITY_NAMES = ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"] as const;
 type AbilityName = (typeof ABILITY_NAMES)[number];
@@ -98,10 +88,15 @@ function NewCharacterPageContent() {
   const { user } = useAuth();
   const campaignId = params.campaignId as Id<"campaigns">;
   const createCharacter = useMutation(api.characters.create);
+  const generateUploadUrl = useMutation(api.files.generateUploadUrl);
 
-  const [currentStep, setCurrentStep] = useState<Step>("basics");
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [portraitStorageId, setPortraitStorageId] = useState<Id<"_storage"> | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [showKinks, setShowKinks] = useState(false);
 
   const [character, setCharacter] = useState<CharacterData>({
     name: "",
@@ -136,45 +131,20 @@ function NewCharacterPageContent() {
     charisma: null,
   });
 
-  const currentStepIndex = STEPS.findIndex((s) => s.id === currentStep);
-
-  const goNext = () => {
-    const nextIndex = currentStepIndex + 1;
-    if (nextIndex < STEPS.length) {
-      setCurrentStep(STEPS[nextIndex].id);
-    }
-  };
-
-  const goPrev = () => {
-    const prevIndex = currentStepIndex - 1;
-    if (prevIndex >= 0) {
-      setCurrentStep(STEPS[prevIndex].id);
-    }
-  };
-
   const assignAbility = (ability: AbilityName, value: number) => {
-    // If clicking on already-assigned value for this ability, deselect it
     if (abilityAssignments[ability] === value) {
-      setAbilityAssignments((prev) => ({
-        ...prev,
-        [ability]: null,
-      }));
+      setAbilityAssignments((prev) => ({ ...prev, [ability]: null }));
       setCharacter((prev) => ({
         ...prev,
-        abilities: {
-          ...prev.abilities,
-          [ability]: 10, // Reset to default
-        },
+        abilities: { ...prev.abilities, [ability]: 10 },
       }));
       return;
     }
 
-    // Find if this value is already assigned elsewhere
     const existingAbility = Object.entries(abilityAssignments).find(
       ([_, v]) => v === value
     )?.[0] as AbilityName | undefined;
 
-    // If the ability already has a value, swap them
     const currentValue = abilityAssignments[ability];
 
     setAbilityAssignments((prev) => ({
@@ -183,7 +153,6 @@ function NewCharacterPageContent() {
       ...(existingAbility && existingAbility !== ability ? { [existingAbility]: currentValue } : {}),
     }));
 
-    // Update character abilities
     setCharacter((prev) => ({
       ...prev,
       abilities: {
@@ -202,11 +171,39 @@ function NewCharacterPageContent() {
   const updateKink = (kink: string, level: number) => {
     setCharacter((prev) => ({
       ...prev,
-      kinkPreferences: {
-        ...prev.kinkPreferences,
-        [kink]: level,
-      },
+      kinkPreferences: { ...prev.kinkPreferences, [kink]: level },
     }));
+  };
+
+  const calculateModifier = (score: number) => {
+    const mod = Math.floor((score - 10) / 2);
+    return mod >= 0 ? `+${mod}` : `${mod}`;
+  };
+
+  const handleAvatarUpload = async (file: File) => {
+    setIsUploading(true);
+    try {
+      // Local preview
+      const previewUrl = URL.createObjectURL(file);
+      setAvatarPreview(previewUrl);
+
+      // Upload to Convex
+      const uploadUrl = await generateUploadUrl();
+      const result = await fetch(uploadUrl, {
+        method: "POST",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      const { storageId } = await result.json();
+      setPortraitStorageId(storageId as Id<"_storage">);
+    } catch (err) {
+      console.error("Failed to upload avatar:", err);
+      setError("Failed to upload image. Please try again.");
+      setAvatarPreview(null);
+      setPortraitStorageId(null);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleCreate = async () => {
@@ -224,6 +221,7 @@ function NewCharacterPageContent() {
         campaignId,
         name: character.name,
         pronouns: character.pronouns,
+        portrait: portraitStorageId ?? undefined,
         abilities: character.abilities,
         class: character.class || undefined,
         background: character.background || undefined,
@@ -240,11 +238,6 @@ function NewCharacterPageContent() {
     }
   };
 
-  const calculateModifier = (score: number) => {
-    const mod = Math.floor((score - 10) / 2);
-    return mod >= 0 ? `+${mod}` : `${mod}`;
-  };
-
   return (
     <div className="min-h-screen pb-24">
       {/* Header */}
@@ -258,43 +251,55 @@ function NewCharacterPageContent() {
             Back to campaign
           </Link>
           <h1 className="text-xl font-bold">Create Character</h1>
-
-          {/* Step Indicator */}
-          <div className="flex items-center gap-2 mt-4 overflow-x-auto pb-2">
-            {STEPS.map((step, index) => (
-              <button
-                key={step.id}
-                onClick={() => setCurrentStep(step.id)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${
-                  currentStep === step.id
-                    ? "bg-[var(--accent-gold)] text-[var(--background)]"
-                    : index < currentStepIndex
-                      ? "bg-[var(--accent-green)]/20 text-[var(--accent-green)]"
-                      : "bg-[var(--background-tertiary)] text-[var(--foreground-secondary)]"
-                }`}
-              >
-                <step.icon className="h-4 w-4" />
-                <span className="hidden sm:inline">{step.title}</span>
-                <span className="sm:hidden">{index + 1}</span>
-              </button>
-            ))}
-          </div>
         </div>
       </header>
 
       {/* Content */}
-      <div className="mx-auto max-w-4xl px-4 py-6">
-        {/* Step: Basics */}
-        {currentStep === "basics" && (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-lg font-semibold mb-1">Basic Information</h2>
-              <p className="text-sm text-[var(--foreground-secondary)]">
-                Who is your character?
-              </p>
-            </div>
+      <div className="mx-auto max-w-4xl px-4 py-6 space-y-10">
 
-            <div className="space-y-4">
+        {/* ── Section 1: Identity ── */}
+        <section className="space-y-6">
+          <h2 className="text-lg font-semibold">Identity</h2>
+
+          {/* Avatar Upload */}
+          <div className="flex items-start gap-6">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="relative w-[120px] h-[120px] shrink-0 rounded-full border-2 border-dashed border-[var(--border)] hover:border-[var(--accent-gold)] transition-colors overflow-hidden flex items-center justify-center bg-[var(--background-tertiary)]"
+            >
+              {avatarPreview ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={avatarPreview}
+                  alt="Avatar preview"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="flex flex-col items-center gap-1 text-[var(--foreground-muted)]">
+                  <Camera className="h-6 w-6" />
+                  <span className="text-xs">Upload</span>
+                </div>
+              )}
+              {isUploading && (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleAvatarUpload(file);
+              }}
+            />
+
+            <div className="flex-1 space-y-4">
+              {/* Name */}
               <div>
                 <label className="block text-sm font-medium mb-2">Character Name</label>
                 <Input
@@ -304,6 +309,7 @@ function NewCharacterPageContent() {
                 />
               </div>
 
+              {/* Pronouns */}
               <div>
                 <label className="block text-sm font-medium mb-2">Pronouns</label>
                 <div className="flex flex-wrap gap-2">
@@ -324,70 +330,75 @@ function NewCharacterPageContent() {
               </div>
             </div>
           </div>
-        )}
+        </section>
 
-        {/* Step: Abilities */}
-        {currentStep === "abilities" && (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-lg font-semibold mb-1">Ability Scores</h2>
-              <p className="text-sm text-[var(--foreground-secondary)]">
-                Assign the standard array: {STANDARD_ARRAY.join(", ")}
-              </p>
-            </div>
+        <hr className="border-[var(--border)]" />
 
-            <div className="grid gap-4">
-              {ABILITY_NAMES.map((ability) => (
-                <div key={ability} className="flex items-center gap-4">
-                  <div className="w-28 capitalize font-medium">{ability}</div>
-                  <div className="flex gap-2 flex-wrap flex-1">
-                    {STANDARD_ARRAY.map((score) => {
-                      const isAssigned = abilityAssignments[ability] === score;
-                      const isAvailable = getAvailableScores().includes(score) || isAssigned;
-                      return (
-                        <button
-                          key={score}
-                          onClick={() => assignAbility(ability, score)}
-                          disabled={!isAvailable}
-                          className={`w-12 h-12 rounded-lg text-lg font-bold transition-colors ${
-                            isAssigned
-                              ? "bg-[var(--accent-gold)] text-[var(--background)]"
-                              : isAvailable
-                                ? "bg-[var(--background-tertiary)] hover:bg-[var(--border)]"
-                                : "bg-[var(--background-secondary)] text-[var(--foreground-muted)] opacity-50"
-                          }`}
-                        >
-                          {score}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <div className="w-16 text-center">
-                    <span className="text-lg font-mono">
-                      {abilityAssignments[ability]
-                        ? calculateModifier(abilityAssignments[ability]!)
-                        : "--"}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
+        {/* ── Section 2: Ability Scores ── */}
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-lg font-semibold mb-1">Ability Scores</h2>
+            <p className="text-sm text-[var(--foreground-secondary)]">
+              Assign the standard array: {STANDARD_ARRAY.join(", ")}
+            </p>
           </div>
-        )}
 
-        {/* Step: Class */}
-        {currentStep === "class" && (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-lg font-semibold mb-1">Class & Background</h2>
-              <p className="text-sm text-[var(--foreground-secondary)]">
-                Choose your character's archetype and history
-              </p>
-            </div>
+          <div className="grid grid-cols-6 gap-3">
+            {ABILITY_NAMES.map((ability) => (
+              <div key={ability} className="flex flex-col items-center gap-2">
+                <span className="text-xs uppercase font-medium text-[var(--foreground-secondary)]">
+                  {ability.slice(0, 3)}
+                </span>
+                <select
+                  value={abilityAssignments[ability] ?? ""}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "") {
+                      // Deselect
+                      if (abilityAssignments[ability] !== null) {
+                        setAbilityAssignments((prev) => ({ ...prev, [ability]: null }));
+                        setCharacter((prev) => ({
+                          ...prev,
+                          abilities: { ...prev.abilities, [ability]: 10 },
+                        }));
+                      }
+                    } else {
+                      assignAbility(ability, parseInt(val));
+                    }
+                  }}
+                  className="w-full bg-[var(--background-tertiary)] border border-[var(--border)] rounded-lg px-2 py-2 text-center text-lg font-bold appearance-none cursor-pointer focus:border-[var(--accent-gold)] focus:outline-none"
+                >
+                  <option value="">—</option>
+                  {STANDARD_ARRAY.map((score) => {
+                    const isAvailable = getAvailableScores().includes(score) || abilityAssignments[ability] === score;
+                    return (
+                      <option key={score} value={score} disabled={!isAvailable}>
+                        {score}
+                      </option>
+                    );
+                  })}
+                </select>
+                <span className="text-sm font-mono text-[var(--foreground-muted)]">
+                  {abilityAssignments[ability] !== null
+                    ? calculateModifier(abilityAssignments[ability]!)
+                    : "—"}
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
 
+        <hr className="border-[var(--border)]" />
+
+        {/* ── Section 3: Class & Background ── */}
+        <section className="space-y-6">
+          <h2 className="text-lg font-semibold">Class & Background</h2>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Class */}
             <div>
               <label className="block text-sm font-medium mb-3">Class</label>
-              <div className="grid sm:grid-cols-2 gap-3">
+              <div className="grid gap-3">
                 {CLASSES.map((c) => (
                   <Card
                     key={c.id}
@@ -398,7 +409,7 @@ function NewCharacterPageContent() {
                     }`}
                     onClick={() => setCharacter({
                       ...character,
-                      class: character.class === c.id ? "" : c.id
+                      class: character.class === c.id ? "" : c.id,
                     })}
                   >
                     <CardHeader className="pb-2">
@@ -412,9 +423,10 @@ function NewCharacterPageContent() {
               </div>
             </div>
 
+            {/* Background */}
             <div>
               <label className="block text-sm font-medium mb-3">Background</label>
-              <div className="grid sm:grid-cols-2 gap-3">
+              <div className="grid gap-3">
                 {BACKGROUNDS.map((b) => (
                   <Card
                     key={b.id}
@@ -425,7 +437,7 @@ function NewCharacterPageContent() {
                     }`}
                     onClick={() => setCharacter({
                       ...character,
-                      background: character.background === b.id ? "" : b.id
+                      background: character.background === b.id ? "" : b.id,
                     })}
                   >
                     <CardHeader className="pb-2">
@@ -439,50 +451,42 @@ function NewCharacterPageContent() {
               </div>
             </div>
           </div>
-        )}
+        </section>
 
-        {/* Step: Intimacy */}
-        {currentStep === "intimacy" && (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-lg font-semibold mb-1">Intimacy Profile</h2>
-              <p className="text-sm text-[var(--foreground-secondary)]">
-                Define your character's intimate preferences. This affects available interactions.
-              </p>
+        <hr className="border-[var(--border)]" />
+
+        {/* ── Section 4: Intimacy Profile ── */}
+        <section className="space-y-6">
+          <h2 className="text-lg font-semibold">Intimacy Profile</h2>
+
+          {/* Orientation */}
+          <div>
+            <label className="block text-sm font-medium mb-3">Orientation</label>
+            <div className="flex flex-wrap gap-2">
+              {ORIENTATIONS.map((o) => (
+                <button
+                  key={o}
+                  onClick={() => setCharacter({ ...character, orientation: o })}
+                  className={`px-4 py-2 rounded-lg text-sm transition-colors ${
+                    character.orientation === o
+                      ? "bg-[var(--accent-gold)] text-[var(--background)]"
+                      : "bg-[var(--background-tertiary)] hover:bg-[var(--border)]"
+                  }`}
+                >
+                  {o}
+                </button>
+              ))}
             </div>
+          </div>
 
-            {/* Orientation */}
-            <div>
-              <label className="block text-sm font-medium mb-3">Orientation</label>
-              <div className="flex flex-wrap gap-2">
-                {ORIENTATIONS.map((o) => (
-                  <button
-                    key={o}
-                    onClick={() =>
-                      setCharacter({
-                        ...character,
-                        orientation: o,
-                      })
-                    }
-                    className={`px-4 py-2 rounded-lg text-sm transition-colors ${
-                      character.orientation === o
-                        ? "bg-[var(--accent-gold)] text-[var(--background)]"
-                        : "bg-[var(--background-tertiary)] hover:bg-[var(--border)]"
-                    }`}
-                  >
-                    {o}
-                  </button>
-                ))}
-              </div>
-            </div>
+          {/* Power Dynamics */}
+          <div className="space-y-4">
+            <label className="block text-sm font-medium">Power Dynamics</label>
+            <p className="text-xs text-[var(--foreground-secondary)]">
+              Both dominance and submission are separate axes — you can be high in both (switch), low in both (vanilla), or lean one way.
+            </p>
 
-            {/* Power Dynamics (Two-Axis) */}
-            <div className="space-y-4">
-              <label className="block text-sm font-medium">Power Dynamics</label>
-              <p className="text-xs text-[var(--foreground-secondary)]">
-                Both dominance and submission are separate axes — you can be high in both (switch), low in both (vanilla), or lean one way.
-              </p>
-
+            <div className="grid sm:grid-cols-2 gap-4">
               {[
                 { key: "dominance", label: "Dominance", description: "Desire to lead, control, or top" },
                 { key: "submission", label: "Submission", description: "Desire to follow, yield, or bottom" },
@@ -511,174 +515,87 @@ function NewCharacterPageContent() {
                 </div>
               ))}
             </div>
-
-            {/* Kink Selection */}
-            <div className="space-y-4">
-              <label className="block text-sm font-medium">Kink Preferences</label>
-              <p className="text-xs text-[var(--foreground-secondary)]">
-                Click to cycle: Neutral → Curious → Enthusiast → Limit
-              </p>
-
-              {Object.entries(KINK_CATEGORIES).map(([category, kinks]) => (
-                <div key={category} className="space-y-2">
-                  <h4 className="text-sm text-[var(--foreground-secondary)]">{category}</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {kinks.map((kink) => {
-                      const level = character.kinkPreferences[kink] || 0;
-                      const colors = {
-                        "-2": "bg-[var(--accent-red)] text-white",
-                        "-1": "bg-[var(--accent-red)]/30",
-                        "0": "bg-[var(--background-tertiary)]",
-                        "1": "bg-[var(--accent-blue)]/30",
-                        "2": "bg-[var(--accent-green)]/30",
-                        "3": "bg-[var(--accent-gold)] text-[var(--background)]",
-                      };
-                      const labels = {
-                        "-2": "Hard Limit",
-                        "-1": "Soft Limit",
-                        "0": "Neutral",
-                        "1": "Curious",
-                        "2": "Enthusiast",
-                        "3": "Expert",
-                      };
-                      return (
-                        <button
-                          key={kink}
-                          onClick={() => {
-                            const newLevel = level >= 3 ? -2 : level + 1;
-                            updateKink(kink, newLevel);
-                          }}
-                          className={`px-3 py-1.5 rounded text-xs transition-colors ${colors[level.toString() as keyof typeof colors]}`}
-                          title={labels[level.toString() as keyof typeof labels]}
-                        >
-                          {kink.replace(/([A-Z])/g, " $1").trim()}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-
           </div>
-        )}
 
-        {/* Step: Review */}
-        {currentStep === "review" && (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-lg font-semibold mb-1">Review Character</h2>
-              <p className="text-sm text-[var(--foreground-secondary)]">
-                Make sure everything looks good before creating your character
-              </p>
-            </div>
+          {/* Kink Preferences — Collapsible */}
+          <div className="space-y-4">
+            <button
+              type="button"
+              onClick={() => setShowKinks(!showKinks)}
+              className="flex items-center gap-2 text-sm font-medium hover:text-[var(--accent-gold)] transition-colors"
+            >
+              {showKinks ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              {showKinks ? "Hide Preferences" : "Show Preferences"}
+            </button>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>{character.name || "Unnamed Character"}</CardTitle>
-                <CardDescription>{character.pronouns}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Abilities */}
-                <div>
-                  <h4 className="text-sm font-medium mb-2">Ability Scores</h4>
-                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                    {ABILITY_NAMES.map((ability) => (
-                      <div key={ability} className="text-center p-2 bg-[var(--background-tertiary)] rounded">
-                        <div className="text-xs uppercase text-[var(--foreground-secondary)]">
-                          {ability.slice(0, 3)}
-                        </div>
-                        <div className="text-lg font-bold">{character.abilities[ability]}</div>
-                        <div className="text-xs text-[var(--foreground-muted)]">
-                          {calculateModifier(character.abilities[ability])}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Class & Background */}
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="text-sm font-medium mb-1">Class</h4>
-                    <p className="text-[var(--foreground-secondary)]">
-                      {CLASSES.find((c) => c.id === character.class)?.name || "Not selected"}
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium mb-1">Background</h4>
-                    <p className="text-[var(--foreground-secondary)]">
-                      {BACKGROUNDS.find((b) => b.id === character.background)?.name || "Not selected"}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Adult Profile Summary */}
-                <div>
-                  <h4 className="text-sm font-medium mb-2">Power Dynamics</h4>
-                  <div className="space-y-1 text-sm text-[var(--foreground-secondary)]">
-                    <p>Orientation: {character.orientation}</p>
-                    <p>
-                      Dominance: {character.adultStats.dominance} | Submission: {character.adultStats.submission}
-                    </p>
-                    <p>
-                      Active kinks:{" "}
-                      {Object.entries(character.kinkPreferences)
-                        .filter(([_, v]) => v > 0)
-                        .map(([k]) => k)
-                        .slice(0, 5)
-                        .join(", ") || "None selected"}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Warning */}
-            <Card className="bg-[var(--accent-gold)]/10 border-[var(--accent-gold)]/30">
-              <CardContent className="py-4">
-                <p className="text-sm">
-                  <strong>Note:</strong> You can modify your character later, but some changes may
-                  affect your campaign progress.
+            {showKinks && (
+              <div className="space-y-4">
+                <p className="text-xs text-[var(--foreground-secondary)]">
+                  Click to cycle: Neutral → Curious → Enthusiast → Expert → Hard Limit → Soft Limit → Neutral
                 </p>
-              </CardContent>
-            </Card>
 
-            {/* Error Message */}
-            {error && (
-              <Card className="bg-[var(--accent-red)]/10 border-[var(--accent-red)]/30">
-                <CardContent className="py-4">
-                  <p className="text-sm text-[var(--accent-red)]">{error}</p>
-                </CardContent>
-              </Card>
+                {Object.entries(KINK_CATEGORIES).map(([category, kinks]) => (
+                  <div key={category} className="space-y-2">
+                    <h4 className="text-sm text-[var(--foreground-secondary)]">{category}</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {kinks.map((kink) => {
+                        const level = character.kinkPreferences[kink] || 0;
+                        const colors: Record<string, string> = {
+                          "-2": "bg-[var(--accent-red)] text-white",
+                          "-1": "bg-[var(--accent-red)]/30",
+                          "0": "bg-[var(--background-tertiary)]",
+                          "1": "bg-[var(--accent-blue)]/30",
+                          "2": "bg-[var(--accent-green)]/30",
+                          "3": "bg-[var(--accent-gold)] text-[var(--background)]",
+                        };
+                        const labels: Record<string, string> = {
+                          "-2": "Hard Limit",
+                          "-1": "Soft Limit",
+                          "0": "Neutral",
+                          "1": "Curious",
+                          "2": "Enthusiast",
+                          "3": "Expert",
+                        };
+                        return (
+                          <button
+                            key={kink}
+                            onClick={() => {
+                              const newLevel = level >= 3 ? -2 : level + 1;
+                              updateKink(kink, newLevel);
+                            }}
+                            className={`px-3 py-1.5 rounded text-xs transition-colors ${colors[level.toString()] ?? colors["0"]}`}
+                            title={labels[level.toString()] ?? "Neutral"}
+                          >
+                            {kink.replace(/([A-Z])/g, " $1").trim()}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
+          </div>
+        </section>
+
+        {/* Error Message */}
+        {error && (
+          <div className="rounded-lg bg-[var(--accent-red)]/10 border border-[var(--accent-red)]/30 px-4 py-3">
+            <p className="text-sm text-[var(--accent-red)]">{error}</p>
           </div>
         )}
       </div>
 
-      {/* Bottom Navigation */}
+      {/* Sticky Footer */}
       <div className="fixed bottom-0 left-0 right-0 border-t border-[var(--border)] bg-[var(--background-secondary)] p-4 lg:pl-60">
-        <div className="mx-auto max-w-4xl flex gap-4">
+        <div className="mx-auto max-w-4xl">
           <Button
-            variant="outline"
-            onClick={goPrev}
-            disabled={currentStepIndex === 0}
-            className="flex-1"
+            onClick={handleCreate}
+            disabled={isCreating || isUploading}
+            className="w-full"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
+            {isCreating ? "Creating..." : "Create Character"}
           </Button>
-
-          {currentStep === "review" ? (
-            <Button onClick={handleCreate} disabled={isCreating} className="flex-1">
-              {isCreating ? "Creating..." : "Create Character"}
-            </Button>
-          ) : (
-            <Button onClick={goNext} className="flex-1">
-              Next
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Button>
-          )}
         </div>
       </div>
     </div>
