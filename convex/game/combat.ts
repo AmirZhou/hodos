@@ -650,8 +650,33 @@ export const move = mutation({
       throw new Error("Invalid combatant");
     }
 
-    // Calculate movement cost (5ft per cell)
-    const movementCost = (args.path.length - 1) * 5;
+    // Check if combatant can move (grappled, restrained, etc.)
+    let entityConditions: string[] = [];
+    if (combatant.entityType === "character") {
+      const char = await ctx.db.get(combatant.entityId as Id<"characters">);
+      if (char) entityConditions = char.conditions.map(c => c.name);
+    } else {
+      const npc = await ctx.db.get(combatant.entityId as Id<"npcs">);
+      if (npc) entityConditions = npc.conditions.map(c => c.name);
+    }
+
+    if (!canMove(entityConditions)) {
+      throw new Error("Cannot move due to conditions");
+    }
+
+    // Calculate movement cost (5ft per cell, difficult terrain = 10ft)
+    let movementCost = 0;
+    if (session.locationId) {
+      const location = await ctx.db.get(session.locationId);
+      for (let i = 1; i < args.path.length; i++) {
+        const cell = location?.gridData?.cells.find(
+          c => c.x === args.path[i].x && c.y === args.path[i].y
+        );
+        movementCost += cell?.terrain === "difficult" ? 10 : 5;
+      }
+    } else {
+      movementCost = (args.path.length - 1) * 5;
+    }
 
     if (movementCost > combatant.movementRemaining) {
       throw new Error("Insufficient movement");
