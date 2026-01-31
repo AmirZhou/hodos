@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import { assertNotBound, logItemEvent } from "../equipment";
+import { requireCharacterOwner } from "../lib/auth";
 
 // ============ QUERIES ============
 

@@ -61,15 +61,15 @@ export const disconnect = mutation({
 export const setVideoStatus = mutation({
   args: {
     campaignId: v.id("campaigns"),
-    userId: v.id("users"),
     isInVideo: v.boolean(),
     videoRoomToken: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const { userId } = await requireAuth(ctx);
     const existing = await ctx.db
       .query("presence")
       .withIndex("by_campaign", (q) => q.eq("campaignId", args.campaignId))
-      .filter((q) => q.eq(q.field("userId"), args.userId))
+      .filter((q) => q.eq(q.field("userId"), userId))
       .first();
 
     if (existing) {
