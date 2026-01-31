@@ -190,10 +190,10 @@ export const updateSettings = mutation({
 
 export const updateDisplayName = mutation({
   args: {
-    userId: v.id("users"),
     displayName: v.string(),
   },
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.userId, { displayName: args.displayName });
+    const { userId } = await requireAuth(ctx);
+    await ctx.db.patch(userId, { displayName: args.displayName });
   },
 });
