@@ -167,33 +167,73 @@ export function InventoryModal({ characterId, onClose }: InventoryModalProps) {
                 const borderColor = RARITY_BORDER_COLORS[item.rarity as keyof typeof RARITY_BORDER_COLORS];
                 const bgColor = RARITY_BG_COLORS[item.rarity as keyof typeof RARITY_BG_COLORS];
                 const isEquipped = equippedIds.has(item._id);
+                const isBound = item.boundTo !== undefined;
                 const keyStat = getKeyStat(item);
+                const isTrading = tradingItemId === item._id;
 
                 return (
-                  <button
-                    key={`${item._id}-${i}`}
-                    onClick={() => isEquipped ? handleUnequip(item._id) : handleEquip(item._id)}
-                    className="relative rounded-xl p-3 flex flex-col items-center gap-2 transition-all hover:brightness-125 cursor-pointer text-left border"
-                    style={{ borderColor, backgroundColor: "rgba(0,0,0,0.3)" }}
-                  >
-                    {isEquipped && (
-                      <span className="absolute top-1.5 right-1.5 text-[8px] px-1.5 py-0.5 rounded bg-[var(--accent-gold)] text-black font-bold">
-                        EQ
-                      </span>
-                    )}
-                    <div
-                      className="w-10 h-10 rounded-lg flex items-center justify-center"
-                      style={{ background: `linear-gradient(135deg, ${bgColor}, transparent)` }}
+                  <div key={`${item._id}-${i}`} className="relative">
+                    <button
+                      onClick={() => isEquipped ? handleUnequip(item._id) : handleEquip(item._id)}
+                      className="relative w-full rounded-xl p-3 flex flex-col items-center gap-2 transition-all hover:brightness-125 cursor-pointer text-left border"
+                      style={{ borderColor, backgroundColor: "rgba(0,0,0,0.3)" }}
                     >
-                      <div style={{ color: rarityColor }}><Icon className="h-5 w-5" /></div>
-                    </div>
-                    <span className="text-xs text-center truncate w-full font-medium" style={{ color: rarityColor }}>
-                      {item.name}
-                    </span>
-                    {keyStat && (
-                      <span className="text-[10px] text-[var(--foreground-muted)]">{keyStat}</span>
+                      {isEquipped && (
+                        <span className="absolute top-1.5 right-1.5 text-[8px] px-1.5 py-0.5 rounded bg-[var(--accent-gold)] text-black font-bold">
+                          EQ
+                        </span>
+                      )}
+                      {isBound && (
+                        <span className="absolute bottom-1.5 left-1.5 text-[7px] px-1 py-0.5 rounded bg-purple-600 text-white font-bold flex items-center gap-0.5">
+                          <Lock className="h-2 w-2" /> Bound
+                        </span>
+                      )}
+                      <div
+                        className="w-10 h-10 rounded-lg flex items-center justify-center"
+                        style={{ background: `linear-gradient(135deg, ${bgColor}, transparent)` }}
+                      >
+                        <div style={{ color: rarityColor }}><Icon className="h-5 w-5" /></div>
+                      </div>
+                      <span className="text-xs text-center truncate w-full font-medium" style={{ color: rarityColor }}>
+                        {item.name}
+                      </span>
+                      {keyStat && (
+                        <span className="text-[10px] text-[var(--foreground-muted)]">{keyStat}</span>
+                      )}
+                    </button>
+                    {/* Trade button — hidden for equipped or bound items */}
+                    {!isEquipped && !isBound && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setTradingItemId(isTrading ? null : item._id);
+                          setTradeAskingPrice("");
+                        }}
+                        className="absolute bottom-1.5 right-1.5 text-[7px] px-1.5 py-0.5 rounded bg-[var(--background-tertiary)] text-[var(--foreground-secondary)] hover:text-[var(--foreground)] hover:bg-[var(--accent-gold)] hover:text-black transition-colors font-medium flex items-center gap-0.5"
+                      >
+                        <ShoppingBag className="h-2 w-2" /> Trade
+                      </button>
                     )}
-                  </button>
+                    {/* Inline listing form */}
+                    {isTrading && (
+                      <div className="mt-1 p-2 rounded-lg bg-[var(--background-tertiary)] border border-[var(--border)]">
+                        <input
+                          type="text"
+                          value={tradeAskingPrice}
+                          onChange={(e) => setTradeAskingPrice(e.target.value)}
+                          placeholder="Asking price (optional)"
+                          className="w-full px-2 py-1 rounded bg-[var(--background-secondary)] border border-[var(--border)] text-[10px] placeholder:text-[var(--foreground-muted)] focus:outline-none focus:border-[var(--accent-gold)] mb-1"
+                        />
+                        <button
+                          onClick={() => handleListForTrade(item._id)}
+                          disabled={isListing}
+                          className="w-full py-1 rounded text-[10px] font-medium bg-[var(--accent-gold)] text-black hover:brightness-110 disabled:opacity-40"
+                        >
+                          {isListing ? "..." : "List for Trade"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 );
               })}
             </div>
