@@ -176,7 +176,6 @@ export const get = query({
 
 export const updateSettings = mutation({
   args: {
-    userId: v.id("users"),
     settings: v.object({
       explicitContent: v.boolean(),
       videoEnabled: v.boolean(),
@@ -184,7 +183,8 @@ export const updateSettings = mutation({
     }),
   },
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.userId, { settings: args.settings });
+    const { userId } = await requireAuth(ctx);
+    await ctx.db.patch(userId, { settings: args.settings });
   },
 });
 
