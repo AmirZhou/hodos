@@ -107,6 +107,7 @@ export const updateHp = mutation({
   handler: async (ctx, args) => {
     const npc = await ctx.db.get(args.npcId);
     if (!npc) throw new Error("NPC not found");
+    await requireCampaignMember(ctx, npc.campaignId);
 
     const newHp = Math.max(0, Math.min(args.hp, npc.maxHp));
     const isAlive = newHp > 0;
