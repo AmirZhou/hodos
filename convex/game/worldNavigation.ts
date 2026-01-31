@@ -156,6 +156,8 @@ export const revealWorldNode = mutation({
     mapId: v.id("maps"),
   },
   handler: async (ctx, args) => {
+    await requireCampaignMember(ctx, args.campaignId);
+
     const map = await ctx.db.get(args.mapId);
     if (!map) throw new Error("Map not found");
 
