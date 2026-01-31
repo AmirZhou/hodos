@@ -30,6 +30,7 @@ interface GameContextType {
     hp: number;
     maxHp: number;
     portrait?: string;
+    portraitUrl?: string;
     level: number;
     xp: number;
     ac: number;
