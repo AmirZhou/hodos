@@ -78,8 +78,22 @@ export const listItem = mutation({
       .first();
     if (existing) throw new Error("Item is already listed for trade");
 
+    // Enforce max 10 active listings per character
+    const activeListings = await ctx.db
+      .query("tradeListings")
+      .withIndex("by_seller", (q) => q.eq("sellerId", args.characterId))
+      .filter((q) => q.eq(q.field("status"), "active"))
+      .collect();
+    if (activeListings.length >= 10) {
+      throw new Error("Maximum 10 active listings per character");
+    }
+
     // Set item status to listed
     await ctx.db.patch(args.itemId, { status: "listed" });
+
+    // 7-day expiration
+    const LISTING_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
+    const now = Date.now();
 
     // Insert listing
     await ctx.db.insert("tradeListings", {
@@ -89,8 +103,9 @@ export const listItem = mutation({
       sellerName: character.name,
       askingPrice: args.askingPrice,
       note: args.note,
+      expiresAt: now + LISTING_DURATION_MS,
       status: "active",
-      createdAt: Date.now(),
+      createdAt: now,
     });
 
     await logItemEvent(ctx, {
