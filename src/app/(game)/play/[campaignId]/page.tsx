@@ -89,6 +89,7 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
   const [selectedNpcId, setSelectedNpcId] = useState<Id<"npcs"> | null>(null);
   const [showInventory, setShowInventory] = useState(false);
   const [showCharSheet, setShowCharSheet] = useState(false);
+  const [showTradeBoard, setShowTradeBoard] = useState(false);
 
   // Loading state
   if (isLoading) {
