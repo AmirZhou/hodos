@@ -1168,6 +1168,12 @@ function GameSidebar({
           >
             <Package className="h-4 w-4" /> View Full Inventory
           </button>
+          <button
+            onClick={onOpenTradeBoard}
+            className="w-full py-2.5 border-t border-[var(--border)] flex items-center justify-center gap-2 text-sm hover:bg-[var(--background-tertiary)] transition-colors text-[var(--foreground-secondary)]"
+          >
+            <ShoppingBag className="h-4 w-4" /> Trade Board
+          </button>
         </div>
       )}
 
