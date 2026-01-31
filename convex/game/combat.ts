@@ -394,6 +394,7 @@ export const move = mutation({
     if (!session || !session.combat) {
       throw new Error("No active combat");
     }
+    await requireCampaignMember(ctx, session.campaignId);
 
     const combatants = [...session.combat.combatants];
     const combatant = combatants[args.combatantIndex];
