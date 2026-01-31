@@ -672,7 +672,8 @@ export default defineSchema({
     name: v.string(),
     description: v.optional(v.string()),
 
-    // Items now stored in the `items` table (query by containerId)
+    // DEPRECATED — items now stored in the `items` table (query by containerId)
+    items: v.optional(v.any()),
 
     // Lock (optional)
     lock: v.optional(v.object({
