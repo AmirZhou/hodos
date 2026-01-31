@@ -670,7 +670,7 @@ export default defineSchema({
     name: v.string(),
     description: v.optional(v.string()),
 
-    items: v.array(equipmentItem),
+    // Items now stored in the `items` table (query by containerId)
 
     // Lock (optional)
     lock: v.optional(v.object({
