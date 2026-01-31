@@ -387,6 +387,8 @@ export const connectLocations = mutation({
     locationB: v.id("locations"),
   },
   handler: async (ctx, args) => {
+    await requireAuth(ctx);
+
     const locA = await ctx.db.get(args.locationA);
     const locB = await ctx.db.get(args.locationB);
 
