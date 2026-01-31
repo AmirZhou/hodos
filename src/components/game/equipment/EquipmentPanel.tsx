@@ -30,7 +30,7 @@ export function EquipmentPanel({ characterId }: EquipmentPanelProps) {
   };
 
   const handleEquip = (itemId: string, targetSlot?: string) => {
-    equipItem({ characterId, itemId, targetSlot });
+    equipItem({ characterId, itemId: itemId as any, targetSlot });
   };
 
   const eq = equipment as Record<string, unknown>;
