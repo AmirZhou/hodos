@@ -12,7 +12,7 @@ import {
   getRarityColor, RARITY_BORDER_COLORS, RARITY_BG_COLORS,
   getSlotLabel, formatStatName, formatStatValue,
 } from "@/lib/equipment";
-import type { EquipmentSlot, Rarity } from "../../../../convex/data/equipmentItems";
+import type { EquipmentSlot } from "../../../../convex/data/equipmentItems";
 
 const SLOT_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   head: Crown, chest: Shirt, hands: Hand, boots: Footprints,
