@@ -1054,25 +1054,14 @@ export const executeNpcTurn = action({
     const distance = Math.abs(nearest.position.x - npc.position.x) + Math.abs(nearest.position.y - npc.position.y);
 
     if (distance <= 1) {
-      const attackRoll = Math.floor(Math.random() * 20) + 1 + 5;
-      const targetAc = nearest.entity?.ac ?? 10;
-
-      if (attackRoll >= targetAc) {
-        const damage = Math.floor(Math.random() * 8) + 1 + 3;
-        await ctx.runMutation(api.game.combat.executeAction, {
-          sessionId: args.sessionId,
-          action: { type: "attack", targetIndex: nearest.index, roll: attackRoll, damage },
-        });
-        await ctx.runMutation(api.game.combat.endTurn, { sessionId: args.sessionId });
-        return { action: "attack", target: nearest.index, roll: attackRoll, damage, hit: true };
-      } else {
-        await ctx.runMutation(api.game.combat.executeAction, {
-          sessionId: args.sessionId,
-          action: { type: "attack", targetIndex: nearest.index, roll: attackRoll, damage: 0 },
-        });
-        await ctx.runMutation(api.game.combat.endTurn, { sessionId: args.sessionId });
-        return { action: "attack", target: nearest.index, roll: attackRoll, hit: false };
-      }
+      // Use the server-side attack resolution via executeAction
+      // The mutation will handle the roll and damage using NPC stats
+      await ctx.runMutation(api.game.combat.executeAction, {
+        sessionId: args.sessionId,
+        action: { type: "attack", targetIndex: nearest.index },
+      });
+      await ctx.runMutation(api.game.combat.endTurn, { sessionId: args.sessionId });
+      return { action: "attack", target: nearest.index };
     } else {
       const dx = Math.sign(nearest.position.x - npc.position.x);
       const dy = Math.sign(nearest.position.y - npc.position.y);
