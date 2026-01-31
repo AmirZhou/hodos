@@ -4,6 +4,7 @@ import { api } from "../_generated/api";
 import { Id, Doc } from "../_generated/dataModel";
 import { validateItemGrants } from "./itemGrants";
 import { findMatchingNpc } from "./npcNameResolver";
+import { validateStringLength, clampAffinity, clampPercentage } from "../lib/validation";
 
 // Type definitions for the response
 interface DMResponse {
