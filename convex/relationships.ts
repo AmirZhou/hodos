@@ -170,6 +170,10 @@ export const setDynamic = mutation({
     }),
   },
   handler: async (ctx, args) => {
+    const relationship = await ctx.db.get(args.relationshipId);
+    if (!relationship) throw new Error("Relationship not found");
+    await requireCampaignMember(ctx, relationship.campaignId);
+
     await ctx.db.patch(args.relationshipId, {
       dynamic: args.dynamic,
     });
