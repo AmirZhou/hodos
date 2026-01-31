@@ -138,6 +138,10 @@ export const updateLocation = mutation({
     locationId: v.optional(v.id("locations")),
   },
   handler: async (ctx, args) => {
+    const npc = await ctx.db.get(args.npcId);
+    if (!npc) throw new Error("NPC not found");
+    await requireCampaignMember(ctx, npc.campaignId);
+
     await ctx.db.patch(args.npcId, {
       currentLocationId: args.locationId,
     });
