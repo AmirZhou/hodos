@@ -124,6 +124,7 @@ export const addMemory = mutation({
   handler: async (ctx, args) => {
     const npc = await ctx.db.get(args.npcId);
     if (!npc) throw new Error("NPC not found");
+    await requireCampaignMember(ctx, npc.campaignId);
 
     await ctx.db.patch(args.npcId, {
       memories: [...npc.memories, args.memory],
