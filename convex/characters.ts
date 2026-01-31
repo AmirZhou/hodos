@@ -1,6 +1,9 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { requireAuth, requireCampaignMember, requireCharacterOwner } from "./lib/auth";
+import { computeEquipmentBonuses, computeDerivedStats } from "./lib/stats";
+import { initializeSpellSlots, isCaster } from "./lib/spells";
+import { initializeClassResources } from "./lib/classFeatures";
 
 const defaultSkills: Record<string, number> = {
   // Strength
