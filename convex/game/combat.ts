@@ -442,6 +442,7 @@ export const endTurn = mutation({
     if (!session || !session.combat) {
       throw new Error("No active combat");
     }
+    await requireCampaignMember(ctx, session.campaignId);
 
     const combat = session.combat;
     const combatants = [...combat.combatants];
