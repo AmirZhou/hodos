@@ -147,11 +147,14 @@ export const create = mutation({
     hardLimits: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
+    const { userId } = await requireAuth(ctx);
+    await requireCampaignMember(ctx, args.campaignId);
+
     const level = 1;
     const maxHp = calculateMaxHp(args.abilities.constitution, level);
 
     const characterId = await ctx.db.insert("characters", {
-      userId: args.userId,
+      userId,
       campaignId: args.campaignId,
       name: args.name,
       pronouns: args.pronouns,
