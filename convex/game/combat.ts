@@ -497,6 +497,7 @@ export const useSafeword = mutation({
     if (!session || !session.combat) {
       throw new Error("No active combat");
     }
+    await requireCampaignMember(ctx, session.campaignId);
 
     if (args.level === "red") {
       // RED = full stop, end combat immediately
