@@ -1722,3 +1722,13 @@ export function getItemsBySlot(slot: EquipmentSlot): EquipmentItem[] {
 export function getItemsByRarity(rarity: Rarity): EquipmentItem[] {
   return ALL_ITEMS.filter((item) => item.rarity === rarity);
 }
+
+/** Resolve the binding rule for an item. Uses explicit bindingRule if set, otherwise defaults by rarity. */
+export function getBindingRule(item: EquipmentItem): BindingRule {
+  if (item.bindingRule) return item.bindingRule;
+  switch (item.rarity) {
+    case "legendary": return "bop";
+    case "epic": return "boe";
+    default: return "none";
+  }
+}
