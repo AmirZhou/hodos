@@ -140,18 +140,18 @@ export function InventoryModal({ characterId, onClose }: InventoryModalProps) {
             <div className="text-center py-12 text-[var(--foreground-muted)]">No items found</div>
           ) : (
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-              {filteredItems.map((item, i) => {
+              {filteredItems.map((item: any, i: number) => {
                 const Icon = SLOT_ICONS[item.type] || Scroll;
-                const rarityColor = getRarityColor(item.rarity);
-                const borderColor = RARITY_BORDER_COLORS[item.rarity];
-                const bgColor = RARITY_BG_COLORS[item.rarity];
-                const isEquipped = equippedIds.has(item.id);
+                const rarityColor = getRarityColor(item.rarity as never);
+                const borderColor = RARITY_BORDER_COLORS[item.rarity as keyof typeof RARITY_BORDER_COLORS];
+                const bgColor = RARITY_BG_COLORS[item.rarity as keyof typeof RARITY_BG_COLORS];
+                const isEquipped = equippedIds.has(item._id);
                 const keyStat = getKeyStat(item);
 
                 return (
                   <button
-                    key={`${item.id}-${i}`}
-                    onClick={() => isEquipped ? handleUnequip(item.id) : handleEquip(item.id)}
+                    key={`${item._id}-${i}`}
+                    onClick={() => isEquipped ? handleUnequip(item._id) : handleEquip(item._id)}
                     className="relative rounded-xl p-3 flex flex-col items-center gap-2 transition-all hover:brightness-125 cursor-pointer text-left border"
                     style={{ borderColor, backgroundColor: "rgba(0,0,0,0.3)" }}
                   >
