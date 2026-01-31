@@ -82,6 +82,7 @@ const sceneState = v.object({
   currentActorIndex: v.number(),
   negotiatedActivities: v.array(v.string()),
   usedSafeword: v.boolean(),
+  aftercareActionsCompleted: v.optional(v.number()),
   startedAt: v.number(),
   lastActionAt: v.number(),
 });
