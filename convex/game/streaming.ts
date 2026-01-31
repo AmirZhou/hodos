@@ -114,6 +114,10 @@ export const completeStream = mutation({
     }),
   },
   handler: async (ctx, args) => {
+    const streamSession = await ctx.db.get(args.sessionId);
+    if (!streamSession) throw new Error("Streaming session not found");
+    await requireCampaignMember(ctx, streamSession.campaignId);
+
     // Mark streaming session as complete
     await ctx.db.patch(args.sessionId, { isComplete: true });
 
