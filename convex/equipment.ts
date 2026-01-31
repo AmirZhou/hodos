@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import type { MutationCtx } from "./_generated/server";
+import { requireCharacterOwner } from "./lib/auth";
 import { Id, Doc } from "./_generated/dataModel";
 import { getItemById, getBindingRule } from "./data/equipmentItems";
 import type { EquipmentItem, EquipedSlot, BindingRule } from "./data/equipmentItems";
