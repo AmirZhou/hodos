@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 import { Doc, Id } from "./_generated/dataModel";
+import { requireCampaignMember } from "./lib/auth";
 
 // Types
 export interface KeyMoment {
