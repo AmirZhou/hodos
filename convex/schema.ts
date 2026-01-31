@@ -297,25 +297,7 @@ export default defineSchema({
     background: v.optional(v.string()),
     classFeatures: v.array(v.string()),
 
-    // Inventory & Equipment
-    inventory: v.array(equipmentItem),
-    equipped: v.object({
-      head: v.optional(equipmentItem),
-      chest: v.optional(equipmentItem),
-      hands: v.optional(equipmentItem),
-      boots: v.optional(equipmentItem),
-      cloak: v.optional(equipmentItem),
-      ring1: v.optional(equipmentItem),
-      ring2: v.optional(equipmentItem),
-      necklace: v.optional(equipmentItem),
-      mainHand: v.optional(equipmentItem),
-      offHand: v.optional(equipmentItem),
-      book: v.optional(equipmentItem),
-      // Adult equipment slots
-      collar: v.optional(equipmentItem),
-      restraints: v.optional(equipmentItem),
-      toy: v.optional(equipmentItem),
-    }),
+    // Inventory & Equipment — now stored in the `items` table (query by ownerId)
 
     // Conditions & Status
     conditions: v.array(condition),
