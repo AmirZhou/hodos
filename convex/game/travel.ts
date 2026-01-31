@@ -458,6 +458,8 @@ export const seedTestLocations = mutation({
     campaignId: v.id("campaigns"),
   },
   handler: async (ctx, args) => {
+    await requireCampaignMember(ctx, args.campaignId, "owner");
+
     // Check if campaign already has maps linked
     const existingMaps = await ctx.db
       .query("campaignMaps")
