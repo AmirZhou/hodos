@@ -40,13 +40,13 @@ export const heartbeat = mutation({
 export const disconnect = mutation({
   args: {
     campaignId: v.id("campaigns"),
-    userId: v.id("users"),
   },
   handler: async (ctx, args) => {
+    const { userId } = await requireAuth(ctx);
     const existing = await ctx.db
       .query("presence")
       .withIndex("by_campaign", (q) => q.eq("campaignId", args.campaignId))
-      .filter((q) => q.eq(q.field("userId"), args.userId))
+      .filter((q) => q.eq(q.field("userId"), userId))
       .first();
 
     if (existing) {
