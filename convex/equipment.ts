@@ -268,6 +268,8 @@ export const removeItemFromInventory = mutation({
     itemId: v.id("items"),
   },
   handler: async (ctx, args) => {
+    await requireCharacterOwner(ctx, args.characterId);
+
     const item = await ctx.db.get(args.itemId);
     if (!item) throw new Error("Item not found");
     if (item.ownerId !== args.characterId || item.status !== "inventory") {
