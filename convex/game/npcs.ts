@@ -30,6 +30,8 @@ export const getOrCreate = mutation({
     description: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireCampaignMember(ctx, args.campaignId);
+
     // Check if NPC already exists (fuzzy match on normalized name)
     const { findMatchingNpc } = await import("./npcNameResolver");
     const campaignNpcs = await ctx.db
