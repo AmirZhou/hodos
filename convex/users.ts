@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { requireAuth } from "./lib/auth";
 
 // Sync Clerk user identity into Convex users table.
 // Called on sign-in to upsert the user record.

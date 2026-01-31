@@ -42,6 +42,7 @@ import type * as game_travel from "../game/travel.js";
 import type * as game_worldNavigation from "../game/worldNavigation.js";
 import type * as gameLog from "../gameLog.js";
 import type * as http from "../http.js";
+import type * as lib_auth from "../lib/auth.js";
 import type * as npcMemories from "../npcMemories.js";
 import type * as npcs from "../npcs.js";
 import type * as presence from "../presence.js";
@@ -89,6 +90,7 @@ declare const fullApi: ApiFromModules<{
   "game/worldNavigation": typeof game_worldNavigation;
   gameLog: typeof gameLog;
   http: typeof http;
+  "lib/auth": typeof lib_auth;
   npcMemories: typeof npcMemories;
   npcs: typeof npcs;
   presence: typeof presence;
