@@ -297,7 +297,9 @@ export default defineSchema({
     background: v.optional(v.string()),
     classFeatures: v.array(v.string()),
 
-    // Inventory & Equipment — now stored in the `items` table (query by ownerId)
+    // DEPRECATED — inventory/equipment now stored in the `items` table (query by ownerId)
+    inventory: v.optional(v.any()),
+    equipped: v.optional(v.any()),
 
     // Conditions & Status
     conditions: v.array(condition),
