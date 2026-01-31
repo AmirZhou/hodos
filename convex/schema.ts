@@ -691,6 +691,84 @@ export default defineSchema({
   })
     .index("by_campaign_and_location", ["campaignId", "locationId"]),
 
+  // ============ ITEM INSTANCES ============
+  items: defineTable({
+    // Identity
+    templateId: v.string(),           // e.g. "main_legendary_01" — links to item catalog
+    instanceId: v.string(),           // crypto.randomUUID() — globally unique per copy
+
+    // Where is this item right now?
+    status: v.union(
+      v.literal("inventory"),         // in a character's bag
+      v.literal("equipped"),          // worn by a character
+      v.literal("container"),         // inside a loot container
+      v.literal("ground"),            // loose on the ground at a location
+      v.literal("listed"),            // on trade board (future)
+      v.literal("destroyed"),         // soft-delete
+    ),
+
+    // Ownership / location (set based on status)
+    ownerId: v.optional(v.id("characters")),         // set when inventory or equipped
+    equippedSlot: v.optional(v.string()),             // "head", "mainHand", etc. (only when equipped)
+    containerId: v.optional(v.id("lootContainers")), // set when in container
+    locationId: v.optional(v.id("locations")),        // set when on ground
+    campaignId: v.id("campaigns"),
+
+    // Binding
+    bindingRule: v.union(v.literal("boe"), v.literal("bop"), v.literal("none")),
+    boundTo: v.optional(v.id("characters")),          // null = not yet bound
+
+    // Item data (denormalized from template at creation time)
+    name: v.string(),
+    description: v.string(),
+    type: v.string(),
+    rarity: v.string(),
+    stats: v.object({
+      ac: v.optional(v.number()),
+      hp: v.optional(v.number()),
+      speed: v.optional(v.number()),
+      damage: v.optional(v.string()),
+      strength: v.optional(v.number()),
+      dexterity: v.optional(v.number()),
+      constitution: v.optional(v.number()),
+      intelligence: v.optional(v.number()),
+      wisdom: v.optional(v.number()),
+      charisma: v.optional(v.number()),
+    }),
+    specialAttributes: v.optional(v.record(v.string(), v.number())),
+    passive: v.optional(v.string()),
+
+    createdAt: v.number(),
+  })
+    .index("by_owner", ["ownerId"])
+    .index("by_container", ["containerId"])
+    .index("by_campaign_and_location", ["campaignId", "locationId"])
+    .index("by_campaign", ["campaignId"])
+    .index("by_instance", ["instanceId"]),
+
+  // ============ ITEM HISTORY ============
+  itemHistory: defineTable({
+    itemId: v.id("items"),
+    campaignId: v.id("campaigns"),
+    event: v.union(
+      v.literal("created"),
+      v.literal("looted"),
+      v.literal("equipped"),
+      v.literal("unequipped"),
+      v.literal("traded"),
+      v.literal("bound"),
+      v.literal("destroyed"),
+      v.literal("listed"),
+      v.literal("delisted"),
+    ),
+    actorId: v.optional(v.id("characters")),
+    targetId: v.optional(v.id("characters")),
+    metadata: v.optional(v.string()),
+    createdAt: v.number(),
+  })
+    .index("by_item", ["itemId"])
+    .index("by_campaign", ["campaignId", "createdAt"]),
+
   // ============ STREAMING SESSIONS ============
   streamingSessions: defineTable({
     campaignId: v.id("campaigns"),
