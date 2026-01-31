@@ -224,6 +224,8 @@ export const addItemToInventory = mutation({
     itemId: v.string(), // template ID
   },
   handler: async (ctx, args) => {
+    await requireCharacterOwner(ctx, args.characterId);
+
     const character = await ctx.db.get(args.characterId);
     if (!character) throw new Error("Character not found");
 
