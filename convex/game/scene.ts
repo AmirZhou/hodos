@@ -300,6 +300,7 @@ export const performSceneAction = mutation({
     if (!session || !session.scene) {
       throw new Error("No active scene");
     }
+    await requireCampaignMember(ctx, session.campaignId);
 
     if (session.scene.phase !== "active") {
       throw new Error("Scene not active");
