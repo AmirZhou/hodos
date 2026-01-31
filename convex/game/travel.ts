@@ -441,6 +441,8 @@ export const updateLocationGrid = mutation({
     }),
   },
   handler: async (ctx, args) => {
+    await requireAuth(ctx);
+
     await ctx.db.patch(args.locationId, {
       gridData: args.gridData,
     });
