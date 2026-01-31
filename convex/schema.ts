@@ -808,6 +808,7 @@ export default defineSchema({
     sellerName: v.string(),
     askingPrice: v.optional(v.string()),
     note: v.optional(v.string()),
+    expiresAt: v.optional(v.number()),
     status: v.union(
       v.literal("active"),
       v.literal("completed"),
