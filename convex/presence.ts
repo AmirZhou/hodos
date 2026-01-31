@@ -8,13 +8,13 @@ const OFFLINE_THRESHOLD_MS = 90000; // 90 seconds
 export const heartbeat = mutation({
   args: {
     campaignId: v.id("campaigns"),
-    userId: v.id("users"),
   },
   handler: async (ctx, args) => {
+    const { userId } = await requireAuth(ctx);
     const existing = await ctx.db
       .query("presence")
       .withIndex("by_campaign", (q) => q.eq("campaignId", args.campaignId))
-      .filter((q) => q.eq(q.field("userId"), args.userId))
+      .filter((q) => q.eq(q.field("userId"), userId))
       .first();
 
     const now = Date.now();
@@ -28,7 +28,7 @@ export const heartbeat = mutation({
     } else {
       return await ctx.db.insert("presence", {
         campaignId: args.campaignId,
-        userId: args.userId,
+        userId: userId,
         isOnline: true,
         isInVideo: false,
         lastPing: now,
