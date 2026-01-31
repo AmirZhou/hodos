@@ -29,6 +29,7 @@ import type * as game_ensureRivermootMap from "../game/ensureRivermootMap.js";
 import type * as game_exploration from "../game/exploration.js";
 import type * as game_itemGrants from "../game/itemGrants.js";
 import type * as game_log from "../game/log.js";
+import type * as game_loot from "../game/loot.js";
 import type * as game_npcNameResolver from "../game/npcNameResolver.js";
 import type * as game_npcs from "../game/npcs.js";
 import type * as game_scene from "../game/scene.js";
@@ -73,6 +74,7 @@ declare const fullApi: ApiFromModules<{
   "game/exploration": typeof game_exploration;
   "game/itemGrants": typeof game_itemGrants;
   "game/log": typeof game_log;
+  "game/loot": typeof game_loot;
   "game/npcNameResolver": typeof game_npcNameResolver;
   "game/npcs": typeof game_npcs;
   "game/scene": typeof game_scene;
