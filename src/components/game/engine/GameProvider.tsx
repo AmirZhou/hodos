@@ -93,7 +93,6 @@ export function GameProvider({ children, campaignId }: GameProviderProps) {
   // Presence heartbeat
   usePresence({
     campaignId,
-    userId: userId!,
     enabled: !!userId,
   });
 
