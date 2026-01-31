@@ -123,7 +123,6 @@ function calculateProficiencyBonus(level: number): number {
 
 export const create = mutation({
   args: {
-    userId: v.id("users"),
     campaignId: v.id("campaigns"),
     name: v.string(),
     pronouns: v.string(),
