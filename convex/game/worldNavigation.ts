@@ -81,6 +81,7 @@ export const travelToCity = mutation({
   handler: async (ctx, args) => {
     const session = await ctx.db.get(args.sessionId);
     if (!session) throw new Error("Session not found");
+    await requireCampaignMember(ctx, session.campaignId);
 
     const targetMap = await ctx.db.get(args.mapId);
     if (!targetMap) throw new Error("Map not found");
