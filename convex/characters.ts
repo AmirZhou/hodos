@@ -126,7 +126,7 @@ export const create = mutation({
     campaignId: v.id("campaigns"),
     name: v.string(),
     pronouns: v.string(),
-    portrait: v.optional(v.string()),
+    portrait: v.optional(v.id("_storage")),
     abilities: v.object({
       strength: v.number(),
       dexterity: v.number(),
