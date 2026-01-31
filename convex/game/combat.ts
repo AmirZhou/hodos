@@ -532,6 +532,7 @@ export const endCombat = mutation({
     if (!session || !session.combat) {
       throw new Error("No active combat");
     }
+    await requireCampaignMember(ctx, session.campaignId);
 
     // Award XP to player characters if specified
     if (args.xpAwarded && args.outcome === "victory") {
