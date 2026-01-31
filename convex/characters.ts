@@ -156,6 +156,14 @@ export const create = mutation({
     const level = 1;
     const maxHp = calculateMaxHp(args.abilities.constitution, level);
 
+    const characterClass = args.class || "";
+    const spellSlots = isCaster(characterClass)
+      ? initializeSpellSlots(characterClass, level)
+      : undefined;
+    const classResources = characterClass
+      ? initializeClassResources(characterClass, level)
+      : undefined;
+
     const characterId = await ctx.db.insert("characters", {
       userId,
       campaignId: args.campaignId,
@@ -182,6 +190,13 @@ export const create = mutation({
       conditions: [],
       exhaustionLevel: 0,
       deathSaves: { successes: 0, failures: 0 },
+
+      hitDice: { max: level, used: 0 },
+      spellSlots: spellSlots && Object.keys(spellSlots).length > 0 ? spellSlots : undefined,
+      knownSpells: [],
+      preparedSpells: [],
+      classResources: classResources && Object.keys(classResources).length > 0 ? classResources : undefined,
+      gold: 0,
 
       adultStats: args.adultStats || {
         composure: 75,
