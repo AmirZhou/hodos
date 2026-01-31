@@ -37,8 +37,8 @@ export function InventoryGrid({ items, onEquip }: InventoryGridProps) {
   return (
     <div className="grid grid-cols-4 gap-1.5">
       {items.map((item, index) => {
-        const borderColor = RARITY_BORDER_COLORS[item.rarity];
-        const nameColor = getRarityColor(item.rarity);
+        const borderColor = RARITY_BORDER_COLORS[item.rarity as keyof typeof RARITY_BORDER_COLORS];
+        const nameColor = getRarityColor(item.rarity as never);
 
         return (
           <div
