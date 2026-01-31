@@ -9,13 +9,11 @@ const HEARTBEAT_INTERVAL_MS = 30000; // 30 seconds
 
 interface UsePresenceOptions {
   campaignId: Id<"campaigns">;
-  userId: Id<"users">;
   enabled?: boolean;
 }
 
 export function usePresence({
   campaignId,
-  userId,
   enabled = true,
 }: UsePresenceOptions) {
   const heartbeat = useMutation(api.presence.heartbeat);
@@ -25,19 +23,19 @@ export function usePresence({
   const sendHeartbeat = useCallback(async () => {
     if (!enabled) return;
     try {
-      await heartbeat({ campaignId, userId });
+      await heartbeat({ campaignId });
     } catch (error) {
       console.error("Failed to send heartbeat:", error);
     }
-  }, [heartbeat, campaignId, userId, enabled]);
+  }, [heartbeat, campaignId, enabled]);
 
   const handleDisconnect = useCallback(async () => {
     try {
-      await disconnect({ campaignId, userId });
+      await disconnect({ campaignId });
     } catch (error) {
       console.error("Failed to send disconnect:", error);
     }
-  }, [disconnect, campaignId, userId]);
+  }, [disconnect, campaignId]);
 
   useEffect(() => {
     if (!enabled) return;
