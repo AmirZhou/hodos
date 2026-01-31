@@ -279,7 +279,10 @@ ${npc.memory ? formatNpcMemoryForPrompt(npc.memory) : ""}`
 ${args.context.recentHistory
   .map((h) => `[${h.type}${h.actorName ? ` - ${h.actorName}` : ""}]: ${h.content}`)
   .join("\n")}
-
+${args.context.lootContainers ? `
+## Loot Containers at Location
+${args.context.lootContainers}
+` : ""}
 ## Player Action
 ${args.input}
 `;
