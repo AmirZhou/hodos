@@ -17,9 +17,9 @@ interface ItemData {
 }
 
 export function ItemTooltip({ item }: { item: ItemData }) {
-  const rarityColor = getRarityColor(item.rarity);
-  const bgColor = RARITY_BG_COLORS[item.rarity];
-  const borderColor = RARITY_BORDER_COLORS[item.rarity];
+  const rarityColor = getRarityColor(item.rarity as Rarity);
+  const bgColor = RARITY_BG_COLORS[item.rarity as Rarity];
+  const borderColor = RARITY_BORDER_COLORS[item.rarity as Rarity];
 
   const statEntries = Object.entries(item.stats).filter(
     ([, v]) => v !== undefined && v !== 0
