@@ -410,6 +410,7 @@ export const adjustIntensity = mutation({
     if (!session || !session.scene) {
       throw new Error("No active scene");
     }
+    await requireCampaignMember(ctx, session.campaignId);
 
     const scene = session.scene;
     const newIntensity = Math.max(0, Math.min(100, scene.intensity + args.delta));
