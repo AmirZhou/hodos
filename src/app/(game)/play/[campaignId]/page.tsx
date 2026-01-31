@@ -906,8 +906,8 @@ function EquipmentSlotPopover({
                 const rc = getRarityColor(inv.rarity);
                 return (
                   <button
-                    key={inv.id}
-                    onClick={async () => { await equipItem({ characterId, itemId: inv.id, targetSlot: slot }); onClose(); }}
+                    key={inv._id}
+                    onClick={async () => { await equipItem({ characterId, itemId: inv._id, targetSlot: slot }); onClose(); }}
                     className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-[var(--background-tertiary)] transition-colors text-left"
                   >
                     {(() => { const I = SIDEBAR_SLOT_ICONS[inv.type] || Scroll; return <div className="shrink-0" style={{ color: rc }}><I className="h-4 w-4" /></div>; })()}
