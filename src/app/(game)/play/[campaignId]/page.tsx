@@ -982,11 +982,13 @@ function GameSidebar({
   onNpcClick,
   onOpenCharSheet,
   onOpenInventory,
+  onOpenTradeBoard,
 }: {
   campaignId: Id<"campaigns">;
   onNpcClick?: (npcId: Id<"npcs">) => void;
   onOpenCharSheet?: () => void;
   onOpenInventory?: () => void;
+  onOpenTradeBoard?: () => void;
 }) {
   const { currentCharacter, gameState } = useGame();
   const [equipExpanded, setEquipExpanded] = useState(true);
