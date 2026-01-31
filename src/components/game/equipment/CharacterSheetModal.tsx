@@ -57,8 +57,13 @@ export function CharacterSheetModal({ characterId, onClose }: CharacterSheetModa
             <X className="h-5 w-5" />
           </button>
           <div className="flex items-center gap-4">
-            <div className="h-20 w-20 rounded-full border-3 border-[var(--accent-gold)] bg-[var(--background-tertiary)] flex items-center justify-center text-3xl font-bold text-[var(--accent-gold)]">
-              {name[0]}
+            <div className="h-20 w-20 rounded-full border-3 border-[var(--accent-gold)] bg-[var(--background-tertiary)] flex items-center justify-center text-3xl font-bold text-[var(--accent-gold)] overflow-hidden">
+              {currentCharacter.portraitUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={currentCharacter.portraitUrl} alt={name} className="w-full h-full object-cover" />
+              ) : (
+                name[0]
+              )}
             </div>
             <div>
               <h2 className="text-xl font-bold">{name}</h2>
