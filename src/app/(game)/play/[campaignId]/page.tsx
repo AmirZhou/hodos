@@ -49,6 +49,7 @@ import {
   MapPin,
   Building2,
   ArrowLeft,
+  ShoppingBag,
 } from "lucide-react";
 import { InventoryModal } from "@/components/game/equipment/InventoryModal";
 import { CharacterSheetModal } from "@/components/game/equipment/CharacterSheetModal";
