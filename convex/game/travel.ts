@@ -286,6 +286,8 @@ export const discoverLocation = mutation({
     locationId: v.id("locations"),
   },
   handler: async (ctx, args) => {
+    await requireCampaignMember(ctx, args.campaignId);
+
     const location = await ctx.db.get(args.locationId);
     if (!location) {
       throw new Error("Location not found");
