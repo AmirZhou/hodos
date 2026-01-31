@@ -1022,8 +1022,13 @@ function GameSidebar({
             className="cursor-pointer p-3 hover:bg-[var(--background-tertiary)] transition-colors"
           >
             <div className="flex items-center gap-3">
-              <div className="h-11 w-11 rounded-full border-2 border-[var(--accent-gold)] bg-[var(--background-tertiary)] flex items-center justify-center text-lg font-bold text-[var(--accent-gold)]">
-                {character.name[0]}
+              <div className="h-11 w-11 rounded-full border-2 border-[var(--accent-gold)] bg-[var(--background-tertiary)] flex items-center justify-center text-lg font-bold text-[var(--accent-gold)] overflow-hidden">
+                {character.portraitUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={character.portraitUrl} alt={character.name} className="w-full h-full object-cover" />
+                ) : (
+                  character.name[0]
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
