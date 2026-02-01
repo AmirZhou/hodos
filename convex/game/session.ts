@@ -50,7 +50,8 @@ export const start = mutation({
     // If campaign has a seedScenario, ensure the map data exists before creating the session
     const campaign = await ctx.db.get(args.campaignId);
     if (campaign?.seedScenario === "rivermoot-city") {
-      await ensureRivermootMap(ctx, args.campaignId);
+      const { mapId } = await ensureRivermootMap(ctx, args.campaignId);
+      await ensureRivermootNpcs(ctx, args.campaignId, mapId);
     }
 
     // Check if campaign has a city map with grid data
