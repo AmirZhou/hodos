@@ -172,31 +172,47 @@ export const getAvailableActions = query({
       }
     }
 
-    // Bonus actions based on class features
-    if (combatant.hasBonusAction) {
-      bonusActions.push("offhand_attack");
-      if (combatant.entityType === "character") {
-        const char = await ctx.db.get(combatant.entityId as Id<"characters">);
-        if (char) {
-          const cls = (char.class || "").toLowerCase();
-          if ((cls === "fighter" || cls === "warrior") && char.classResources?.secondWind?.current) {
-            bonusActions.push("second_wind");
-          }
-          // Bonus action spells (misty_step, etc.)
-          bonusActions.push("bonus_spell");
-        }
-      }
-    }
-
-    // Action Surge (free action, not bonus)
+    // Bonus actions and class features
     if (combatant.entityType === "character") {
       const char = await ctx.db.get(combatant.entityId as Id<"characters">);
       if (char) {
         const cls = (char.class || "").toLowerCase();
+
+        if (combatant.hasBonusAction) {
+          bonusActions.push("offhand_attack");
+
+          // Fighter: Second Wind
+          if ((cls === "fighter" || cls === "warrior") && char.classResources?.secondWind?.current) {
+            bonusActions.push("second_wind");
+          }
+          // Rogue: Cunning Action (Dash/Disengage/Hide as bonus action)
+          if (cls === "rogue" && char.level >= 2) {
+            bonusActions.push("cunning_dash", "cunning_disengage", "cunning_hide");
+          }
+          // Bonus action spells (misty_step, etc.)
+          bonusActions.push("bonus_spell");
+        }
+
+        // Action Surge (free action, not bonus)
         if ((cls === "fighter" || cls === "warrior") && char.classResources?.actionSurge?.current) {
           actions.push("action_surge");
         }
+        // Reckless Attack flag (barbarian level 2+, shown as attack modifier)
+        if (cls === "barbarian" && char.level >= 2 && combatant.hasAction) {
+          actions.push("reckless_attack");
+        }
+        // Stunning Strike (monk level 5+, shown as attack modifier when ki available)
+        if (cls === "monk" && char.level >= 5 && char.classResources?.ki?.current) {
+          actions.push("stunning_strike");
+        }
+        // Divine Smite (paladin level 2+, shown when spell slots available)
+        if (cls === "paladin" && char.level >= 2 && char.spellSlots) {
+          const hasAnySlot = Object.values(char.spellSlots).some(s => s.used < s.max);
+          if (hasAnySlot) actions.push("divine_smite");
+        }
       }
+    } else if (combatant.hasBonusAction) {
+      bonusActions.push("offhand_attack");
     }
 
     // Reactions
