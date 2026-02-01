@@ -61,8 +61,8 @@ describe("computeEquipmentBonuses", () => {
 
   it("accumulates special attributes", () => {
     const items = [
-      { stats: {}, specialAttributes: { critChance: 5, spellPower: 3 } },
-      { stats: {}, specialAttributes: { critChance: 3, xpBonus: 10 } },
+      { stats: {}, specialAttributes: { critChance: 5, spellPower: 3 } as Record<string, number> },
+      { stats: {}, specialAttributes: { critChance: 3, xpBonus: 10 } as Record<string, number> },
     ];
     const bonuses = computeEquipmentBonuses(items);
     expect(bonuses.critChance).toBe(8);
