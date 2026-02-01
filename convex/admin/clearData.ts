@@ -40,6 +40,8 @@ export const clearAllData = mutation({
       }
     }
 
+    await logAudit(ctx, userId, "admin.clearData", "system", undefined, { tables: "all" });
+
     return { deleted: totalDeleted };
   },
 });
