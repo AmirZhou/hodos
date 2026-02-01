@@ -2,6 +2,9 @@ import { describe, it, expect } from "vitest";
 import {
   getExtraAttacks,
   initializeClassResources,
+  getSneakAttackDice,
+  getRageDamageBonus,
+  getFeaturesForClassAtLevel,
 } from "../lib/classFeatures";
 import {
   hasSpellSlot,
