@@ -396,6 +396,16 @@ export const performSceneAction = mutation({
       }
     }
 
+    // Auto yellow safeword if any participant comfort drops critically low
+    for (let i = 0; i < participants.length; i++) {
+      if (participants[i].currentComfort < 20 && !participants[i].safewordUsed) {
+        participants[i] = { ...participants[i], safewordUsed: "yellow" };
+      }
+    }
+
+    // Determine if a comfort check-in is needed
+    const comfortCheckIn = participants.some((p) => p.currentComfort < 40);
+
     // Update mood based on intensity level
     let mood = scene.mood;
     if (newIntensity < 20) mood = "anticipation";

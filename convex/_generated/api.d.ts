@@ -15,6 +15,7 @@ import type * as ai_dm from "../ai/dm.js";
 import type * as ai_llmProvider from "../ai/llmProvider.js";
 import type * as campaigns from "../campaigns.js";
 import type * as characters from "../characters.js";
+import type * as crons from "../crons.js";
 import type * as data_equipmentItems from "../data/equipmentItems.js";
 import type * as data_itemCatalog from "../data/itemCatalog.js";
 import type * as data_kinkTaxonomy from "../data/kinkTaxonomy.js";
@@ -77,6 +78,7 @@ declare const fullApi: ApiFromModules<{
   "ai/llmProvider": typeof ai_llmProvider;
   campaigns: typeof campaigns;
   characters: typeof characters;
+  crons: typeof crons;
   "data/equipmentItems": typeof data_equipmentItems;
   "data/itemCatalog": typeof data_itemCatalog;
   "data/kinkTaxonomy": typeof data_kinkTaxonomy;
