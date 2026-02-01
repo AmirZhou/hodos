@@ -1242,10 +1242,201 @@ export const move = mutation({
       throw new Error("Insufficient movement");
     }
 
+    // ========== OPPORTUNITY ATTACKS ==========
+    // When a combatant leaves an enemy's melee range, the enemy may make an
+    // opportunity attack (single melee attack roll) if it has its reaction.
+    // TODO: Disengage action should prevent opportunity attacks. Add a per-turn
+    // disengaged flag once the disengage action sets one.
+
+    const opportunityAttacks: Array<{
+      attackerIndex: number;
+      attackerName: string;
+      hit: boolean;
+      damage: number;
+      roll: number;
+    }> = [];
+
+    for (let step = 0; step < args.path.length - 1; step++) {
+      const from = args.path[step];
+      const to = args.path[step + 1];
+
+      for (let ei = 0; ei < combatants.length; ei++) {
+        if (ei === args.combatantIndex) continue;
+
+        const enemy = combatants[ei];
+
+        // Enemies are the opposite entityType (characters vs NPCs)
+        if (enemy.entityType === combatant.entityType) continue;
+
+        // Enemy must have reaction available
+        if (!enemy.hasReaction) continue;
+
+        // Check if the mover was adjacent to this enemy (distance <= 1)
+        const distFrom = Math.abs(from.x - enemy.position.x) + Math.abs(from.y - enemy.position.y);
+        if (distFrom > 1) continue;
+
+        // Check if the mover is moving AWAY (new distance > 1)
+        const distTo = Math.abs(to.x - enemy.position.x) + Math.abs(to.y - enemy.position.y);
+        if (distTo <= 1) continue;
+
+        // Check if the enemy can act (not incapacitated, stunned, etc.)
+        let enemyConditions: string[] = [];
+        if (enemy.entityType === "character") {
+          const ec = await ctx.db.get(enemy.entityId as Id<"characters">);
+          if (ec) enemyConditions = ec.conditions.map(c => c.name);
+        } else {
+          const en = await ctx.db.get(enemy.entityId as Id<"npcs">);
+          if (en) enemyConditions = en.conditions.map(c => c.name);
+        }
+        if (!canAct(enemyConditions)) continue;
+
+        // Check the enemy is alive
+        let enemyAlive = true;
+        if (enemy.entityType === "character") {
+          const ec = await ctx.db.get(enemy.entityId as Id<"characters">);
+          if (!ec || ec.hp <= 0) enemyAlive = false;
+        } else {
+          const en = await ctx.db.get(enemy.entityId as Id<"npcs">);
+          if (!en || !en.isAlive) enemyAlive = false;
+        }
+        if (!enemyAlive) continue;
+
+        // --- Resolve the opportunity attack ---
+        // Consume the enemy's reaction
+        combatants[ei] = { ...combatants[ei], hasReaction: false };
+
+        // Get enemy's attack bonus
+        let attackBonus = 0;
+        let enemyName = "Enemy";
+        if (enemy.entityType === "character") {
+          const stats = await getEffectiveStats(ctx, enemy.entityId as Id<"characters">);
+          attackBonus = stats.attackBonus;
+          const ec = await ctx.db.get(enemy.entityId as Id<"characters">);
+          if (ec) enemyName = ec.name;
+        } else {
+          const en = await ctx.db.get(enemy.entityId as Id<"npcs">);
+          if (en) {
+            attackBonus = getNpcAttackBonus(en);
+            enemyName = en.name;
+          }
+        }
+
+        // Get mover's AC
+        let moverAc = 10;
+        if (combatant.entityType === "character") {
+          const ms = await getEffectiveStats(ctx, combatant.entityId as Id<"characters">);
+          moverAc = ms.effectiveAc;
+        } else {
+          const mn = await ctx.db.get(combatant.entityId as Id<"npcs">);
+          if (mn) moverAc = mn.ac;
+        }
+
+        // Roll d20 + attack bonus (no advantage/disadvantage for opportunity attacks)
+        const naturalRoll = Math.floor(Math.random() * 20) + 1;
+        const rollTotal = naturalRoll + attackBonus;
+        const isCrit = naturalRoll === 20;
+
+        if (naturalRoll === 1 || (!isCrit && rollTotal < moverAc)) {
+          // Miss
+          opportunityAttacks.push({
+            attackerIndex: ei,
+            attackerName: enemyName,
+            hit: false,
+            damage: 0,
+            roll: rollTotal,
+          });
+          continue;
+        }
+
+        // Hit — calculate damage
+        let damageDice = "1d8";
+        let damageBonus = 0;
+        if (enemy.entityType === "character") {
+          const ec = await ctx.db.get(enemy.entityId as Id<"characters">);
+          if (ec) {
+            const stats = await getEffectiveStats(ctx, enemy.entityId as Id<"characters">);
+            damageBonus = stats.abilityModifiers.strength;
+            const weapon = await ctx.db
+              .query("items")
+              .withIndex("by_owner", (q) => q.eq("ownerId", enemy.entityId as Id<"characters">))
+              .filter((q) =>
+                q.and(
+                  q.eq(q.field("status"), "equipped"),
+                  q.eq(q.field("equippedSlot"), "mainHand")
+                )
+              )
+              .first();
+            if (weapon?.stats.damage) damageDice = weapon.stats.damage;
+          }
+        } else {
+          const en = await ctx.db.get(enemy.entityId as Id<"npcs">);
+          if (en) damageDice = getNpcDamageDice(en);
+        }
+
+        const damageResult = parseDiceString(damageDice);
+        let oaDamage = damageResult.total + damageBonus;
+        if (isCrit) {
+          oaDamage += parseDiceString(damageDice).total;
+        }
+
+        // Apply resistance if mover has resistance all (petrified)
+        if (hasResistanceAll(entityConditions)) {
+          oaDamage = Math.floor(oaDamage / 2);
+        }
+
+        // Apply damage to the moving combatant
+        if (combatant.entityType === "character") {
+          const ch = await ctx.db.get(combatant.entityId as Id<"characters">);
+          if (ch) {
+            let remainingDamage = oaDamage;
+            let newTempHp = ch.tempHp;
+            if (newTempHp > 0) {
+              const absorbed = Math.min(newTempHp, remainingDamage);
+              newTempHp -= absorbed;
+              remainingDamage -= absorbed;
+            }
+            const newHp = Math.max(0, ch.hp - remainingDamage);
+            const patch: Record<string, unknown> = { hp: newHp, tempHp: newTempHp };
+            if (newHp === 0 && ch.hp > 0) {
+              const currentConditions = [...ch.conditions];
+              if (!currentConditions.some(c => c.name === "unconscious")) {
+                currentConditions.push({ name: "unconscious" });
+              }
+              patch.conditions = currentConditions;
+              patch.deathSaves = { successes: 0, failures: 0 };
+            }
+            if (ch.concentration && remainingDamage > 0) {
+              const conSaveDC = concentrationSaveDC(remainingDamage);
+              const conMod = Math.floor((ch.abilities.constitution - 10) / 2);
+              const conSave = Math.floor(Math.random() * 20) + 1 + conMod + ch.proficiencyBonus;
+              if (conSave < conSaveDC) {
+                patch.concentration = undefined;
+              }
+            }
+            await ctx.db.patch(combatant.entityId as Id<"characters">, patch);
+          }
+        } else {
+          const mn = await ctx.db.get(combatant.entityId as Id<"npcs">);
+          if (mn) {
+            const newHp = Math.max(0, mn.hp - oaDamage);
+            await ctx.db.patch(combatant.entityId as Id<"npcs">, { hp: newHp, isAlive: newHp > 0 });
+          }
+        }
+
+        opportunityAttacks.push({
+          attackerIndex: ei,
+          attackerName: enemyName,
+          hit: true,
+          damage: oaDamage,
+          roll: rollTotal,
+        });
+      }
+    }
+
     // Update position to final destination
     const destination = args.path[args.path.length - 1];
     combatants[args.combatantIndex] = {
-      ...combatant,
+      ...combatants[args.combatantIndex],
       position: destination,
       movementRemaining: combatant.movementRemaining - movementCost,
     };
@@ -1260,7 +1451,8 @@ export const move = mutation({
 
     return {
       newPosition: destination,
-      movementRemaining: combatant.movementRemaining - movementCost
+      movementRemaining: combatant.movementRemaining - movementCost,
+      opportunityAttacks,
     };
   },
 });
