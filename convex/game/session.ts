@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { mutation, query } from "../_generated/server";
 import { requireCampaignMember } from "../lib/auth";
 import { ensureRivermootMap } from "./ensureRivermootMap";
+import { ensureRivermootNpcs } from "./ensureRivermootNpcs";
 
 export const getCurrent = query({
   args: {

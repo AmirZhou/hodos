@@ -31,6 +31,7 @@ import type * as game_actions from "../game/actions.js";
 import type * as game_cityNavigation from "../game/cityNavigation.js";
 import type * as game_combat from "../game/combat.js";
 import type * as game_ensureRivermootMap from "../game/ensureRivermootMap.js";
+import type * as game_ensureRivermootNpcs from "../game/ensureRivermootNpcs.js";
 import type * as game_exploration from "../game/exploration.js";
 import type * as game_itemGrants from "../game/itemGrants.js";
 import type * as game_log from "../game/log.js";
@@ -95,6 +96,7 @@ declare const fullApi: ApiFromModules<{
   "game/cityNavigation": typeof game_cityNavigation;
   "game/combat": typeof game_combat;
   "game/ensureRivermootMap": typeof game_ensureRivermootMap;
+  "game/ensureRivermootNpcs": typeof game_ensureRivermootNpcs;
   "game/exploration": typeof game_exploration;
   "game/itemGrants": typeof game_itemGrants;
   "game/log": typeof game_log;
