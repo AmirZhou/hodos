@@ -851,6 +851,15 @@ export default defineSchema({
     .index("by_action", ["action", "createdAt"])
     .index("by_time", ["createdAt"]),
 
+  // ============ RATE LIMITS ============
+  rateLimits: defineTable({
+    userId: v.id("users"),
+    action: v.string(),        // e.g. "game_action", "admin"
+    windowStart: v.number(),   // timestamp of window start
+    count: v.number(),         // calls in this window
+  })
+    .index("by_user_action", ["userId", "action"]),
+
   // ============ KINK TAXONOMY ============
   kinkDefinitions: defineTable({
     id: v.string(),           // e.g., "foot_worship"
