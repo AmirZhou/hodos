@@ -934,7 +934,8 @@ export const executeAction = mutation({
           } else {
             const tn = await ctx.db.get(target.entityId as Id<"npcs">);
             if (tn) {
-              saveMod = 0; // NPCs use base 0 save mod unless we add ability scores
+              const npcAbilityScore = tn.abilities[spell.saveType as keyof typeof tn.abilities] ?? 10;
+              saveMod = Math.floor((npcAbilityScore - 10) / 2);
               targetConditions = tn.conditions.map(c => c.name);
             }
           }
