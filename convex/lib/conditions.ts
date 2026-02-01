@@ -172,6 +172,14 @@ export const CONDITIONS: Record<string, ConditionDefinition> = {
       attackedDisadvantage: true,
     },
   },
+  reckless: {
+    name: "Reckless",
+    description:
+      "Used Reckless Attack. Attacks against you have advantage until your next turn.",
+    effects: {
+      attackedAdvantage: true,
+    },
+  },
 };
 
 // ============ HELPERS ============
