@@ -32,6 +32,8 @@ const actionType = v.union(
   v.literal("hide"),
   v.literal("ready"),
   v.literal("use_item"),
+  v.literal("second_wind"),
+  v.literal("action_surge"),
   v.literal("other")
 );
 
