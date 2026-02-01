@@ -47,6 +47,7 @@ import type * as game_worldNavigation from "../game/worldNavigation.js";
 import type * as gameLog from "../gameLog.js";
 import type * as http from "../http.js";
 import type * as lib_admin from "../lib/admin.js";
+import type * as lib_auditLog from "../lib/auditLog.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_classFeatures from "../lib/classFeatures.js";
 import type * as lib_conditions from "../lib/conditions.js";
@@ -108,6 +109,7 @@ declare const fullApi: ApiFromModules<{
   gameLog: typeof gameLog;
   http: typeof http;
   "lib/admin": typeof lib_admin;
+  "lib/auditLog": typeof lib_auditLog;
   "lib/auth": typeof lib_auth;
   "lib/classFeatures": typeof lib_classFeatures;
   "lib/conditions": typeof lib_conditions;
