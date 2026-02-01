@@ -1,6 +1,20 @@
 import { v } from "convex/values";
 import { mutation } from "../_generated/server";
 import { requireCharacterOwner } from "../lib/auth";
+import { getEffectiveStats } from "../lib/statHelpers";
+
+/**
+ * Hit die size per class (D&D 5e SRD).
+ */
+function getHitDieSize(characterClass: string): number {
+  switch (characterClass.toLowerCase()) {
+    case "barbarian": return 12;
+    case "fighter": case "warrior": case "paladin": case "ranger": return 10;
+    case "bard": case "cleric": case "druid": case "monk": case "rogue": case "warlock": return 8;
+    case "sorcerer": case "wizard": case "mage": case "scholar": return 6;
+    default: return 8;
+  }
+}
 
 /**
  * Short Rest: Spend hit dice to recover HP.
@@ -26,16 +40,18 @@ export const shortRest = mutation({
       return { healed: 0, hitDiceSpent: 0, message: "No hit dice available" };
     }
 
-    // Roll hit dice (d10 for default, + CON mod per die)
+    // Roll hit dice (class-specific die + CON mod per die)
+    const hitDieSize = getHitDieSize(character.class || "");
     const conMod = Math.floor((character.abilities.constitution - 10) / 2);
     let totalHealing = 0;
 
     for (let i = 0; i < toSpend; i++) {
-      const roll = Math.floor(Math.random() * 10) + 1;
+      const roll = Math.floor(Math.random() * hitDieSize) + 1;
       totalHealing += Math.max(1, roll + conMod); // minimum 1 HP per die
     }
 
-    const newHp = Math.min(character.maxHp, character.hp + totalHealing);
+    const derivedStats = await getEffectiveStats(ctx, args.characterId);
+    const newHp = Math.min(derivedStats.effectiveMaxHp, character.hp + totalHealing);
 
     await ctx.db.patch(args.characterId, {
       hp: newHp,
