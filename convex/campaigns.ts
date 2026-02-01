@@ -187,6 +187,8 @@ export const join = mutation({
       lastSeenAt: Date.now(),
     });
 
+    await logAudit(ctx, userId, "campaign.join", "campaigns", campaign._id, { inviteCode: args.inviteCode });
+
     return { campaignId: campaign._id, alreadyMember: false };
   },
 });
