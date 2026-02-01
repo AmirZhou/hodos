@@ -164,6 +164,14 @@ export const CONDITIONS: Record<string, ConditionDefinition> = {
       critWithin5ft: true,
     },
   },
+  dodging: {
+    name: "Dodging",
+    description:
+      "Using the Dodge action. Attack rolls against have disadvantage. Advantage on DEX saving throws.",
+    effects: {
+      attackedDisadvantage: true,
+    },
+  },
 };
 
 // ============ HELPERS ============
