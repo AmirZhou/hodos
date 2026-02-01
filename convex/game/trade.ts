@@ -226,3 +226,31 @@ export const acceptListing = mutation({
     await logAudit(ctx, userId, "trade.complete", "tradeListings", listing._id, { itemName: item.name, sellerId: listing.sellerId, buyerId: args.buyerId });
   },
 });
+
+// ============ CRON JOBS ============
+
+/** Cancel expired trade listings (called by cron). */
+export const cancelExpiredListings = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const now = Date.now();
+    const activeListings = await ctx.db
+      .query("tradeListings")
+      .filter((q) => q.eq(q.field("status"), "active"))
+      .collect();
+
+    let cancelled = 0;
+    for (const listing of activeListings) {
+      if (listing.expiresAt && listing.expiresAt < now) {
+        await ctx.db.patch(listing._id, { status: "cancelled" });
+        // Delist the item back to inventory
+        const item = await ctx.db.get(listing.itemId);
+        if (item && item.status === "listed") {
+          await ctx.db.patch(listing.itemId, { status: "inventory" });
+        }
+        cancelled++;
+      }
+    }
+    return { cancelled };
+  },
+});
