@@ -295,6 +295,8 @@ export const initiateCombat = mutation({
       lastActionAt: now,
     });
 
+    await logAudit(ctx, userId, "combat.initiate", "gameSessions", session._id, { combatantCount: args.combatants.length });
+
     return { phase: "rolling_initiative", combatantCount: combatantStates.length };
   },
 });
