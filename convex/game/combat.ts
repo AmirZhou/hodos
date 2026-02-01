@@ -804,6 +804,19 @@ export const executeAction = mutation({
           if (tn) { targetAc = tn.ac; targetConditions = tn.conditions.map(c => c.name); }
         }
 
+        // Apply cover bonus to spell attack AC
+        if (session.locationId) {
+          const location = await ctx.db.get(session.locationId);
+          if (location?.gridData) {
+            const targetCell = location.gridData.cells.find(
+              c => c.x === target.position.x && c.y === target.position.y
+            );
+            if (targetCell?.cover === "full") throw new Error("Target has full cover and cannot be targeted");
+            if (targetCell?.cover === "half") targetAc += 2;
+            else if (targetCell?.cover === "three-quarters") targetAc += 5;
+          }
+        }
+
         const spellAttackBonus = getSpellAttackBonus(profBonus, castingAbilityScore);
         const distance = Math.abs(target.position.x - current.position.x) + Math.abs(target.position.y - current.position.y);
         const isMelee = distance <= 1;
