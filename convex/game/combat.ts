@@ -1071,11 +1071,12 @@ export const executeAction = mutation({
 
     // ========== HANDLE ACTION TYPE → CONSUME RESOURCES ==========
     if (args.action.type === "dash") {
-      combatants[currentIndex] = {
-        ...current,
-        hasAction: false,
-        movementRemaining: current.movementRemaining * 2,
-      };
+      // Cunning Action: rogues use bonus action for dash
+      if (isCunningAction) {
+        combatants[currentIndex] = { ...current, hasBonusAction: false, movementRemaining: current.movementRemaining * 2 };
+      } else {
+        combatants[currentIndex] = { ...current, hasAction: false, movementRemaining: current.movementRemaining * 2 };
+      }
     } else if (args.action.type === "dodge") {
       // Apply dodging condition (now mechanically recognized — gives attackedDisadvantage)
       if (current.entityType === "character") {
