@@ -186,6 +186,15 @@ export const CONDITIONS: Record<string, ConditionDefinition> = {
       "Used the Disengage action. Movement doesn't provoke opportunity attacks this turn.",
     effects: {},
   },
+  dead: {
+    name: "Dead",
+    description:
+      "The creature has died. It cannot take any actions, move, or be revived without powerful magic.",
+    effects: {
+      cannotAct: true,
+      cannotMove: true,
+    },
+  },
 };
 
 // ============ HELPERS ============
