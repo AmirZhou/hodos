@@ -439,7 +439,7 @@ export const performSceneAction = mutation({
         },
         lastActionAt: now,
       });
-      return { actionType: args.actionType, phase: "aftercare", intensity: newIntensity };
+      return { actionType: args.actionType, phase: "aftercare", intensity: newIntensity, comfortCheckIn };
     }
 
     // Increment aftercare count during aftercare phase
