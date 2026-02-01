@@ -1716,6 +1716,8 @@ export const endCombat = mutation({
       lastActionAt: Date.now(),
     });
 
+    await logAudit(ctx, userId, "combat.end", "gameSessions", session._id);
+
     return { outcome: args.outcome, xpAwarded: args.xpAwarded };
   },
 });
