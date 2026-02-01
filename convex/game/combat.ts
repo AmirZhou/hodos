@@ -1089,7 +1089,11 @@ export const executeAction = mutation({
       }
       combatants[currentIndex] = { ...current, hasAction: false };
     } else if (args.action.type === "disengage") {
-      combatants[currentIndex] = { ...current, hasAction: false };
+      if (isCunningAction) {
+        combatants[currentIndex] = { ...current, hasBonusAction: false };
+      } else {
+        combatants[currentIndex] = { ...current, hasAction: false };
+      }
 
     // --- Bonus Actions ---
     } else if (args.action.type === "second_wind") {
