@@ -1095,6 +1095,14 @@ export const executeAction = mutation({
         combatants[currentIndex] = { ...current, hasAction: false };
       }
 
+    } else if (args.action.type === "hide") {
+      // Cunning Action: rogues use bonus action for hide
+      if (isCunningAction) {
+        combatants[currentIndex] = { ...current, hasBonusAction: false };
+      } else {
+        combatants[currentIndex] = { ...current, hasAction: false };
+      }
+
     // --- Bonus Actions ---
     } else if (args.action.type === "second_wind") {
       // Fighter: 1d10 + level HP, consumes bonus action + resource
