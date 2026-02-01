@@ -222,5 +222,7 @@ export const acceptListing = mutation({
         metadata: "Bind on Pickup (trade)",
       });
     }
+
+    await logAudit(ctx, userId, "trade.complete", "tradeListings", listing._id, { itemName: item.name, sellerId: listing.sellerId, buyerId: args.buyerId });
   },
 });
