@@ -461,7 +461,7 @@ export const performSceneAction = mutation({
       lastActionAt: now,
     });
 
-    return { actionType: args.actionType, intensity: newIntensity, mood, nextActor: nextActorIndex };
+    return { actionType: args.actionType, intensity: newIntensity, mood, nextActor: nextActorIndex, comfortCheckIn };
   },
 });
 
