@@ -234,3 +234,154 @@ describe("hit die sizes for rest", () => {
     expect(getHitDie("artificer")).toBe("d8");
   });
 });
+
+// ============ RECKLESS ATTACK CONDITION ============
+
+describe("Reckless Attack condition", () => {
+  it("getCondition('reckless') returns a valid condition with attackedAdvantage", () => {
+    const cond = getCondition("reckless");
+    expect(cond).toBeDefined();
+    expect(cond!.name).toBe("Reckless");
+    expect(cond!.effects.attackedAdvantage).toBe(true);
+  });
+
+  it("resolveAttackAdvantage grants advantage for melee attacker against reckless target", () => {
+    // attacker has no conditions, target is reckless, melee within 5ft
+    expect(resolveAttackAdvantage([], ["reckless"], true, true)).toBe(1);
+  });
+
+  it("resolveAttackAdvantage grants advantage for ranged attacker against reckless target", () => {
+    // attackedAdvantage applies regardless of melee/ranged
+    expect(resolveAttackAdvantage([], ["reckless"], false, false)).toBe(1);
+  });
+});
+
+// ============ SNEAK ATTACK DICE ============
+
+describe("getSneakAttackDice", () => {
+  it("returns 1 die at rogue level 1", () => {
+    expect(getSneakAttackDice(1)).toBe(1);
+  });
+
+  it("returns 2 dice at rogue level 3", () => {
+    expect(getSneakAttackDice(3)).toBe(2);
+  });
+
+  it("returns 3 dice at rogue level 5", () => {
+    expect(getSneakAttackDice(5)).toBe(3);
+  });
+
+  it("returns 6 dice at rogue level 11", () => {
+    expect(getSneakAttackDice(11)).toBe(6);
+  });
+
+  it("returns 10 dice at rogue level 19", () => {
+    expect(getSneakAttackDice(19)).toBe(10);
+  });
+
+  it("non-rogue classes have no sneak attack feature", () => {
+    const features = getFeaturesForClassAtLevel("fighter", 20);
+    const hasSneakAttack = features.some(
+      (f) => f.combatEffect?.sneakAttackDice !== undefined,
+    );
+    expect(hasSneakAttack).toBe(false);
+  });
+});
+
+// ============ RAGE DAMAGE BONUS ============
+
+describe("getRageDamageBonus", () => {
+  it("returns 2 at barbarian level 1", () => {
+    expect(getRageDamageBonus(1)).toBe(2);
+  });
+
+  it("returns 3 at barbarian level 9", () => {
+    expect(getRageDamageBonus(9)).toBe(3);
+  });
+
+  it("returns 4 at barbarian level 16", () => {
+    expect(getRageDamageBonus(16)).toBe(4);
+  });
+
+  it("non-barbarian classes have no rage damage feature", () => {
+    const features = getFeaturesForClassAtLevel("rogue", 20);
+    const hasRageDamage = features.some(
+      (f) => f.combatEffect?.rageDamageBonus !== undefined,
+    );
+    expect(hasRageDamage).toBe(false);
+  });
+});
+
+// ============ CONCENTRATION SAVE DC ============
+
+describe("concentrationSaveDC", () => {
+  it("returns DC 10 for 0 damage", () => {
+    expect(concentrationSaveDC(0)).toBe(10);
+  });
+
+  it("returns DC 10 for 10 damage (floor(10/2) = 5, but minimum is 10)", () => {
+    expect(concentrationSaveDC(10)).toBe(10);
+  });
+
+  it("returns DC 10 for 20 damage (floor(20/2) = 10)", () => {
+    expect(concentrationSaveDC(20)).toBe(10);
+  });
+
+  it("returns DC 11 for 22 damage (floor(22/2) = 11)", () => {
+    expect(concentrationSaveDC(22)).toBe(11);
+  });
+
+  it("returns DC 25 for 50 damage (floor(50/2) = 25)", () => {
+    expect(concentrationSaveDC(50)).toBe(25);
+  });
+
+  it("returns DC 50 for 100 damage (floor(100/2) = 50)", () => {
+    expect(concentrationSaveDC(100)).toBe(50);
+  });
+});
+
+// ============ SPELL DATA ============
+
+describe("getSpellById", () => {
+  it("fire_bolt is a cantrip with an attack roll", () => {
+    const spell = getSpellById("fire_bolt");
+    expect(spell).toBeDefined();
+    expect(spell!.level).toBe(0);
+    expect(spell!.attackRoll).toBe(true);
+    expect(spell!.range).toBe(120);
+  });
+
+  it("fireball is a level 3 spell with dexterity save", () => {
+    const spell = getSpellById("fireball");
+    expect(spell).toBeDefined();
+    expect(spell!.level).toBe(3);
+    expect(spell!.saveType).toBe("dexterity");
+  });
+
+  it("cure_wounds is a level 1 healing spell", () => {
+    const spell = getSpellById("cure_wounds");
+    expect(spell).toBeDefined();
+    expect(spell!.level).toBe(1);
+    expect(spell!.healing).toBeDefined();
+    expect(spell!.healing!.dice).toBe("1d8");
+  });
+
+  it("magic_missile is a level 1 auto-hit spell (no attack roll, no save)", () => {
+    const spell = getSpellById("magic_missile");
+    expect(spell).toBeDefined();
+    expect(spell!.level).toBe(1);
+    expect(spell!.attackRoll).toBeUndefined();
+    expect(spell!.saveType).toBeUndefined();
+  });
+
+  it("returns undefined for nonexistent spell", () => {
+    expect(getSpellById("nonexistent")).toBeUndefined();
+  });
+
+  it("hold_person has condition 'paralyzed'", () => {
+    const spell = getSpellById("hold_person");
+    expect(spell).toBeDefined();
+    expect(spell!.conditions).toBeDefined();
+    expect(spell!.conditions).toContain("paralyzed");
+  });
+});
