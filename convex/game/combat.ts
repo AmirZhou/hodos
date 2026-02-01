@@ -47,6 +47,10 @@ const combatAction = v.object({
   roll: v.optional(v.number()),
   damage: v.optional(v.number()),
   description: v.optional(v.string()),
+  // Class feature flags
+  reckless: v.optional(v.boolean()),        // Barbarian: Reckless Attack (advantage on STR melee, but attacked with advantage)
+  smiteSlotLevel: v.optional(v.number()),   // Paladin: Divine Smite (spell slot level to expend on hit)
+  stunningStrike: v.optional(v.boolean()),  // Monk: Stunning Strike (spend 1 ki, target CON save or stunned)
 });
 
 // ============ QUERIES ============
