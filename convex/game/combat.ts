@@ -244,7 +244,7 @@ export const initiateCombat = mutation({
     if (!session) {
       throw new Error("Session not found");
     }
-    await requireCampaignMember(ctx, session.campaignId);
+    const { userId } = await requireCampaignMember(ctx, session.campaignId);
 
     // Copy exploration positions to combatants if available
     const explorationPositions = session.explorationPositions ?? {};
