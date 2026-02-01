@@ -16,6 +16,8 @@ import {
   getCondition,
   resolveAttackAdvantage,
   concentrationSaveDC,
+  canAct,
+  canMove,
 } from "../lib/conditions";
 import { getSpellById } from "../data/spellData";
 
