@@ -161,7 +161,7 @@ export const acceptListing = mutation({
     buyerId: v.id("characters"),
   },
   handler: async (ctx, args) => {
-    await requireCharacterOwner(ctx, args.buyerId);
+    const { userId } = await requireCharacterOwner(ctx, args.buyerId);
 
     const listing = await ctx.db.get(args.listingId);
     if (!listing) throw new Error("Listing not found");
