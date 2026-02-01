@@ -32,6 +32,24 @@ describe("getCondition", () => {
       expect(getCondition(name)).toBeDefined();
     }
   });
+
+  it("returns the dodging condition with attackedDisadvantage", () => {
+    const cond = getCondition("dodging");
+    expect(cond).toBeDefined();
+    expect(cond!.name).toBe("Dodging");
+    expect(cond!.effects.attackedDisadvantage).toBe(true);
+  });
+
+  it("dodging condition does not grant other combat effects", () => {
+    const cond = getCondition("dodging");
+    expect(cond).toBeDefined();
+    expect(cond!.effects.attackDisadvantage).toBeUndefined();
+    expect(cond!.effects.attackAdvantage).toBeUndefined();
+    expect(cond!.effects.attackedAdvantage).toBeUndefined();
+    expect(cond!.effects.cannotAct).toBeUndefined();
+    expect(cond!.effects.cannotMove).toBeUndefined();
+    expect(cond!.effects.speedZero).toBeUndefined();
+  });
 });
 
 describe("resolveAttackAdvantage", () => {
