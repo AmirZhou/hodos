@@ -465,7 +465,7 @@ export const executeAction = mutation({
       const distance = Math.abs(target.position.x - current.position.x) +
                        Math.abs(target.position.y - current.position.y);
       const isMelee = distance <= 1;
-      const advState = resolveAttackAdvantage(
+      let advState = resolveAttackAdvantage(
         attackerConditions,
         targetConditions,
         isMelee,
@@ -482,6 +482,23 @@ export const executeAction = mutation({
           charClass = (char.class || "").toLowerCase();
           charLevel = char.level;
           numAttacks = 1 + getExtraAttacks(charClass, charLevel);
+        }
+      }
+
+      // Reckless Attack (barbarian level 2+): gain advantage on melee STR attacks,
+      // but attacks against you have advantage until your next turn
+      if (args.action.reckless && charClass === "barbarian" && charLevel >= 2 && isMelee) {
+        if (advState <= 0) advState = 1; // force advantage
+        // Apply "reckless" condition — attacks against have advantage until next turn
+        if (current.entityType === "character") {
+          const rChar = await ctx.db.get(current.entityId as Id<"characters">);
+          if (rChar) {
+            const conds = [...rChar.conditions];
+            if (!conds.some(c => c.name === "reckless")) {
+              conds.push({ name: "reckless", duration: 1, source: "reckless_attack" });
+              await ctx.db.patch(current.entityId as Id<"characters">, { conditions: conds });
+            }
+          }
         }
       }
 
