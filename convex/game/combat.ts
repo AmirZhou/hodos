@@ -1108,6 +1108,26 @@ export const executeAction = mutation({
       }
       combatants[currentIndex] = { ...current, hasAction: false };
     } else if (args.action.type === "disengage") {
+      // Apply "disengaged" condition to prevent opportunity attacks this turn
+      if (current.entityType === "character") {
+        const char = await ctx.db.get(current.entityId as Id<"characters">);
+        if (char) {
+          const conditions = [...char.conditions];
+          if (!conditions.some(c => c.name === "disengaged")) {
+            conditions.push({ name: "disengaged", duration: 1, source: "disengage" });
+            await ctx.db.patch(current.entityId as Id<"characters">, { conditions });
+          }
+        }
+      } else {
+        const npc = await ctx.db.get(current.entityId as Id<"npcs">);
+        if (npc) {
+          const conditions = [...npc.conditions];
+          if (!conditions.some(c => c.name === "disengaged")) {
+            conditions.push({ name: "disengaged", duration: 1, source: "disengage" });
+            await ctx.db.patch(current.entityId as Id<"npcs">, { conditions });
+          }
+        }
+      }
       if (isCunningAction) {
         combatants[currentIndex] = { ...current, hasBonusAction: false };
       } else {
