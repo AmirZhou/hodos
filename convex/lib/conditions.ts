@@ -180,6 +180,12 @@ export const CONDITIONS: Record<string, ConditionDefinition> = {
       attackedAdvantage: true,
     },
   },
+  disengaged: {
+    name: "Disengaged",
+    description:
+      "Used the Disengage action. Movement doesn't provoke opportunity attacks this turn.",
+    effects: {},
+  },
 };
 
 // ============ HELPERS ============
