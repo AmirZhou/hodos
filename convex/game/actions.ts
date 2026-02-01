@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { action } from "../_generated/server";
-import { api } from "../_generated/api";
+import { api, internal } from "../_generated/api";
 import { Id, Doc } from "../_generated/dataModel";
 import { validateItemGrants } from "./itemGrants";
 import { findMatchingNpc } from "./npcNameResolver";

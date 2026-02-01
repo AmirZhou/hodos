@@ -35,6 +35,7 @@ import type * as game_log from "../game/log.js";
 import type * as game_loot from "../game/loot.js";
 import type * as game_npcNameResolver from "../game/npcNameResolver.js";
 import type * as game_npcs from "../game/npcs.js";
+import type * as game_rateLimitCheck from "../game/rateLimitCheck.js";
 import type * as game_rest from "../game/rest.js";
 import type * as game_scene from "../game/scene.js";
 import type * as game_seedMap from "../game/seedMap.js";
@@ -95,6 +96,7 @@ declare const fullApi: ApiFromModules<{
   "game/loot": typeof game_loot;
   "game/npcNameResolver": typeof game_npcNameResolver;
   "game/npcs": typeof game_npcs;
+  "game/rateLimitCheck": typeof game_rateLimitCheck;
   "game/rest": typeof game_rest;
   "game/scene": typeof game_scene;
   "game/seedMap": typeof game_seedMap;
