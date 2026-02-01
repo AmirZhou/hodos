@@ -12,6 +12,12 @@ import {
   getSpellSaveDC,
   getSpellAttackBonus,
 } from "../lib/spells";
+import {
+  getCondition,
+  resolveAttackAdvantage,
+  concentrationSaveDC,
+} from "../lib/conditions";
+import { getSpellById } from "../data/spellData";
 
 // ============ EXTRA ATTACKS ============
 
