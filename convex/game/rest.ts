@@ -134,7 +134,7 @@ export const longRest = mutation({
     await ctx.db.patch(args.characterId, patch);
 
     return {
-      hpRestored: character.maxHp - character.hp,
+      hpRestored: derivedStats.effectiveMaxHp - character.hp,
       hitDiceRecovered,
       spellSlotsRestored: !!character.spellSlots,
     };
