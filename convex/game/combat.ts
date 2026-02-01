@@ -8,7 +8,8 @@ import { resolveAttackAdvantage, canAct, canMove, getEffectiveSpeed, isAutoCrit,
 import { getNpcAttackBonus, getNpcDamageDice } from "../lib/npcCombat";
 import { parseDiceString } from "../lib/validation";
 import { getExtraAttacks, getSneakAttackDice, getRageDamageBonus } from "../lib/classFeatures";
-import { hasSpellSlot } from "../lib/spells";
+import { hasSpellSlot, getCastingAbility, getSpellSaveDC, getSpellAttackBonus, getCantripDiceCount } from "../lib/spells";
+import { getSpellById } from "../data/spellData";
 
 // Default turn timeout: 2 minutes
 const DEFAULT_TURN_TIMEOUT_MS = 120000;
