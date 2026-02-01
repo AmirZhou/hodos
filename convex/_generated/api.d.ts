@@ -50,6 +50,7 @@ import type * as lib_auth from "../lib/auth.js";
 import type * as lib_classFeatures from "../lib/classFeatures.js";
 import type * as lib_conditions from "../lib/conditions.js";
 import type * as lib_npcCombat from "../lib/npcCombat.js";
+import type * as lib_rateLimit from "../lib/rateLimit.js";
 import type * as lib_spells from "../lib/spells.js";
 import type * as lib_statHelpers from "../lib/statHelpers.js";
 import type * as lib_stats from "../lib/stats.js";
@@ -109,6 +110,7 @@ declare const fullApi: ApiFromModules<{
   "lib/classFeatures": typeof lib_classFeatures;
   "lib/conditions": typeof lib_conditions;
   "lib/npcCombat": typeof lib_npcCombat;
+  "lib/rateLimit": typeof lib_rateLimit;
   "lib/spells": typeof lib_spells;
   "lib/statHelpers": typeof lib_statHelpers;
   "lib/stats": typeof lib_stats;
