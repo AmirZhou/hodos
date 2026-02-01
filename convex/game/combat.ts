@@ -10,6 +10,7 @@ import { parseDiceString } from "../lib/validation";
 import { getExtraAttacks, getSneakAttackDice, getRageDamageBonus } from "../lib/classFeatures";
 import { hasSpellSlot, getCastingAbility, getSpellSaveDC, getSpellAttackBonus, getCantripDiceCount } from "../lib/spells";
 import { getSpellById } from "../data/spellData";
+import { logAudit } from "../lib/auditLog";
 
 // Default turn timeout: 2 minutes
 const DEFAULT_TURN_TIMEOUT_MS = 120000;
