@@ -388,7 +388,20 @@ export const executeAction = mutation({
     }
 
     // Determine if this is a bonus action (doesn't consume standard action)
-    const isBonusAction = args.action.type === "second_wind" ||
+    // Cunning Action: rogues level 2+ can Dash/Disengage/Hide as a bonus action
+    let isCunningAction = false;
+    if (current.entityType === "character" && ["dash", "disengage", "hide"].includes(args.action.type)) {
+      const cunningChar = await ctx.db.get(current.entityId as Id<"characters">);
+      if (cunningChar) {
+        const cls = (cunningChar.class || "").toLowerCase();
+        if (cls === "rogue" && cunningChar.level >= 2) {
+          isCunningAction = true;
+        }
+      }
+    }
+
+    const isBonusAction = isCunningAction ||
+      args.action.type === "second_wind" ||
       (args.action.type === "spell" && args.action.spellId && getSpellById(args.action.spellId)?.castingTime === "bonus_action");
 
     if (isBonusAction) {
