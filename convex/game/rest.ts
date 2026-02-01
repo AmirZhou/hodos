@@ -103,8 +103,9 @@ export const longRest = mutation({
     const hitDiceRecovered = Math.max(1, Math.floor(hitDice.max / 2));
     const newUsed = Math.max(0, hitDice.used - hitDiceRecovered);
 
+    const derivedStats = await getEffectiveStats(ctx, args.characterId);
     const patch: Record<string, unknown> = {
-      hp: character.maxHp,
+      hp: derivedStats.effectiveMaxHp,
       hitDice: { max: hitDice.max, used: newUsed },
       // Reset death saves
       deathSaves: { successes: 0, failures: 0 },
