@@ -7,6 +7,8 @@ import { logAudit } from "../lib/auditLog";
 export const clearAllData = mutation({
   args: {},
   handler: async (ctx) => {
+    const { userId } = await requireAuth(ctx);
+
     const tables = [
       "users",
       "campaigns",
