@@ -1293,6 +1293,8 @@ export const move = mutation({
     }> = [];
 
     for (let step = 0; step < args.path.length - 1; step++) {
+      if (moverDisengaged) break; // Disengage prevents all opportunity attacks
+
       const from = args.path[step];
       const to = args.path[step + 1];
 
