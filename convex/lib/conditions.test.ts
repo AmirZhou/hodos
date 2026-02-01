@@ -81,6 +81,19 @@ describe("resolveAttackAdvantage", () => {
   it("returns -1 for ranged attack against prone target", () => {
     expect(resolveAttackAdvantage([], ["prone"], false, false)).toBe(-1);
   });
+
+  it("returns -1 when target is dodging and attacker has no advantage sources", () => {
+    expect(resolveAttackAdvantage([], ["dodging"], true, true)).toBe(-1);
+  });
+
+  it("returns -1 when target is dodging for ranged attacks too", () => {
+    expect(resolveAttackAdvantage([], ["dodging"], false, false)).toBe(-1);
+  });
+
+  it("cancels dodging disadvantage with attacker advantage", () => {
+    // Invisible attacker (advantage) vs dodging target (disadvantage) = cancel
+    expect(resolveAttackAdvantage(["invisible"], ["dodging"], true, true)).toBe(0);
+  });
 });
 
 describe("canAct", () => {
