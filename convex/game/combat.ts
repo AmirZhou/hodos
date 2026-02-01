@@ -576,9 +576,76 @@ export const executeAction = mutation({
           atkDamage += critExtra.total;
         }
 
+        // Divine Smite (paladin, on melee hit, expend spell slot for 2d8 + 1d8/slot above 1st radiant)
+        if (args.action.smiteSlotLevel && charClass === "paladin" && isMelee && atkNum === 0) {
+          const smiteChar = await ctx.db.get(current.entityId as Id<"characters">);
+          if (smiteChar) {
+            const slots = smiteChar.spellSlots || {};
+            const slotKey = String(args.action.smiteSlotLevel);
+            const slot = slots[slotKey];
+            if (slot && slot.used < slot.max) {
+              // 2d8 base + 1d8 per slot level above 1st (max 5d8)
+              const smiteDice = Math.min(5, 1 + args.action.smiteSlotLevel);
+              const smiteResult = parseDiceString(`${smiteDice}d8`);
+              let smiteDmg = smiteResult.total;
+              if (atkCrit || autoCrit) smiteDmg += parseDiceString(`${smiteDice}d8`).total; // crit doubles smite
+              atkDamage += smiteDmg;
+              // Consume spell slot
+              await ctx.db.patch(current.entityId as Id<"characters">, {
+                spellSlots: { ...slots, [slotKey]: { max: slot.max, used: slot.used + 1 } },
+              });
+            }
+          }
+        }
+
         // Apply resistance (petrified)
         if (hasResistanceAll(targetConditions)) {
           atkDamage = Math.floor(atkDamage / 2);
+        }
+
+        // Stunning Strike (monk level 5+, on hit, spend 1 ki, target CON save or stunned)
+        if (args.action.stunningStrike && charClass === "monk" && charLevel >= 5 && isMelee && atkNum === 0) {
+          const monkChar = await ctx.db.get(current.entityId as Id<"characters">);
+          if (monkChar && monkChar.classResources?.ki?.current) {
+            // Consume 1 ki
+            await ctx.db.patch(current.entityId as Id<"characters">, {
+              classResources: {
+                ...monkChar.classResources,
+                ki: { max: monkChar.classResources.ki.max, current: monkChar.classResources.ki.current - 1 },
+              },
+            });
+            // Target CON save vs monk's ki save DC (8 + prof + WIS mod)
+            const wisMod = Math.floor((monkChar.abilities.wisdom - 10) / 2);
+            const kiSaveDC = 8 + monkChar.proficiencyBonus + wisMod;
+            let targetConMod = 0;
+            if (target.entityType === "character") {
+              const tc = await ctx.db.get(target.entityId as Id<"characters">);
+              if (tc) targetConMod = Math.floor((tc.abilities.constitution - 10) / 2);
+            }
+            const conSave = Math.floor(Math.random() * 20) + 1 + targetConMod;
+            if (conSave < kiSaveDC) {
+              // Stunned until end of monk's next turn
+              if (target.entityType === "character") {
+                const tc = await ctx.db.get(target.entityId as Id<"characters">);
+                if (tc) {
+                  const conds = [...tc.conditions];
+                  if (!conds.some(c => c.name === "stunned")) {
+                    conds.push({ name: "stunned", duration: 1, source: "stunning_strike" });
+                    await ctx.db.patch(target.entityId as Id<"characters">, { conditions: conds });
+                  }
+                }
+              } else {
+                const tn = await ctx.db.get(target.entityId as Id<"npcs">);
+                if (tn) {
+                  const conds = [...tn.conditions];
+                  if (!conds.some(c => c.name === "stunned")) {
+                    conds.push({ name: "stunned", duration: 1, source: "stunning_strike" });
+                    await ctx.db.patch(target.entityId as Id<"npcs">, { conditions: conds });
+                  }
+                }
+              }
+            }
+          }
         }
 
         // Apply damage to target
