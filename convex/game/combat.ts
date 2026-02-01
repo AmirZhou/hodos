@@ -1268,8 +1268,21 @@ export const move = mutation({
     // ========== OPPORTUNITY ATTACKS ==========
     // When a combatant leaves an enemy's melee range, the enemy may make an
     // opportunity attack (single melee attack roll) if it has its reaction.
-    // TODO: Disengage action should prevent opportunity attacks. Add a per-turn
-    // disengaged flag once the disengage action sets one.
+    // Disengage action prevents all opportunity attacks for the rest of the turn.
+
+    // Check if mover used Disengage — skip all opportunity attacks
+    let moverDisengaged = false;
+    if (combatant.entityType === "character") {
+      const moverChar = await ctx.db.get(combatant.entityId as Id<"characters">);
+      if (moverChar?.conditions.some(c => c.name === "disengaged")) {
+        moverDisengaged = true;
+      }
+    } else {
+      const moverNpc = await ctx.db.get(combatant.entityId as Id<"npcs">);
+      if (moverNpc?.conditions.some(c => c.name === "disengaged")) {
+        moverDisengaged = true;
+      }
+    }
 
     const opportunityAttacks: Array<{
       attackerIndex: number;
