@@ -78,6 +78,12 @@ async function executeAction(
   }) as Doc<"characters"> | null;
   if (!character) throw new Error("Character not found");
 
+  // 1b. Rate limit check
+  await ctx.runMutation(internal.game.rateLimitCheck.check, {
+    userId: character.userId,
+    action: "game_action",
+  });
+
   // 2. Get recent game log for context
   const recentLogs = await ctx.runQuery(api.game.log.getRecent, {
     campaignId,
