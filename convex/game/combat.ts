@@ -671,32 +671,45 @@ export const executeAction = mutation({
         if (target.entityType === "character") {
           const character = await ctx.db.get(target.entityId as Id<"characters">);
           if (character) {
-            let remainingDamage = atkDamage;
-            let newTempHp = character.tempHp;
-            if (newTempHp > 0) {
-              const absorbed = Math.min(newTempHp, remainingDamage);
-              newTempHp -= absorbed;
-              remainingDamage -= absorbed;
-            }
-            const newHp = Math.max(0, character.hp - remainingDamage);
-            const patch: Record<string, unknown> = { hp: newHp, tempHp: newTempHp };
-            if (newHp === 0 && character.hp > 0) {
-              const currentConditions = [...character.conditions];
-              if (!currentConditions.some(c => c.name === "unconscious")) {
-                currentConditions.push({ name: "unconscious" });
+            // Damage at 0 HP → automatic death save failures (crit = 2 failures)
+            if (character.hp === 0) {
+              const ds = { ...character.deathSaves };
+              ds.failures = Math.min(3, ds.failures + ((atkCrit || autoCrit) ? 2 : 1));
+              const patch: Record<string, unknown> = { deathSaves: ds };
+              if (ds.failures >= 3) {
+                const conds = character.conditions.filter(c => c.name !== "unconscious");
+                conds.push({ name: "dead" });
+                patch.conditions = conds;
               }
-              patch.conditions = currentConditions;
-              patch.deathSaves = { successes: 0, failures: 0 };
-            }
-            if (character.concentration && remainingDamage > 0) {
-              const conSaveDC = concentrationSaveDC(remainingDamage);
-              const conMod = Math.floor((character.abilities.constitution - 10) / 2);
-              const conSave = Math.floor(Math.random() * 20) + 1 + conMod + character.proficiencyBonus;
-              if (conSave < conSaveDC) {
-                patch.concentration = undefined;
+              await ctx.db.patch(target.entityId as Id<"characters">, patch);
+            } else {
+              let remainingDamage = atkDamage;
+              let newTempHp = character.tempHp;
+              if (newTempHp > 0) {
+                const absorbed = Math.min(newTempHp, remainingDamage);
+                newTempHp -= absorbed;
+                remainingDamage -= absorbed;
               }
+              const newHp = Math.max(0, character.hp - remainingDamage);
+              const patch: Record<string, unknown> = { hp: newHp, tempHp: newTempHp };
+              if (newHp === 0 && character.hp > 0) {
+                const currentConditions = [...character.conditions];
+                if (!currentConditions.some(c => c.name === "unconscious")) {
+                  currentConditions.push({ name: "unconscious" });
+                }
+                patch.conditions = currentConditions;
+                patch.deathSaves = { successes: 0, failures: 0 };
+              }
+              if (character.concentration && remainingDamage > 0) {
+                const conSaveDC = concentrationSaveDC(remainingDamage);
+                const conMod = Math.floor((character.abilities.constitution - 10) / 2);
+                const conSave = Math.floor(Math.random() * 20) + 1 + conMod + character.proficiencyBonus;
+                if (conSave < conSaveDC) {
+                  patch.concentration = undefined;
+                }
+              }
+              await ctx.db.patch(target.entityId as Id<"characters">, patch);
             }
-            await ctx.db.patch(target.entityId as Id<"characters">, patch);
           }
         } else {
           const npc = await ctx.db.get(target.entityId as Id<"npcs">);
