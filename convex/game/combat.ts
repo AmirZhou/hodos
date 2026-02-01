@@ -1032,6 +1032,8 @@ export const executeAction = mutation({
       damage: serverDamage,
       hit: hitResult,
       critical: isCrit,
+      ...(attackResults.length > 1 ? { attacks: attackResults } : {}),
+      ...(args.action.spellId ? { spellId: args.action.spellId } : {}),
     };
   },
 });
