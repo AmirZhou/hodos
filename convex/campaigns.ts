@@ -58,6 +58,8 @@ export const create = mutation({
       activeEvents: [],
     });
 
+    await logAudit(ctx, userId, "campaign.create", "campaigns", campaignId, { name: args.name });
+
     return { campaignId, inviteCode };
   },
 });
