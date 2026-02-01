@@ -1605,38 +1605,52 @@ export const endTurn = mutation({
 
         // Death saves: if at 0 HP, roll death save
         if (char.hp === 0) {
-          const deathRoll = Math.floor(Math.random() * 20) + 1;
           const ds = { ...char.deathSaves };
 
-          if (deathRoll === 20) {
-            // Nat 20: regain 1 HP
-            patch.hp = 1;
-            patch.deathSaves = { successes: 0, failures: 0 };
-            // Remove unconscious condition
-            patch.conditions = (updatedConditions as Array<{ name: string; duration?: number; source?: string }>)
-              .filter(c => c.name !== "unconscious")
-              .map(c => ({
-                name: c.name,
-                ...(c.duration !== undefined ? { duration: c.duration } : {}),
-                ...(c.source ? { source: c.source } : {}),
-              }));
-          } else if (deathRoll === 1) {
-            // Nat 1: 2 failures
-            ds.failures = Math.min(3, ds.failures + 2);
-            patch.deathSaves = ds;
-          } else if (deathRoll >= 10) {
-            ds.successes = Math.min(3, ds.successes + 1);
-            patch.deathSaves = ds;
-            if (ds.successes >= 3) {
-              // Stabilized — stays at 0 HP but stops rolling
-              patch.deathSaves = { successes: 3, failures: ds.failures };
-            }
+          // Skip if already stabilized or already dead
+          if (ds.successes >= 3 || ds.failures >= 3) {
+            await ctx.db.patch(nextCombatant.entityId as Id<"characters">, patch);
           } else {
-            ds.failures = Math.min(3, ds.failures + 1);
-            patch.deathSaves = ds;
-          }
+            const deathRoll = Math.floor(Math.random() * 20) + 1;
 
-          await ctx.db.patch(nextCombatant.entityId as Id<"characters">, patch);
+            if (deathRoll === 20) {
+              // Nat 20: regain 1 HP, remove unconscious
+              patch.hp = 1;
+              patch.deathSaves = { successes: 0, failures: 0 };
+              patch.conditions = (updatedConditions as Array<{ name: string; duration?: number; source?: string }>)
+                .filter(c => c.name !== "unconscious")
+                .map(c => ({
+                  name: c.name,
+                  ...(c.duration !== undefined ? { duration: c.duration } : {}),
+                  ...(c.source ? { source: c.source } : {}),
+                }));
+            } else if (deathRoll === 1) {
+              // Nat 1: 2 failures
+              ds.failures = Math.min(3, ds.failures + 2);
+              patch.deathSaves = ds;
+            } else if (deathRoll >= 10) {
+              ds.successes = Math.min(3, ds.successes + 1);
+              patch.deathSaves = ds;
+            } else {
+              ds.failures = Math.min(3, ds.failures + 1);
+              patch.deathSaves = ds;
+            }
+
+            // If 3 failures: character dies — add "dead" condition, remove unconscious
+            if (ds.failures >= 3) {
+              const deathConditions = (patch.conditions as Array<{ name: string; duration?: number; source?: string }>) ??
+                updatedConditions.map(c => ({
+                  name: c.name,
+                  ...(c.duration !== undefined ? { duration: c.duration } : {}),
+                  ...(c.source ? { source: c.source } : {}),
+                }));
+              patch.conditions = deathConditions
+                .filter((c: { name: string }) => c.name !== "unconscious")
+                .concat([{ name: "dead" }]);
+            }
+
+            await ctx.db.patch(nextCombatant.entityId as Id<"characters">, patch);
+          }
         } else {
           await ctx.db.patch(nextCombatant.entityId as Id<"characters">, patch);
         }
