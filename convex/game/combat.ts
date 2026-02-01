@@ -1396,6 +1396,20 @@ export const move = mutation({
           if (mn) moverAc = mn.ac;
         }
 
+        // Apply cover bonus to mover's AC for the OA
+        if (session.locationId) {
+          const location = await ctx.db.get(session.locationId);
+          if (location?.gridData) {
+            const moverCell = location.gridData.cells.find(
+              c => c.x === from.x && c.y === from.y
+            );
+            if (moverCell?.cover === "half") moverAc += 2;
+            else if (moverCell?.cover === "three-quarters") moverAc += 5;
+            // Full cover: mover in full cover can't be OA'd (skip)
+            if (moverCell?.cover === "full") continue;
+          }
+        }
+
         // Roll d20 + attack bonus (no advantage/disadvantage for opportunity attacks)
         const naturalRoll = Math.floor(Math.random() * 20) + 1;
         const rollTotal = naturalRoll + attackBonus;
