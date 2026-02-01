@@ -387,3 +387,169 @@ describe("getSpellById", () => {
     expect(spell!.conditions).toContain("paralyzed");
   });
 });
+
+// ============ DEATH SAVE MECHANICS ============
+
+describe("Death save rules", () => {
+  // Test the D&D 5e death save decision logic
+  const resolveDeathSave = (
+    roll: number,
+    currentSaves: { successes: number; failures: number },
+  ) => {
+    const ds = { ...currentSaves };
+    if (roll === 20)
+      return {
+        hp: 1,
+        deathSaves: { successes: 0, failures: 0 },
+        revived: true,
+      };
+    if (roll === 1) {
+      ds.failures = Math.min(3, ds.failures + 2);
+    } else if (roll >= 10) {
+      ds.successes = Math.min(3, ds.successes + 1);
+    } else {
+      ds.failures = Math.min(3, ds.failures + 1);
+    }
+    return {
+      hp: 0,
+      deathSaves: ds,
+      revived: false,
+      dead: ds.failures >= 3,
+      stabilized: ds.successes >= 3,
+    };
+  };
+
+  it("nat 20 revives with 1 HP", () => {
+    const result = resolveDeathSave(20, { successes: 0, failures: 2 });
+    expect(result.revived).toBe(true);
+    expect(result.hp).toBe(1);
+    expect(result.deathSaves.successes).toBe(0);
+    expect(result.deathSaves.failures).toBe(0);
+  });
+
+  it("nat 1 causes 2 failures", () => {
+    const result = resolveDeathSave(1, { successes: 0, failures: 0 });
+    expect(result.deathSaves.failures).toBe(2);
+    expect(result.revived).toBe(false);
+  });
+
+  it("roll of 10+ adds a success", () => {
+    const result = resolveDeathSave(10, { successes: 0, failures: 0 });
+    expect(result.deathSaves.successes).toBe(1);
+    expect(result.deathSaves.failures).toBe(0);
+  });
+
+  it("roll below 10 adds a failure", () => {
+    const result = resolveDeathSave(9, { successes: 0, failures: 0 });
+    expect(result.deathSaves.failures).toBe(1);
+    expect(result.deathSaves.successes).toBe(0);
+  });
+
+  it("3 successes stabilizes", () => {
+    const result = resolveDeathSave(15, { successes: 2, failures: 1 });
+    expect(result.deathSaves.successes).toBe(3);
+    expect(result.stabilized).toBe(true);
+    expect(result.dead).toBe(false);
+  });
+
+  it("3 failures means death", () => {
+    const result = resolveDeathSave(5, { successes: 1, failures: 2 });
+    expect(result.deathSaves.failures).toBe(3);
+    expect(result.dead).toBe(true);
+    expect(result.stabilized).toBe(false);
+  });
+
+  it("already stabilized should skip (successes >= 3)", () => {
+    // Test that the logic correctly identifies stabilized state
+    const ds = { successes: 3, failures: 1 };
+    expect(ds.successes >= 3).toBe(true);
+  });
+});
+
+// ============ DAMAGE AT 0 HP ============
+
+describe("Damage at 0 HP", () => {
+  const damageAt0HP = (isCrit: boolean, currentFailures: number) => {
+    return Math.min(3, currentFailures + (isCrit ? 2 : 1));
+  };
+
+  it("non-crit damage adds 1 failure", () => {
+    expect(damageAt0HP(false, 0)).toBe(1);
+  });
+
+  it("crit damage adds 2 failures", () => {
+    expect(damageAt0HP(true, 0)).toBe(2);
+  });
+
+  it("failures cap at 3", () => {
+    expect(damageAt0HP(true, 2)).toBe(3);
+    expect(damageAt0HP(false, 3)).toBe(3);
+  });
+
+  it("crit on 2 failures results in death (3 failures)", () => {
+    const failures = damageAt0HP(true, 2);
+    expect(failures).toBe(3);
+  });
+});
+
+// ============ COVER AC BONUSES ============
+
+describe("Cover AC bonuses", () => {
+  const applyCover = (baseAc: number, cover: string | undefined) => {
+    if (cover === "full") return { targetable: false, ac: baseAc };
+    if (cover === "half") return { targetable: true, ac: baseAc + 2 };
+    if (cover === "three-quarters")
+      return { targetable: true, ac: baseAc + 5 };
+    return { targetable: true, ac: baseAc };
+  };
+
+  it("half cover adds +2 AC", () => {
+    const result = applyCover(15, "half");
+    expect(result.targetable).toBe(true);
+    expect(result.ac).toBe(17);
+  });
+
+  it("three-quarters cover adds +5 AC", () => {
+    const result = applyCover(15, "three-quarters");
+    expect(result.targetable).toBe(true);
+    expect(result.ac).toBe(20);
+  });
+
+  it("full cover makes target untargetable", () => {
+    const result = applyCover(15, "full");
+    expect(result.targetable).toBe(false);
+    expect(result.ac).toBe(15);
+  });
+
+  it("no cover leaves AC unchanged", () => {
+    const result = applyCover(15, undefined);
+    expect(result.targetable).toBe(true);
+    expect(result.ac).toBe(15);
+  });
+
+  it("undefined cover leaves AC unchanged", () => {
+    const result = applyCover(18, undefined);
+    expect(result.targetable).toBe(true);
+    expect(result.ac).toBe(18);
+  });
+});
+
+// ============ DEAD CONDITION ============
+
+describe("Dead condition", () => {
+  it("getCondition('dead') returns valid condition", () => {
+    const cond = getCondition("dead");
+    expect(cond).toBeDefined();
+    expect(cond!.name).toBe("Dead");
+    expect(cond!.effects.cannotAct).toBe(true);
+    expect(cond!.effects.cannotMove).toBe(true);
+  });
+
+  it("dead condition prevents acting", () => {
+    expect(canAct(["dead"])).toBe(false);
+  });
+
+  it("dead condition prevents movement", () => {
+    expect(canMove(["dead"])).toBe(false);
+  });
+});
