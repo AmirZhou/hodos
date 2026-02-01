@@ -361,21 +361,30 @@ export const executeAction = mutation({
       throw new Error("Cannot act due to conditions");
     }
 
-    if (!current.hasAction) {
-      throw new Error("No action remaining");
+    // Determine if this is a bonus action (doesn't consume standard action)
+    const isBonusAction = args.action.type === "second_wind" ||
+      (args.action.type === "spell" && args.action.spellId && getSpellById(args.action.spellId)?.castingTime === "bonus_action");
+
+    if (isBonusAction) {
+      if (!current.hasBonusAction) throw new Error("No bonus action remaining");
+    } else if (args.action.type === "action_surge") {
+      // Action surge is free — doesn't consume action or bonus action
+    } else {
+      if (!current.hasAction) throw new Error("No action remaining");
     }
 
     let serverRoll: number | undefined;
     let serverDamage: number | undefined;
     let hitResult = false;
     let isCrit = false;
+    const attackResults: Array<{ hit: boolean; damage: number; roll: number; critical: boolean }> = [];
 
-    // Server-side attack resolution
+    // ========== ATTACK RESOLUTION (with Extra Attacks) ==========
     if (args.action.type === "attack" && args.action.targetIndex !== undefined) {
       const target = combatants[args.action.targetIndex];
       if (!target) throw new Error("Invalid target");
 
-      // Get target AC and conditions
+      // Get target AC and conditions (computed once for all attacks)
       let targetAc = 10;
       let targetConditions: string[] = [];
       if (target.entityType === "character") {
@@ -424,26 +433,48 @@ export const executeAction = mutation({
         isMelee,
       );
 
-      // Roll d20 with advantage/disadvantage
-      const roll1 = Math.floor(Math.random() * 20) + 1;
-      const roll2 = Math.floor(Math.random() * 20) + 1;
-      let naturalRoll: number;
-      if (advState === 1) naturalRoll = Math.max(roll1, roll2);
-      else if (advState === -1) naturalRoll = Math.min(roll1, roll2);
-      else naturalRoll = roll1;
+      // Determine number of attacks (Extra Attack feature)
+      let numAttacks = 1;
+      let charClass = "";
+      let charLevel = 1;
+      if (current.entityType === "character") {
+        const char = await ctx.db.get(current.entityId as Id<"characters">);
+        if (char) {
+          charClass = (char.class || "").toLowerCase();
+          charLevel = char.level;
+          numAttacks = 1 + getExtraAttacks(charClass, charLevel);
+        }
+      }
 
-      serverRoll = naturalRoll + attackBonus;
-      isCrit = naturalRoll === 20;
-      const autoCrit = isAutoCrit(targetConditions, isMelee);
+      let sneakAttackUsed = false; // Sneak attack: once per turn only
 
-      if (naturalRoll === 1) {
-        // Critical miss — always misses
-        hitResult = false;
-        serverDamage = 0;
-      } else if (isCrit || autoCrit || serverRoll >= targetAc) {
-        hitResult = true;
+      // === MULTI-ATTACK LOOP ===
+      for (let atkNum = 0; atkNum < numAttacks; atkNum++) {
+        // Roll d20 with advantage/disadvantage
+        const roll1 = Math.floor(Math.random() * 20) + 1;
+        const roll2 = Math.floor(Math.random() * 20) + 1;
+        let naturalRoll: number;
+        if (advState === 1) naturalRoll = Math.max(roll1, roll2);
+        else if (advState === -1) naturalRoll = Math.min(roll1, roll2);
+        else naturalRoll = roll1;
 
-        // Calculate damage
+        const atkRoll = naturalRoll + attackBonus;
+        const atkCrit = naturalRoll === 20;
+        const autoCrit = isAutoCrit(targetConditions, isMelee);
+
+        if (naturalRoll === 1) {
+          // Critical miss
+          attackResults.push({ hit: false, damage: 0, roll: atkRoll, critical: false });
+          continue;
+        }
+
+        if (!(atkCrit || autoCrit || atkRoll >= targetAc)) {
+          // Miss
+          attackResults.push({ hit: false, damage: 0, roll: atkRoll, critical: false });
+          continue;
+        }
+
+        // === HIT — calculate damage ===
         let damageDice = "1d8";
         let damageBonus = 0;
         if (current.entityType === "character") {
@@ -451,7 +482,6 @@ export const executeAction = mutation({
           if (char) {
             const stats = await getEffectiveStats(ctx, current.entityId as Id<"characters">);
             damageBonus = stats.abilityModifiers.strength; // default to STR
-            // Check for equipped weapon damage
             const weapon = await ctx.db
               .query("items")
               .withIndex("by_owner", (q) => q.eq("ownerId", current.entityId as Id<"characters">))
@@ -464,60 +494,50 @@ export const executeAction = mutation({
               .first();
             if (weapon?.stats.damage) damageDice = weapon.stats.damage;
 
-            // Add class feature bonuses (sneak attack, rage, etc.)
-            const charClass = (char.class || "").toLowerCase();
-            if (charClass === "rogue") {
-              // Sneak attack: if have advantage or ally adjacent to target
-              if (advState === 1) {
-                const sneakDice = getSneakAttackDice(char.level);
-                const sneakResult = parseDiceString(`${sneakDice}d6`);
-                damageBonus += sneakResult.total;
-              }
+            // Sneak Attack (rogue, once per turn, requires advantage or ally adjacent)
+            if (charClass === "rogue" && !sneakAttackUsed && advState === 1) {
+              const sneakDice = getSneakAttackDice(charLevel);
+              const sneakResult = parseDiceString(`${sneakDice}d6`);
+              damageBonus += sneakResult.total;
+              sneakAttackUsed = true;
             }
+            // Rage damage bonus (barbarian, while raging)
             if (charClass === "barbarian" && char.classResources?.rage?.current) {
-              damageBonus += getRageDamageBonus(char.level);
+              damageBonus += getRageDamageBonus(charLevel);
             }
           }
         } else {
           const npc = await ctx.db.get(current.entityId as Id<"npcs">);
-          if (npc) {
-            damageDice = getNpcDamageDice(npc);
-          }
+          if (npc) damageDice = getNpcDamageDice(npc);
         }
 
         const damageResult = parseDiceString(damageDice);
-        serverDamage = damageResult.total + damageBonus;
+        let atkDamage = damageResult.total + damageBonus;
 
         // Double dice on crit
-        if (isCrit || autoCrit) {
+        if (atkCrit || autoCrit) {
           const critExtra = parseDiceString(damageDice);
-          serverDamage += critExtra.total;
+          atkDamage += critExtra.total;
         }
 
         // Apply resistance (petrified)
         if (hasResistanceAll(targetConditions)) {
-          serverDamage = Math.floor(serverDamage / 2);
+          atkDamage = Math.floor(atkDamage / 2);
         }
 
         // Apply damage to target
         if (target.entityType === "character") {
           const character = await ctx.db.get(target.entityId as Id<"characters">);
           if (character) {
-            let totalDamage = serverDamage;
-            let remainingDamage = totalDamage;
+            let remainingDamage = atkDamage;
             let newTempHp = character.tempHp;
-
-            // Absorb with temp HP first
             if (newTempHp > 0) {
               const absorbed = Math.min(newTempHp, remainingDamage);
               newTempHp -= absorbed;
               remainingDamage -= absorbed;
             }
-
             const newHp = Math.max(0, character.hp - remainingDamage);
             const patch: Record<string, unknown> = { hp: newHp, tempHp: newTempHp };
-
-            // Death saves: if HP drops to 0, add unconscious condition
             if (newHp === 0 && character.hp > 0) {
               const currentConditions = [...character.conditions];
               if (!currentConditions.some(c => c.name === "unconscious")) {
@@ -526,8 +546,6 @@ export const executeAction = mutation({
               patch.conditions = currentConditions;
               patch.deathSaves = { successes: 0, failures: 0 };
             }
-
-            // Concentration check on damage
             if (character.concentration && remainingDamage > 0) {
               const conSaveDC = concentrationSaveDC(remainingDamage);
               const conMod = Math.floor((character.abilities.constitution - 10) / 2);
@@ -536,23 +554,26 @@ export const executeAction = mutation({
                 patch.concentration = undefined;
               }
             }
-
             await ctx.db.patch(target.entityId as Id<"characters">, patch);
           }
         } else {
           const npc = await ctx.db.get(target.entityId as Id<"npcs">);
           if (npc) {
-            const newHp = Math.max(0, npc.hp - serverDamage);
-            await ctx.db.patch(target.entityId as Id<"npcs">, {
-              hp: newHp,
-              isAlive: newHp > 0,
-            });
+            const newHp = Math.max(0, npc.hp - atkDamage);
+            await ctx.db.patch(target.entityId as Id<"npcs">, { hp: newHp, isAlive: newHp > 0 });
           }
         }
-      } else {
-        hitResult = false;
-        serverDamage = 0;
+
+        attackResults.push({ hit: true, damage: atkDamage, roll: atkRoll, critical: atkCrit || autoCrit });
       }
+      // === END MULTI-ATTACK LOOP ===
+
+      // Aggregate results
+      hitResult = attackResults.some(r => r.hit);
+      serverDamage = attackResults.reduce((sum, r) => sum + r.damage, 0);
+      serverRoll = attackResults[0]?.roll;
+      isCrit = attackResults.some(r => r.critical);
+
     } else if (args.action.type === "attack" && args.action.damage) {
       // Fallback: client sent damage directly (legacy support)
       serverDamage = args.action.damage;
@@ -569,18 +590,363 @@ export const executeAction = mutation({
             const npc = await ctx.db.get(target.entityId as Id<"npcs">);
             if (npc) {
               const newHp = Math.max(0, npc.hp - serverDamage);
-              await ctx.db.patch(target.entityId as Id<"npcs">, {
-                hp: newHp,
-                isAlive: newHp > 0,
-              });
+              await ctx.db.patch(target.entityId as Id<"npcs">, { hp: newHp, isAlive: newHp > 0 });
             }
           }
         }
       }
       hitResult = true;
+
+    // ========== SPELL CASTING ==========
+    } else if (args.action.type === "spell" && args.action.spellId) {
+      const spell = getSpellById(args.action.spellId);
+      if (!spell) throw new Error("Unknown spell: " + args.action.spellId);
+
+      if (current.entityType !== "character") throw new Error("NPCs cannot cast spells via this action");
+      const caster = await ctx.db.get(current.entityId as Id<"characters">);
+      if (!caster) throw new Error("Caster not found");
+
+      const charClass = (caster.class || "").toLowerCase();
+      const castingAbility = getCastingAbility(charClass);
+      if (!castingAbility) throw new Error("Class cannot cast spells");
+
+      const castingAbilityScore = caster.abilities[castingAbility as keyof typeof caster.abilities];
+      const profBonus = caster.proficiencyBonus;
+
+      // Check and consume spell slot (cantrips are free)
+      if (spell.level > 0) {
+        const slots = caster.spellSlots || {};
+        if (!hasSpellSlot(slots, spell.level)) {
+          throw new Error(`No level ${spell.level} spell slot available`);
+        }
+        const slotKey = String(spell.level);
+        const slot = slots[slotKey];
+        await ctx.db.patch(current.entityId as Id<"characters">, {
+          spellSlots: { ...slots, [slotKey]: { max: slot.max, used: slot.used + 1 } },
+        });
+      }
+
+      // Handle concentration: drop existing before setting new
+      if (spell.concentration && caster.concentration) {
+        await ctx.db.patch(current.entityId as Id<"characters">, { concentration: undefined });
+      }
+
+      // --- Spell attack roll spells (fire_bolt, eldritch_blast, ray_of_frost, chill_touch, scorching_ray) ---
+      if (spell.attackRoll && args.action.targetIndex !== undefined) {
+        const target = combatants[args.action.targetIndex];
+        if (!target) throw new Error("Invalid target");
+
+        let targetAc = 10;
+        let targetConditions: string[] = [];
+        if (target.entityType === "character") {
+          const ts = await getEffectiveStats(ctx, target.entityId as Id<"characters">);
+          targetAc = ts.effectiveAc;
+          const tc = await ctx.db.get(target.entityId as Id<"characters">);
+          if (tc) targetConditions = tc.conditions.map(c => c.name);
+        } else {
+          const tn = await ctx.db.get(target.entityId as Id<"npcs">);
+          if (tn) { targetAc = tn.ac; targetConditions = tn.conditions.map(c => c.name); }
+        }
+
+        const spellAttackBonus = getSpellAttackBonus(profBonus, castingAbilityScore);
+        const distance = Math.abs(target.position.x - current.position.x) + Math.abs(target.position.y - current.position.y);
+        const isMelee = distance <= 1;
+        const advState = resolveAttackAdvantage(attackerConditions, targetConditions, isMelee, isMelee);
+
+        // Scorching ray: 3 rays; other spells: 1 ray
+        const numRays = spell.id === "scorching_ray" ? 3 : 1;
+
+        for (let ray = 0; ray < numRays; ray++) {
+          const roll1 = Math.floor(Math.random() * 20) + 1;
+          const roll2 = Math.floor(Math.random() * 20) + 1;
+          let naturalRoll: number;
+          if (advState === 1) naturalRoll = Math.max(roll1, roll2);
+          else if (advState === -1) naturalRoll = Math.min(roll1, roll2);
+          else naturalRoll = roll1;
+
+          const rollTotal = naturalRoll + spellAttackBonus;
+          if (ray === 0) serverRoll = rollTotal;
+          const rayIsCrit = naturalRoll === 20;
+
+          if (naturalRoll === 1) continue; // miss
+
+          if (rayIsCrit || rollTotal >= targetAc) {
+            hitResult = true;
+            if (rayIsCrit) isCrit = true;
+
+            if (spell.damage) {
+              const diceMatch = spell.damage.dice.match(/^(\d+)d(\d+)/);
+              let diceCount = diceMatch ? parseInt(diceMatch[1]) : 1;
+              const diceSides = diceMatch ? diceMatch[2] : "10";
+
+              // Scale cantrips
+              if (spell.level === 0 && spell.damage.scalesWithLevel) {
+                diceCount = getCantripDiceCount(caster.level);
+              }
+
+              const damageDice = `${diceCount}d${diceSides}`;
+              const result = parseDiceString(damageDice);
+              let rayDamage = result.total;
+              if (rayIsCrit) rayDamage += parseDiceString(damageDice).total;
+
+              if (hasResistanceAll(targetConditions)) rayDamage = Math.floor(rayDamage / 2);
+
+              serverDamage = (serverDamage || 0) + rayDamage;
+
+              // Apply damage
+              if (target.entityType === "character") {
+                const ch = await ctx.db.get(target.entityId as Id<"characters">);
+                if (ch) {
+                  let rem = rayDamage;
+                  let tp = ch.tempHp;
+                  if (tp > 0) { const a = Math.min(tp, rem); tp -= a; rem -= a; }
+                  const newHp = Math.max(0, ch.hp - rem);
+                  const patch: Record<string, unknown> = { hp: newHp, tempHp: tp };
+                  if (newHp === 0 && ch.hp > 0) {
+                    const conds = [...ch.conditions];
+                    if (!conds.some(c => c.name === "unconscious")) conds.push({ name: "unconscious" });
+                    patch.conditions = conds;
+                    patch.deathSaves = { successes: 0, failures: 0 };
+                  }
+                  if (ch.concentration && rem > 0) {
+                    const dc = concentrationSaveDC(rem);
+                    const mod = Math.floor((ch.abilities.constitution - 10) / 2);
+                    if (Math.floor(Math.random() * 20) + 1 + mod + ch.proficiencyBonus < dc) {
+                      patch.concentration = undefined;
+                    }
+                  }
+                  await ctx.db.patch(target.entityId as Id<"characters">, patch);
+                }
+              } else {
+                const np = await ctx.db.get(target.entityId as Id<"npcs">);
+                if (np) {
+                  const newHp = Math.max(0, np.hp - rayDamage);
+                  await ctx.db.patch(target.entityId as Id<"npcs">, { hp: newHp, isAlive: newHp > 0 });
+                }
+              }
+            }
+          }
+        }
+
+      // --- Saving throw spells (sacred_flame, burning_hands, thunderwave, fireball, hold_person) ---
+      } else if (spell.saveType) {
+        const spellSaveDC = getSpellSaveDC(profBonus, castingAbilityScore);
+        serverRoll = spellSaveDC; // Return DC as the "roll" for display
+
+        // Find targets: AoE or single target
+        const targetIndices: number[] = [];
+        if (spell.areaOfEffect && args.action.targetPosition) {
+          // AoE: find all combatants within range of target position
+          const aoeRadius = spell.areaOfEffect.size / 5; // convert feet to cells
+          for (let i = 0; i < combatants.length; i++) {
+            if (i === currentIndex) continue; // don't hit self (most AoE)
+            const c = combatants[i];
+            const dist = Math.abs(c.position.x - args.action.targetPosition.x) + Math.abs(c.position.y - args.action.targetPosition.y);
+            if (dist <= aoeRadius) targetIndices.push(i);
+          }
+        } else if (args.action.targetIndex !== undefined) {
+          targetIndices.push(args.action.targetIndex);
+        }
+
+        for (const tIdx of targetIndices) {
+          const target = combatants[tIdx];
+          if (!target) continue;
+
+          // Get target's save modifier
+          let saveMod = 0;
+          let targetConditions: string[] = [];
+          if (target.entityType === "character") {
+            const tc = await ctx.db.get(target.entityId as Id<"characters">);
+            if (tc) {
+              const abilityScore = tc.abilities[spell.saveType as keyof typeof tc.abilities];
+              saveMod = Math.floor((abilityScore - 10) / 2);
+              targetConditions = tc.conditions.map(c => c.name);
+            }
+          } else {
+            const tn = await ctx.db.get(target.entityId as Id<"npcs">);
+            if (tn) {
+              saveMod = 0; // NPCs use base 0 save mod unless we add ability scores
+              targetConditions = tn.conditions.map(c => c.name);
+            }
+          }
+
+          const saveRoll = Math.floor(Math.random() * 20) + 1 + saveMod;
+          const saveSuccess = saveRoll >= spellSaveDC;
+
+          // Apply damage (half on save for damage spells)
+          if (spell.damage) {
+            const diceMatch = spell.damage.dice.match(/^(\d+)d(\d+)/);
+            let diceCount = diceMatch ? parseInt(diceMatch[1]) : 1;
+            const diceSides = diceMatch ? diceMatch[2] : "6";
+
+            if (spell.level === 0 && spell.damage.scalesWithLevel) {
+              diceCount = getCantripDiceCount(caster.level);
+            }
+
+            const result = parseDiceString(`${diceCount}d${diceSides}`);
+            let dmg = result.total;
+            if (saveSuccess) dmg = Math.floor(dmg / 2); // half on save
+
+            if (hasResistanceAll(targetConditions)) dmg = Math.floor(dmg / 2);
+            serverDamage = (serverDamage || 0) + dmg;
+
+            if (target.entityType === "character") {
+              const ch = await ctx.db.get(target.entityId as Id<"characters">);
+              if (ch) {
+                let rem = dmg;
+                let tp = ch.tempHp;
+                if (tp > 0) { const a = Math.min(tp, rem); tp -= a; rem -= a; }
+                const newHp = Math.max(0, ch.hp - rem);
+                const patch: Record<string, unknown> = { hp: newHp, tempHp: tp };
+                if (newHp === 0 && ch.hp > 0) {
+                  const conds = [...ch.conditions];
+                  if (!conds.some(c => c.name === "unconscious")) conds.push({ name: "unconscious" });
+                  patch.conditions = conds;
+                  patch.deathSaves = { successes: 0, failures: 0 };
+                }
+                if (ch.concentration && rem > 0) {
+                  const dc = concentrationSaveDC(rem);
+                  const mod = Math.floor((ch.abilities.constitution - 10) / 2);
+                  if (Math.floor(Math.random() * 20) + 1 + mod + ch.proficiencyBonus < dc) {
+                    patch.concentration = undefined;
+                  }
+                }
+                await ctx.db.patch(target.entityId as Id<"characters">, patch);
+              }
+            } else {
+              const np = await ctx.db.get(target.entityId as Id<"npcs">);
+              if (np) {
+                const newHp = Math.max(0, np.hp - dmg);
+                await ctx.db.patch(target.entityId as Id<"npcs">, { hp: newHp, isAlive: newHp > 0 });
+              }
+            }
+          }
+
+          // Apply conditions on failed save (hold_person → paralyzed, etc.)
+          if (spell.conditions && !saveSuccess) {
+            hitResult = true;
+            if (target.entityType === "character") {
+              const ch = await ctx.db.get(target.entityId as Id<"characters">);
+              if (ch) {
+                const conds = [...ch.conditions];
+                for (const condName of spell.conditions) {
+                  if (!conds.some(c => c.name === condName)) {
+                    conds.push({
+                      name: condName,
+                      ...(spell.concentration ? { duration: 10 } : { duration: 1 }),
+                      source: spell.id,
+                    });
+                  }
+                }
+                await ctx.db.patch(target.entityId as Id<"characters">, { conditions: conds });
+              }
+            } else {
+              const np = await ctx.db.get(target.entityId as Id<"npcs">);
+              if (np) {
+                const conds = [...np.conditions];
+                for (const condName of spell.conditions) {
+                  if (!conds.some(c => c.name === condName)) {
+                    conds.push({
+                      name: condName,
+                      ...(spell.concentration ? { duration: 10 } : { duration: 1 }),
+                      source: spell.id,
+                    });
+                  }
+                }
+                await ctx.db.patch(target.entityId as Id<"npcs">, { conditions: conds });
+              }
+            }
+          }
+        }
+
+        if (!hitResult && (spell.damage && (serverDamage || 0) > 0)) hitResult = true;
+
+      // --- Healing spells (cure_wounds) ---
+      } else if (spell.healing && args.action.targetIndex !== undefined) {
+        const target = combatants[args.action.targetIndex];
+        if (!target) throw new Error("Invalid target");
+
+        const diceMatch = spell.healing.dice.match(/^(\d+)d(\d+)/);
+        const diceCount = diceMatch ? parseInt(diceMatch[1]) : 1;
+        const diceSides = diceMatch ? diceMatch[2] : "8";
+        const result = parseDiceString(`${diceCount}d${diceSides}`);
+        const castingMod = Math.floor((castingAbilityScore - 10) / 2);
+        const healAmount = result.total + castingMod;
+        serverDamage = -healAmount; // negative = healing
+
+        if (target.entityType === "character") {
+          const ch = await ctx.db.get(target.entityId as Id<"characters">);
+          if (ch) {
+            const derivedStats = await getEffectiveStats(ctx, target.entityId as Id<"characters">);
+            const newHp = Math.min(derivedStats.effectiveMaxHp, ch.hp + healAmount);
+            const patch: Record<string, unknown> = { hp: newHp };
+            // Remove unconscious if healed from 0
+            if (ch.hp === 0 && newHp > 0) {
+              patch.conditions = ch.conditions.filter(c => c.name !== "unconscious");
+              patch.deathSaves = { successes: 0, failures: 0 };
+            }
+            await ctx.db.patch(target.entityId as Id<"characters">, patch);
+          }
+        }
+        hitResult = true;
+
+      // --- Auto-hit spells (magic_missile: 3 darts, 1d4+1 each) ---
+      } else if (spell.id === "magic_missile" && args.action.targetIndex !== undefined) {
+        const target = combatants[args.action.targetIndex];
+        if (!target) throw new Error("Invalid target");
+
+        const numDarts = 3; // 3 at level 1, +1 per slot above 1st
+        let totalDmg = 0;
+        for (let d = 0; d < numDarts; d++) {
+          const dart = parseDiceString("1d4+1");
+          totalDmg += dart.total;
+        }
+        serverDamage = totalDmg;
+
+        if (target.entityType === "character") {
+          const ch = await ctx.db.get(target.entityId as Id<"characters">);
+          if (ch) {
+            let rem = totalDmg;
+            let tp = ch.tempHp;
+            if (tp > 0) { const a = Math.min(tp, rem); tp -= a; rem -= a; }
+            const newHp = Math.max(0, ch.hp - rem);
+            const patch: Record<string, unknown> = { hp: newHp, tempHp: tp };
+            if (newHp === 0 && ch.hp > 0) {
+              const conds = [...ch.conditions];
+              if (!conds.some(c => c.name === "unconscious")) conds.push({ name: "unconscious" });
+              patch.conditions = conds;
+              patch.deathSaves = { successes: 0, failures: 0 };
+            }
+            if (ch.concentration && rem > 0) {
+              const dc = concentrationSaveDC(rem);
+              const mod = Math.floor((ch.abilities.constitution - 10) / 2);
+              if (Math.floor(Math.random() * 20) + 1 + mod + ch.proficiencyBonus < dc) {
+                patch.concentration = undefined;
+              }
+            }
+            await ctx.db.patch(target.entityId as Id<"characters">, patch);
+          }
+        } else {
+          const np = await ctx.db.get(target.entityId as Id<"npcs">);
+          if (np) {
+            const newHp = Math.max(0, np.hp - totalDmg);
+            await ctx.db.patch(target.entityId as Id<"npcs">, { hp: newHp, isAlive: newHp > 0 });
+          }
+        }
+        hitResult = true;
+      }
+      // Utility spells (shield, misty_step, haste, etc.) just consume the slot — effects tracked via concentration or conditions
+
+      // Set concentration for concentration spells
+      if (spell.concentration) {
+        const concTarget = args.action.targetIndex !== undefined ? combatants[args.action.targetIndex]?.entityId : undefined;
+        await ctx.db.patch(current.entityId as Id<"characters">, {
+          concentration: { spellId: spell.id, ...(concTarget ? { targetId: concTarget } : {}) },
+        });
+      }
     }
 
-    // Handle special actions
+    // ========== HANDLE ACTION TYPE → CONSUME RESOURCES ==========
     if (args.action.type === "dash") {
       combatants[currentIndex] = {
         ...current,
@@ -588,7 +954,7 @@ export const executeAction = mutation({
         movementRemaining: current.movementRemaining * 2,
       };
     } else if (args.action.type === "dodge") {
-      // Apply dodging condition (attackers have disadvantage)
+      // Apply dodging condition (now mechanically recognized — gives attackedDisadvantage)
       if (current.entityType === "character") {
         const char = await ctx.db.get(current.entityId as Id<"characters">);
         if (char) {
@@ -597,21 +963,58 @@ export const executeAction = mutation({
           await ctx.db.patch(current.entityId as Id<"characters">, { conditions });
         }
       }
-      combatants[currentIndex] = {
-        ...current,
-        hasAction: false,
-      };
+      combatants[currentIndex] = { ...current, hasAction: false };
     } else if (args.action.type === "disengage") {
-      // Disengage: prevent opportunity attacks this turn (tracked via flag)
-      combatants[currentIndex] = {
-        ...current,
-        hasAction: false,
-      };
+      combatants[currentIndex] = { ...current, hasAction: false };
+
+    // --- Bonus Actions ---
+    } else if (args.action.type === "second_wind") {
+      // Fighter: 1d10 + level HP, consumes bonus action + resource
+      if (current.entityType !== "character") throw new Error("Only characters can use Second Wind");
+      const char = await ctx.db.get(current.entityId as Id<"characters">);
+      if (!char) throw new Error("Character not found");
+      const swResource = char.classResources?.secondWind;
+      if (!swResource || swResource.current <= 0) throw new Error("No Second Wind uses remaining");
+
+      const healRoll = parseDiceString("1d10");
+      const healAmount = healRoll.total + char.level;
+      const derivedStats = await getEffectiveStats(ctx, current.entityId as Id<"characters">);
+      const newHp = Math.min(derivedStats.effectiveMaxHp, char.hp + healAmount);
+      await ctx.db.patch(current.entityId as Id<"characters">, {
+        hp: newHp,
+        classResources: {
+          ...char.classResources,
+          secondWind: { max: swResource.max, current: swResource.current - 1 },
+        },
+      });
+      serverDamage = -healAmount;
+      hitResult = true;
+      combatants[currentIndex] = { ...current, hasBonusAction: false };
+
+    } else if (args.action.type === "action_surge") {
+      // Fighter: regain action this turn, consumes resource (not an action itself)
+      if (current.entityType !== "character") throw new Error("Only characters can use Action Surge");
+      const char = await ctx.db.get(current.entityId as Id<"characters">);
+      if (!char) throw new Error("Character not found");
+      const asResource = char.classResources?.actionSurge;
+      if (!asResource || asResource.current <= 0) throw new Error("No Action Surge uses remaining");
+
+      await ctx.db.patch(current.entityId as Id<"characters">, {
+        classResources: {
+          ...char.classResources,
+          actionSurge: { max: asResource.max, current: asResource.current - 1 },
+        },
+      });
+      // Restore the action (already consumed or not — just grant a fresh one)
+      combatants[currentIndex] = { ...current, hasAction: true };
+      hitResult = true;
+
+    } else if (args.action.type === "spell" && getSpellById(args.action.spellId || "")?.castingTime === "bonus_action") {
+      // Bonus action spell (misty_step, etc.) — already resolved above, just consume bonus action
+      combatants[currentIndex] = { ...current, hasBonusAction: false };
     } else {
-      combatants[currentIndex] = {
-        ...current,
-        hasAction: false,
-      };
+      // Default: consume standard action
+      combatants[currentIndex] = { ...current, hasAction: false };
     }
 
     await ctx.db.patch(args.sessionId, {
