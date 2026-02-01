@@ -465,6 +465,7 @@ export const executeAction = mutation({
           const targetCell = location.gridData.cells.find(
             c => c.x === target.position.x && c.y === target.position.y
           );
+          if (targetCell?.cover === "full") throw new Error("Target has full cover and cannot be targeted");
           if (targetCell?.cover === "half") targetAc += 2;
           else if (targetCell?.cover === "three-quarters") targetAc += 5;
         }
