@@ -168,9 +168,31 @@ export const getAvailableActions = query({
       }
     }
 
-    // Bonus actions (simplified - would be based on class features)
+    // Bonus actions based on class features
     if (combatant.hasBonusAction) {
-      bonusActions.push("offhand_attack", "bonus_spell");
+      bonusActions.push("offhand_attack");
+      if (combatant.entityType === "character") {
+        const char = await ctx.db.get(combatant.entityId as Id<"characters">);
+        if (char) {
+          const cls = (char.class || "").toLowerCase();
+          if ((cls === "fighter" || cls === "warrior") && char.classResources?.secondWind?.current) {
+            bonusActions.push("second_wind");
+          }
+          // Bonus action spells (misty_step, etc.)
+          bonusActions.push("bonus_spell");
+        }
+      }
+    }
+
+    // Action Surge (free action, not bonus)
+    if (combatant.entityType === "character") {
+      const char = await ctx.db.get(combatant.entityId as Id<"characters">);
+      if (char) {
+        const cls = (char.class || "").toLowerCase();
+        if ((cls === "fighter" || cls === "warrior") && char.classResources?.actionSurge?.current) {
+          actions.push("action_surge");
+        }
+      }
     }
 
     // Reactions
