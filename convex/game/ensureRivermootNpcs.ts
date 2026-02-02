@@ -40,11 +40,11 @@ export async function ensureRivermootNpcs(
     }
   }
 
-  // 3. Insert all 18 NPCs
+  // 3. Insert all 18 NPCs and seed their skills / techniques / teaching
   for (const template of RIVERMOOT_NPCS) {
     const currentLocationId = locationByTemplate.get(template.locationTemplateId);
 
-    await ctx.db.insert("npcs", {
+    const npcId = await ctx.db.insert("npcs", {
       campaignId,
       templateId: template.templateId,
       name: template.name,
@@ -67,5 +67,52 @@ export async function ensureRivermootNpcs(
       // autoCreated is NOT set — these are campaign-defined NPCs
       // firstMetAt is NOT set — they exist but haven't been "met" yet
     });
+
+    // 4. Seed skills, techniques, and teaching availability for this NPC
+    const assignments = RIVERMOOT_NPC_SKILLS[template.templateId];
+    if (!assignments) continue;
+
+    for (const assignment of assignments) {
+      // Insert entitySkill record
+      await ctx.db.insert("entitySkills", {
+        entityId: npcId,
+        entityType: "npc",
+        campaignId,
+        skillId: assignment.skillId,
+        currentTier: assignment.tier,
+        ceiling: assignment.tier,
+        practiceXp: 0,
+        xpToNextTier: XP_THRESHOLDS[assignment.tier] ?? 0,
+      });
+
+      // Insert entityTechnique records and teachingAvailability for teachable ones
+      for (const techniqueId of assignment.techniques) {
+        const techniqueDef = getTechniqueById(techniqueId);
+
+        await ctx.db.insert("entityTechniques", {
+          entityId: npcId,
+          entityType: "npc",
+          campaignId,
+          techniqueId,
+          skillId: assignment.skillId,
+          timesUsed: 0,
+          lastUsedAt: 0,
+          usesToday: 0,
+          lastDayReset: 0,
+        });
+
+        // Only create teachingAvailability for techniques marked teachable
+        if (techniqueDef?.teachable) {
+          await ctx.db.insert("teachingAvailability", {
+            npcId,
+            campaignId,
+            techniqueId,
+            skillId: assignment.skillId,
+            trustRequired: 40,
+            ceilingGrant: assignment.tier,
+          });
+        }
+      }
+    }
   }
 }
