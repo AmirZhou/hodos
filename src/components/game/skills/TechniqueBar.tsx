@@ -5,7 +5,7 @@ import { useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
-import { Zap, Clock } from "lucide-react";
+import { Zap, Clock, Loader2 } from "lucide-react";
 import { getTechniqueById } from "../../../../convex/data/techniqueCatalog";
 import type { TechniqueContext } from "../../../../convex/data/techniqueCatalog";
 
