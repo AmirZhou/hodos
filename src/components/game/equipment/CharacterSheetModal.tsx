@@ -105,7 +105,7 @@ export function CharacterSheetModal({ characterId, onClose }: CharacterSheetModa
                   : "text-[var(--foreground-secondary)] hover:text-[var(--foreground)]"
               }`}
             >
-              {t === "sheet" ? "Character Sheet" : t}
+              {t === "sheet" ? "Character Sheet" : t === "skills" ? "Skills" : t}
             </button>
           ))}
         </div>
