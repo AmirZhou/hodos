@@ -11,7 +11,10 @@ import { SceneActionMenu } from "./SceneActionMenu";
 import { AftercareView } from "./AftercareView";
 import { SafewordButton } from "./SafewordButton";
 import { TechniqueBar } from "../skills/TechniqueBar";
+import { TechniqueResultToast } from "../skills/TechniqueResultToast";
+import { getTechniqueById } from "../../../../convex/data/techniqueCatalog";
 import { useGame } from "@/components/game/engine";
+import { AlertTriangle } from "lucide-react";
 
 interface SceneViewProps {
   sessionId: Id<"gameSessions">;
