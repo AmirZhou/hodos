@@ -206,6 +206,10 @@ export function CharacterSheetModal({ characterId, onClose }: CharacterSheetModa
               )}
             </div>
           )}
+
+          {tab === "skills" && (
+            <SkillPanel characterId={characterId} campaignId={campaignId} />
+          )}
         </div>
       </div>
     </div>
