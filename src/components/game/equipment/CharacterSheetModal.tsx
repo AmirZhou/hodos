@@ -7,6 +7,7 @@ import { Id } from "../../../../convex/_generated/dataModel";
 import { X, Shield, Zap, Target, Heart } from "lucide-react";
 import { useGame } from "@/components/game/engine";
 import { InventoryModal } from "./InventoryModal";
+import { SkillPanel } from "../skills/SkillPanel";
 
 type Tab = "sheet" | "inventory" | "relationships";
 
