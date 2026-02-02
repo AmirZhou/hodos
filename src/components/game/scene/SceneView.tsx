@@ -19,6 +19,8 @@ interface SceneViewProps {
 }
 
 export function SceneView({ sessionId, currentCharacterId }: SceneViewProps) {
+  const { campaignId } = useGame();
+
   // Queries
   const sceneState = useQuery(api.game.scene.getSceneState, { sessionId });
 
