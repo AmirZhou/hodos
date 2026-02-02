@@ -9,6 +9,8 @@ import { InitiativeTracker } from "./InitiativeTracker";
 import { ActionBar } from "./ActionBar";
 import { TechniqueBar } from "../skills/TechniqueBar";
 import { useGame } from "@/components/game/engine";
+import { TechniqueResultToast } from "../skills/TechniqueResultToast";
+import { getTechniqueById } from "../../../../convex/data/techniqueCatalog";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
 
