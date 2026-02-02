@@ -9,6 +9,7 @@ import { CombatView } from "@/components/game/combat";
 import { SceneView } from "@/components/game/scene";
 import { MovementLogEntry } from "@/components/game/exploration/MovementLogEntry";
 import { RollPrompt } from "@/components/game/dice";
+import { TechniqueBar } from "@/components/game/skills/TechniqueBar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
