@@ -284,6 +284,31 @@ export function SceneView({ sessionId, currentCharacterId }: SceneViewProps) {
         variant="floating"
         onSafeword={handleSafeword}
       />
+
+      {/* Technique result toast */}
+      {techniqueResult && (
+        <TechniqueResultToast
+          techniqueName={techniqueResult.techniqueName}
+          potency={techniqueResult.potency}
+          narration={techniqueResult.narration}
+          xpAwarded={techniqueResult.xpAwarded}
+          onDismiss={() => setTechniqueResult(null)}
+        />
+      )}
+
+      {/* Technique error toast */}
+      {techniqueError && (
+        <div
+          className="fixed bottom-6 right-6 z-50 max-w-sm w-full rounded-lg bg-[var(--accent-red)]/15 border border-[var(--accent-red)]/30 px-4 py-3 cursor-pointer"
+          onClick={() => setTechniqueError(null)}
+          role="alert"
+        >
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 shrink-0 text-[var(--accent-red)]" />
+            <p className="text-sm text-[var(--accent-red)]">{techniqueError}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
