@@ -374,11 +374,25 @@ export const activateTechnique = action({
       context,
     });
 
+    // 13. Get AI narration for the activation
+    let narration: string | undefined;
+    try {
+      const narrationResult = await ctx.runAction(
+        api.ai.dm.narrateTechniqueOutcome,
+        { techniqueSummary: summary },
+      );
+      narration = narrationResult?.response?.narration;
+    } catch {
+      // Narration is non-critical — technique still resolved successfully
+      narration = undefined;
+    }
+
     return {
       potency,
       effectsApplied,
       xpAwarded: xp,
       summary,
+      narration,
     };
   },
 });
