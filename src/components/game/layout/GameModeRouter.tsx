@@ -238,6 +238,30 @@ function ExplorationView({
         </div>
       </div>
 
+      {/* Technique Bar */}
+      {currentCharacter?._id && campaignId && (
+        <div className="border-t border-[var(--border)] bg-[var(--background-secondary)] px-4 pt-3 pb-1">
+          <div className="mx-auto max-w-3xl">
+            <TechniqueBar
+              characterId={currentCharacter._id}
+              campaignId={campaignId}
+              context="exploration"
+              onActivate={handleTechniqueActivate}
+            />
+            {activatingTechnique && (
+              <p className="text-xs text-[var(--foreground-muted)] text-center mt-1">
+                Activating technique...
+              </p>
+            )}
+            {techniqueError && (
+              <p className="text-xs text-[var(--accent-red)] text-center mt-1">
+                {techniqueError}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Input Area */}
       <div className="border-t border-[var(--border)] bg-[var(--background-secondary)] p-4">
         <div className="mx-auto max-w-3xl">
