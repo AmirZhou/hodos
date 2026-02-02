@@ -142,8 +142,8 @@ describe("calculateActorPower edge cases", () => {
 
 describe("calculateTargetResistance edge cases", () => {
   it("counterTier 0 with low ability (score 1)", () => {
-    // 0 * 3 = 0, abilityModifier(1) = -4 → -4
-    expect(calculateTargetResistance(0, 1)).toBe(-4);
+    // 0 * 3 = 0, abilityModifier(1) = Math.floor((1-10)/2) = -5 → -5
+    expect(calculateTargetResistance(0, 1)).toBe(-5);
   });
   it("counterTier 8 with high ability (score 20)", () => {
     // 8 * 3 = 24, abilityModifier(20) = +5 → 29
