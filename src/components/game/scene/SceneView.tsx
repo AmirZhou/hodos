@@ -23,6 +23,22 @@ interface SceneViewProps {
 
 export function SceneView({ sessionId, currentCharacterId }: SceneViewProps) {
   const { campaignId } = useGame();
+  const [techniqueResult, setTechniqueResult] = useState<{
+    techniqueName: string;
+    potency: string;
+    narration?: string;
+    xpAwarded: number;
+  } | null>(null);
+  const [activatingTechnique, setActivatingTechnique] = useState<string | null>(null);
+  const [techniqueError, setTechniqueError] = useState<string | null>(null);
+
+  // Auto-clear technique error after 4 seconds
+  useEffect(() => {
+    if (techniqueError) {
+      const timer = setTimeout(() => setTechniqueError(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [techniqueError]);
 
   // Queries
   const sceneState = useQuery(api.game.scene.getSceneState, { sessionId });
