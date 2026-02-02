@@ -126,9 +126,9 @@ describe("calculateXpAward", () => {
 // ===========================================================================
 
 describe("calculateActorPower edge cases", () => {
-  it("negative ability modifier (score 1 → modifier -4)", () => {
-    // tier 0 * 3 = 0, abilityModifier(1) = Math.floor((1-10)/2) = -4, rollBonus 0 → -4
-    expect(calculateActorPower(0, 1, 0)).toBe(-4);
+  it("negative ability modifier (score 1 → modifier -5)", () => {
+    // tier 0 * 3 = 0, abilityModifier(1) = Math.floor((1-10)/2) = Math.floor(-4.5) = -5, rollBonus 0 → -5
+    expect(calculateActorPower(0, 1, 0)).toBe(-5);
   });
   it("very high tier 8 with abilityScore 20 and rollBonus 5", () => {
     // tier 8 * 3 = 24, abilityModifier(20) = +5, rollBonus 5 → 34
