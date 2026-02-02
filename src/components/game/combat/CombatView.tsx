@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
 import { CombatGrid } from "./CombatGrid";
 import { InitiativeTracker } from "./InitiativeTracker";
 import { ActionBar } from "./ActionBar";
+import { TechniqueBar } from "../skills/TechniqueBar";
+import { useGame } from "@/components/game/engine";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
 
