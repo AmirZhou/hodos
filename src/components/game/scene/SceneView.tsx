@@ -206,6 +206,16 @@ export function SceneView({ sessionId, currentCharacterId }: SceneViewProps) {
           />
         </div>
 
+        {/* Technique bar */}
+        {currentCharacterId && campaignId && (
+          <TechniqueBar
+            characterId={currentCharacterId}
+            campaignId={campaignId}
+            context="scene"
+            onActivate={handleTechniqueActivate}
+          />
+        )}
+
         {/* Action menu */}
         {availableActions && currentParticipant && (
           <SceneActionMenu
