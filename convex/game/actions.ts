@@ -105,13 +105,14 @@ async function executeAction(
     characterId,
   }) as Doc<"relationships">[];
 
-  // Build NPC context with relationships
-  const npcContext = npcs.map((npc: Doc<"npcs">) => {
+  // Build NPC context filtered by location and relationship
+  const buildNpcEntry = (npc: Doc<"npcs">, location: "here" | "elsewhere") => {
     const rel = relationships.find((r: Doc<"relationships">) => r.npcId === npc._id);
     return {
       name: npc.name,
       description: npc.description,
       personality: npc.personality,
+      location,
       relationshipWithPlayer: rel
         ? {
             affinity: rel.affinity,
@@ -120,7 +121,25 @@ async function executeAction(
           }
         : undefined,
     };
-  });
+  };
+
+  // NPCs physically at the current location (can be introduced)
+  const npcsAtLocation = npcs
+    .filter((npc: Doc<"npcs">) =>
+      npc.isAlive && session?.locationId && npc.currentLocationId === session.locationId
+    )
+    .map((npc: Doc<"npcs">) => buildNpcEntry(npc, "here"));
+
+  // Known NPCs elsewhere (have a relationship but not at this location)
+  const knownNpcsElsewhere = npcs
+    .filter((npc: Doc<"npcs">) => {
+      if (!npc.isAlive) return false;
+      if (session?.locationId && npc.currentLocationId === session.locationId) return false;
+      return relationships.some((r: Doc<"relationships">) => r.npcId === npc._id);
+    })
+    .map((npc: Doc<"npcs">) => buildNpcEntry(npc, "elsewhere"));
+
+  const npcContext = [...npcsAtLocation, ...knownNpcsElsewhere];
 
   // 5b. Get equipped items and inventory count for DM context
   const equippedSlotMap = await ctx.runQuery(api.equipment.getEquipment, {
