@@ -67,20 +67,21 @@ export function TechniqueBar({
           // Simple cooldown check: if cooldown > 0 and usesToday >= 1,
           // the technique is "on cooldown" for display purposes
           const isOnCooldown = def.cooldown > 0 && entity.usesToday >= def.cooldown;
+          const isActivating = activatingTechniqueId === def.id;
 
           return (
             <button
               key={def.id}
               onClick={() => {
-                if (!isOnCooldown) {
+                if (!isOnCooldown && !isActivating) {
                   onActivate(def.id);
                 }
               }}
-              disabled={isOnCooldown}
+              disabled={isOnCooldown || isActivating}
               className={cn(
                 "flex-shrink-0 flex flex-col items-center justify-center gap-1",
                 "w-20 h-16 rounded-lg border transition-colors text-center",
-                isOnCooldown
+                isOnCooldown || isActivating
                   ? "border-[var(--border)] bg-[var(--background-secondary)] opacity-50 cursor-not-allowed"
                   : "border-[var(--border)] bg-[var(--background-secondary)] hover:border-[var(--accent-gold)]/50 hover:bg-[var(--card)] cursor-pointer",
               )}
@@ -93,6 +94,13 @@ export function TechniqueBar({
                   </span>
                   <span className="text-[9px] text-[var(--accent-red)]">
                     CD: {def.cooldown}
+                  </span>
+                </>
+              ) : isActivating ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 text-[var(--accent-gold)] animate-spin" />
+                  <span className="text-[10px] text-[var(--foreground-muted)] leading-tight px-1 truncate max-w-full">
+                    {def.name}
                   </span>
                 </>
               ) : (
