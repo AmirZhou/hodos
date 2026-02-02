@@ -95,7 +95,7 @@ export function CharacterSheetModal({ characterId, onClose }: CharacterSheetModa
 
         {/* Tabs */}
         <div className="flex border-b border-[var(--border)]">
-          {(["sheet", "inventory", "relationships"] as Tab[]).map((t) => (
+          {(["sheet", "inventory", "relationships", "skills"] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
