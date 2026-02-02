@@ -377,10 +377,10 @@ export const activateTechnique = action({
     // 13. Get AI narration for the activation
     let narration: string | undefined;
     try {
-      const narrationResult = await ctx.runAction(
+      const narrationResult = (await ctx.runAction(
         api.ai.dm.narrateTechniqueOutcome,
         { techniqueSummary: summary },
-      );
+      )) as { response: { narration?: string }; usage: unknown; provider: string; model: string; latencyMs: number };
       narration = narrationResult?.response?.narration;
     } catch {
       // Narration is non-critical — technique still resolved successfully
