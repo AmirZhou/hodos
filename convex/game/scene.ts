@@ -294,6 +294,11 @@ export const performSceneAction = mutation({
     targetIndex: v.optional(v.number()),
     description: v.optional(v.string()),
     intensityDelta: v.optional(v.number()),
+    techniqueEffects: v.optional(v.object({
+      intensityChange: v.optional(v.number()),
+      comfortImpact: v.optional(v.number()),
+      moodShift: v.optional(v.string()),
+    })),
   },
   handler: async (ctx, args) => {
     const session = await ctx.db.get(args.sessionId);
@@ -346,25 +351,35 @@ export const performSceneAction = mutation({
     }
 
     // Calculate intensity change based on action
-    let intensityChange = args.intensityDelta ?? 0;
-    if (intensityChange === 0) {
-      // Default intensity changes based on action type
-      const intensityMap: Record<string, number> = {
-        tease: 5,
-        verbal: 3,
-        restrain: 8,
-        sensation: 7,
-        impact: 10,
-        service: 4,
-        worship: 6,
-        edge: 12,
-        deny: 8,
-        reward: -5,
-        check_in: -2,
-        aftercare: -15,
-        other: 0,
-      };
-      intensityChange = intensityMap[args.actionType] ?? 0;
+    let intensityChange: number;
+    let techniqueComfortDelta: number | undefined;
+
+    // If technique effects provided, use those instead of hardcoded map
+    if (args.techniqueEffects) {
+      intensityChange = args.techniqueEffects.intensityChange ?? 0;
+      techniqueComfortDelta = args.techniqueEffects.comfortImpact;
+      // moodShift can be used for narration context (applied in mood update below)
+    } else {
+      intensityChange = args.intensityDelta ?? 0;
+      if (intensityChange === 0) {
+        // Default intensity changes based on action type
+        const intensityMap: Record<string, number> = {
+          tease: 5,
+          verbal: 3,
+          restrain: 8,
+          sensation: 7,
+          impact: 10,
+          service: 4,
+          worship: 6,
+          edge: 12,
+          deny: 8,
+          reward: -5,
+          check_in: -2,
+          aftercare: -15,
+          other: 0,
+        };
+        intensityChange = intensityMap[args.actionType] ?? 0;
+      }
     }
 
     const newIntensity = Math.max(0, Math.min(100, scene.intensity + intensityChange));
@@ -374,8 +389,10 @@ export const performSceneAction = mutation({
     if (args.targetIndex !== undefined) {
       const target = participants[args.targetIndex];
       if (target) {
-        // Higher intensity actions can reduce comfort
-        const comfortDelta = intensityChange > 5 ? -Math.floor(intensityChange / 2) : 0;
+        // Use technique-provided comfort impact, or default heuristic
+        const comfortDelta = techniqueComfortDelta !== undefined
+          ? techniqueComfortDelta
+          : (intensityChange > 5 ? -Math.floor(intensityChange / 2) : 0);
         const newComfort = Math.max(0, Math.min(100, target.currentComfort + comfortDelta));
         participants[args.targetIndex] = {
           ...target,
@@ -406,13 +423,17 @@ export const performSceneAction = mutation({
     // Determine if a comfort check-in is needed
     const comfortCheckIn = participants.some((p) => p.currentComfort < 40);
 
-    // Update mood based on intensity level
+    // Update mood based on intensity level, or use technique moodShift if provided
     let mood = scene.mood;
-    if (newIntensity < 20) mood = "anticipation";
-    else if (newIntensity < 40) mood = "warming";
-    else if (newIntensity < 60) mood = "building";
-    else if (newIntensity < 80) mood = "intense";
-    else mood = "peak";
+    if (args.techniqueEffects?.moodShift) {
+      mood = args.techniqueEffects.moodShift;
+    } else {
+      if (newIntensity < 20) mood = "anticipation";
+      else if (newIntensity < 40) mood = "warming";
+      else if (newIntensity < 60) mood = "building";
+      else if (newIntensity < 80) mood = "intense";
+      else mood = "peak";
+    }
 
     // Move to next actor
     const nextActorIndex = (args.actorIndex + 1) % participants.length;
