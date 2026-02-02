@@ -127,7 +127,7 @@ export function calculateEffects<C extends TechniqueContext>(
 
   for (const [key, value] of Object.entries(contextEffects)) {
     if (typeof value === "number") {
-      result[key] = Math.trunc(value * multiplier);
+      result[key] = multiplier === 0 ? 0 : Math.trunc(value * multiplier);
     } else if (typeof value === "boolean") {
       result[key] = isNullified ? false : value;
     } else if (typeof value === "string") {

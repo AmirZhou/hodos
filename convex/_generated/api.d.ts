@@ -61,6 +61,7 @@ import type * as lib_rateLimit from "../lib/rateLimit.js";
 import type * as lib_spells from "../lib/spells.js";
 import type * as lib_statHelpers from "../lib/statHelpers.js";
 import type * as lib_stats from "../lib/stats.js";
+import type * as lib_techniqueResolution from "../lib/techniqueResolution.js";
 import type * as lib_validation from "../lib/validation.js";
 import type * as npcMemories from "../npcMemories.js";
 import type * as npcs from "../npcs.js";
@@ -128,6 +129,7 @@ declare const fullApi: ApiFromModules<{
   "lib/spells": typeof lib_spells;
   "lib/statHelpers": typeof lib_statHelpers;
   "lib/stats": typeof lib_stats;
+  "lib/techniqueResolution": typeof lib_techniqueResolution;
   "lib/validation": typeof lib_validation;
   npcMemories: typeof npcMemories;
   npcs: typeof npcs;
