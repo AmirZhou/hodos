@@ -10,6 +10,15 @@ import { parseDiceString } from "../lib/validation";
 import { getExtraAttacks, getSneakAttackDice, getRageDamageBonus } from "../lib/classFeatures";
 import { hasSpellSlot, getCastingAbility, getSpellSaveDC, getSpellAttackBonus, getCantripDiceCount } from "../lib/spells";
 import { getSpellById } from "../data/spellData";
+import { getTechniqueById } from "../data/techniqueCatalog";
+import { getSkillById } from "../data/skillCatalog";
+import {
+  calculateActorPower,
+  calculateTargetResistance,
+  determinePotency,
+  calculateEffects,
+  calculateXpAward,
+} from "../lib/techniqueResolution";
 import { logAudit } from "../lib/auditLog";
 
 // Default turn timeout: 2 minutes
@@ -26,6 +35,7 @@ const combatantInput = v.object({
 const actionType = v.union(
   v.literal("attack"),
   v.literal("spell"),
+  v.literal("technique"),
   v.literal("dodge"),
   v.literal("disengage"),
   v.literal("dash"),
@@ -44,6 +54,7 @@ const combatAction = v.object({
   targetPosition: v.optional(v.object({ x: v.number(), y: v.number() })),
   weaponId: v.optional(v.string()),
   spellId: v.optional(v.string()),
+  techniqueId: v.optional(v.string()),
   itemId: v.optional(v.string()),
   roll: v.optional(v.number()),
   damage: v.optional(v.number()),
@@ -165,7 +176,7 @@ export const getAvailableActions = query({
 
     // Standard actions available if hasAction is true
     if (combatant.hasAction) {
-      actions.push("attack", "dodge", "disengage", "dash", "help", "hide", "ready", "use_item");
+      actions.push("attack", "technique", "dodge", "disengage", "dash", "help", "hide", "ready", "use_item");
 
       // Check for spells if character
       if (combatant.entityType === "character") {
@@ -1116,6 +1127,288 @@ export const executeAction = mutation({
       }
     }
 
+    // ========== TECHNIQUE RESOLUTION (deterministic) ==========
+    if (args.action.type === "technique" && args.action.techniqueId) {
+      const technique = getTechniqueById(args.action.techniqueId);
+      if (!technique) throw new Error("Unknown technique: " + args.action.techniqueId);
+
+      if (!technique.contexts.includes("combat")) {
+        throw new Error("Technique cannot be used in combat: " + args.action.techniqueId);
+      }
+
+      const combatEffects = technique.effects.combat;
+      if (!combatEffects) throw new Error("Technique has no combat effects: " + args.action.techniqueId);
+
+      // Look up the skill definition for ability references
+      const skill = getSkillById(technique.skillId);
+      if (!skill) throw new Error("Unknown skill for technique: " + technique.skillId);
+
+      // Get actor's ability score and skill tier
+      let actorAbilityScore = 10;
+      let actorTier = 0;
+      let actorEntityType = current.entityType;
+      let isFirstUse = false;
+      let usesToday = 0;
+
+      if (current.entityType === "character") {
+        const char = await ctx.db.get(current.entityId as Id<"characters">);
+        if (char) {
+          actorAbilityScore = char.abilities[skill.baseAbility as keyof typeof char.abilities];
+        }
+      } else {
+        const npc = await ctx.db.get(current.entityId as Id<"npcs">);
+        if (npc) {
+          actorAbilityScore = npc.abilities[skill.baseAbility as keyof typeof npc.abilities] ?? 10;
+        }
+      }
+
+      // Look up actor's skill record
+      const actorSkillRecord = await ctx.db
+        .query("entitySkills")
+        .withIndex("by_campaign_entity", (q) =>
+          q
+            .eq("campaignId", session.campaignId)
+            .eq("entityId", current.entityId)
+            .eq("entityType", actorEntityType),
+        )
+        .filter((q) => q.eq(q.field("skillId"), technique.skillId))
+        .first();
+      if (actorSkillRecord) {
+        actorTier = actorSkillRecord.currentTier;
+      }
+
+      // Look up actor's entity technique record (for usage tracking)
+      const actorTechniqueRecord = await ctx.db
+        .query("entityTechniques")
+        .withIndex("by_entity_technique", (q) =>
+          q
+            .eq("entityId", current.entityId)
+            .eq("entityType", actorEntityType)
+            .eq("techniqueId", args.action.techniqueId!),
+        )
+        .first();
+      if (actorTechniqueRecord) {
+        isFirstUse = actorTechniqueRecord.timesUsed === 0;
+        usesToday = actorTechniqueRecord.usesToday;
+      }
+
+      // Calculate actor power
+      const actorPower = calculateActorPower(actorTier, actorAbilityScore, technique.rollBonus);
+
+      // Get target info (if targeted technique)
+      let targetResistance = 0;
+      let targetTier = 0;
+      const hasTarget = args.action.targetIndex !== undefined;
+      const target = hasTarget ? combatants[args.action.targetIndex!] : undefined;
+
+      if (target) {
+        let counterAbilityScore = 10;
+
+        if (target.entityType === "character") {
+          const targetChar = await ctx.db.get(target.entityId as Id<"characters">);
+          if (targetChar) {
+            counterAbilityScore = targetChar.abilities[skill.counterAbility as keyof typeof targetChar.abilities];
+          }
+        } else {
+          const targetNpc = await ctx.db.get(target.entityId as Id<"npcs">);
+          if (targetNpc) {
+            counterAbilityScore = targetNpc.abilities[skill.counterAbility as keyof typeof targetNpc.abilities] ?? 10;
+          }
+        }
+
+        // Look up target's counter-skill tier
+        const targetSkillRecord = await ctx.db
+          .query("entitySkills")
+          .withIndex("by_campaign_entity", (q) =>
+            q
+              .eq("campaignId", session.campaignId)
+              .eq("entityId", target.entityId)
+              .eq("entityType", target.entityType),
+          )
+          .filter((q) => q.eq(q.field("skillId"), technique.skillId))
+          .first();
+        if (targetSkillRecord) {
+          targetTier = targetSkillRecord.currentTier;
+        }
+
+        targetResistance = calculateTargetResistance(targetTier, counterAbilityScore);
+      }
+
+      // Determine potency
+      const potency = determinePotency(actorPower, targetResistance);
+
+      // Calculate scaled combat effects
+      const scaledEffects = calculateEffects(technique.effects, "combat", potency);
+
+      // Apply damage to target
+      if (scaledEffects.damage && scaledEffects.damage > 0 && target) {
+        const dmg = scaledEffects.damage;
+        serverDamage = (serverDamage || 0) + dmg;
+
+        if (target.entityType === "character") {
+          const ch = await ctx.db.get(target.entityId as Id<"characters">);
+          if (ch) {
+            let rem = dmg;
+            let tp = ch.tempHp;
+            if (tp > 0) { const a = Math.min(tp, rem); tp -= a; rem -= a; }
+            const newHp = Math.max(0, ch.hp - rem);
+            const patch: Record<string, unknown> = { hp: newHp, tempHp: tp };
+            if (newHp === 0 && ch.hp > 0) {
+              const conds = [...ch.conditions];
+              if (!conds.some(c => c.name === "unconscious")) conds.push({ name: "unconscious" });
+              patch.conditions = conds;
+              patch.deathSaves = { successes: 0, failures: 0 };
+            }
+            if (ch.concentration && rem > 0) {
+              const dc = concentrationSaveDC(rem);
+              const mod = Math.floor((ch.abilities.constitution - 10) / 2);
+              if (Math.floor(Math.random() * 20) + 1 + mod + ch.proficiencyBonus < dc) {
+                patch.concentration = undefined;
+              }
+            }
+            await ctx.db.patch(target.entityId as Id<"characters">, patch);
+          }
+        } else {
+          const np = await ctx.db.get(target.entityId as Id<"npcs">);
+          if (np) {
+            const newHp = Math.max(0, np.hp - dmg);
+            await ctx.db.patch(target.entityId as Id<"npcs">, { hp: newHp, isAlive: newHp > 0 });
+          }
+        }
+        hitResult = true;
+      }
+
+      // Apply healing to target (or self if no target)
+      if (scaledEffects.healing && scaledEffects.healing > 0) {
+        const healTarget = target || { entityId: current.entityId, entityType: current.entityType };
+        const healAmount = scaledEffects.healing;
+        serverDamage = (serverDamage || 0) - healAmount; // negative = healing
+
+        if (healTarget.entityType === "character") {
+          const ch = await ctx.db.get(healTarget.entityId as Id<"characters">);
+          if (ch) {
+            const derivedStats = await getEffectiveStats(ctx, healTarget.entityId as Id<"characters">);
+            const newHp = Math.min(derivedStats.effectiveMaxHp, ch.hp + healAmount);
+            const patch: Record<string, unknown> = { hp: newHp };
+            if (ch.hp === 0 && newHp > 0) {
+              patch.conditions = ch.conditions.filter(c => c.name !== "unconscious");
+              patch.deathSaves = { successes: 0, failures: 0 };
+            }
+            await ctx.db.patch(healTarget.entityId as Id<"characters">, patch);
+          }
+        }
+        hitResult = true;
+      }
+
+      // Apply temp HP to actor
+      if (scaledEffects.tempHp && scaledEffects.tempHp > 0) {
+        if (current.entityType === "character") {
+          const ch = await ctx.db.get(current.entityId as Id<"characters">);
+          if (ch) {
+            const newTempHp = Math.max(ch.tempHp, scaledEffects.tempHp);
+            await ctx.db.patch(current.entityId as Id<"characters">, { tempHp: newTempHp });
+          }
+        }
+      }
+
+      // Apply AC bonus (as a temporary condition on actor)
+      if (scaledEffects.acBonus && scaledEffects.acBonus > 0) {
+        if (current.entityType === "character") {
+          const ch = await ctx.db.get(current.entityId as Id<"characters">);
+          if (ch) {
+            const conds = [...ch.conditions];
+            if (!conds.some(c => c.name === "technique_ac_bonus")) {
+              conds.push({ name: "technique_ac_bonus", duration: 1, source: args.action.techniqueId! });
+            }
+            await ctx.db.patch(current.entityId as Id<"characters">, { conditions: conds });
+          }
+        }
+      }
+
+      // Apply condition to target
+      if (scaledEffects.condition && scaledEffects.condition !== "" && target) {
+        const condName = scaledEffects.condition;
+        if (target.entityType === "character") {
+          const ch = await ctx.db.get(target.entityId as Id<"characters">);
+          if (ch) {
+            const conds = [...ch.conditions];
+            if (!conds.some(c => c.name === condName)) {
+              conds.push({ name: condName, duration: 1, source: args.action.techniqueId! });
+            }
+            await ctx.db.patch(target.entityId as Id<"characters">, { conditions: conds });
+          }
+        } else {
+          const np = await ctx.db.get(target.entityId as Id<"npcs">);
+          if (np) {
+            const conds = [...np.conditions];
+            if (!conds.some(c => c.name === condName)) {
+              conds.push({ name: condName, duration: 1, source: args.action.techniqueId! });
+            }
+            await ctx.db.patch(target.entityId as Id<"npcs">, { conditions: conds });
+          }
+        }
+        hitResult = true;
+      }
+
+      // Record technique use and award XP
+      if (actorTechniqueRecord) {
+        let updatedUsesToday = actorTechniqueRecord.usesToday;
+        let updatedLastDayReset = actorTechniqueRecord.lastDayReset;
+        const currentDay = Math.floor(Date.now() / 86400000);
+        if (currentDay !== updatedLastDayReset) {
+          updatedUsesToday = 0;
+          updatedLastDayReset = currentDay;
+        }
+        updatedUsesToday += 1;
+
+        await ctx.db.patch(actorTechniqueRecord._id, {
+          timesUsed: actorTechniqueRecord.timesUsed + 1,
+          lastUsedAt: Date.now(),
+          usesToday: updatedUsesToday,
+          lastDayReset: updatedLastDayReset,
+        });
+
+        // Calculate and award XP
+        const xpAmount = calculateXpAward({
+          isFirstUse,
+          targetTierHigher: targetTier > actorTier,
+          potency,
+          usesToday: updatedUsesToday,
+          techniqueTier: technique.tierRequired,
+          actorTier,
+        });
+
+        if (xpAmount > 0 && actorSkillRecord) {
+          let { practiceXp, currentTier: skillTier, ceiling } = actorSkillRecord;
+          practiceXp += xpAmount;
+
+          // Auto tier-up loop
+          const XP_THRESHOLDS: Record<number, number> = {
+            0: 50, 1: 120, 2: 220, 3: 360, 4: 550, 5: 800, 6: 1100, 7: 1500,
+          };
+          while (
+            skillTier < 8 &&
+            skillTier < ceiling &&
+            XP_THRESHOLDS[skillTier] !== undefined &&
+            practiceXp >= XP_THRESHOLDS[skillTier]
+          ) {
+            practiceXp -= XP_THRESHOLDS[skillTier];
+            skillTier += 1;
+          }
+
+          const xpToNextTier = XP_THRESHOLDS[skillTier] ?? 0;
+          await ctx.db.patch(actorSkillRecord._id, {
+            practiceXp,
+            currentTier: skillTier,
+            xpToNextTier,
+          });
+        }
+      }
+
+      // Set serverRoll to actorPower for display purposes (no dice roll in technique)
+      serverRoll = actorPower;
+    }
+
     // ========== HANDLE ACTION TYPE → CONSUME RESOURCES ==========
     if (args.action.type === "dash") {
       // Cunning Action: rogues use bonus action for dash
@@ -1237,6 +1530,7 @@ export const executeAction = mutation({
       critical: isCrit,
       ...(attackResults.length > 1 ? { attacks: attackResults } : {}),
       ...(args.action.spellId ? { spellId: args.action.spellId } : {}),
+      ...(args.action.techniqueId ? { techniqueId: args.action.techniqueId } : {}),
     };
   },
 });
