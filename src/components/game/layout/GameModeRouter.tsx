@@ -86,9 +86,11 @@ function ExplorationView({
 }: {
   onNpcNameClick?: (npcId: Id<"npcs">) => void;
 }) {
-  const { gameState, currentCharacter, campaign } = useGame();
+  const { gameState, currentCharacter, campaign, campaignId } = useGame();
   const [input, setInput] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activatingTechnique, setActivatingTechnique] = useState(false);
+  const [techniqueError, setTechniqueError] = useState<string | null>(null);
   const logEndRef = useRef<HTMLDivElement>(null);
 
   const pendingRoll = gameState.session?.pendingRoll;
