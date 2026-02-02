@@ -194,6 +194,7 @@ export const processPlayerInput = action({
           name: v.string(),
           description: v.string(),
           personality: v.string(),
+          location: v.union(v.literal("here"), v.literal("elsewhere")),
           relationshipWithPlayer: v.optional(
             v.object({
               affinity: v.number(),
