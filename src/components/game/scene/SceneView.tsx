@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
 import { IntensityMeter } from "./IntensityMeter";
@@ -10,6 +10,8 @@ import { NegotiationPanel } from "./NegotiationPanel";
 import { SceneActionMenu } from "./SceneActionMenu";
 import { AftercareView } from "./AftercareView";
 import { SafewordButton } from "./SafewordButton";
+import { TechniqueBar } from "../skills/TechniqueBar";
+import { useGame } from "@/components/game/engine";
 
 interface SceneViewProps {
   sessionId: Id<"gameSessions">;
