@@ -292,53 +292,6 @@ export function TrainingPanel({
 }
 
 // ---------------------------------------------------------------------------
-// TrainingDialog — standalone modal wrapper around TrainingPanel
-// ---------------------------------------------------------------------------
-
-export function TrainingDialog({
-  npcId,
-  npcName,
-  characterId,
-  campaignId,
-  onClose,
-}: TrainingDialogProps) {
-  return (
-    <div
-      className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
-      onClick={onClose}
-    >
-      <div
-        className="w-full max-w-lg rounded-xl bg-[var(--card)] border border-[var(--border)] overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
-          <div className="flex items-center gap-2">
-            <GraduationCap className="h-5 w-5 text-[var(--accent-gold)]" />
-            <h2 className="font-bold text-lg text-[var(--foreground)]">
-              Train with {npcName}
-            </h2>
-          </div>
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <X className="h-5 w-5" />
-          </Button>
-        </div>
-
-        {/* Panel content */}
-        <div className="p-4 max-h-[60vh] overflow-y-auto">
-          <TrainingPanel
-            npcId={npcId}
-            npcName={npcName}
-            characterId={characterId}
-            campaignId={campaignId}
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Teaching Option Card
 // ---------------------------------------------------------------------------
 
