@@ -1,6 +1,9 @@
 import type { Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 import { RIVERMOOT_NPCS } from "../data/rivermootNpcs";
+import { RIVERMOOT_NPC_SKILLS } from "../data/rivermootNpcSkills";
+import { XP_THRESHOLDS } from "../data/skillCatalog";
+import { getTechniqueById } from "../data/techniqueCatalog";
 
 /**
  * Idempotent helper: ensures the 18 Rivermoot campaign NPCs exist.
