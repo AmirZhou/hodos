@@ -205,6 +205,16 @@ export function CombatView({
           onCombatantClick={handleCombatantClick}
         />
 
+        {/* Technique bar */}
+        {currentCharacterId && campaignId && (
+          <TechniqueBar
+            characterId={currentCharacterId}
+            campaignId={campaignId}
+            context="combat"
+            onActivate={handleTechniqueActivate}
+          />
+        )}
+
         {/* Action bar */}
         {currentCombatant && (
           <ActionBar
