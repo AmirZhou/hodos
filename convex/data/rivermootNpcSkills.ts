@@ -35,7 +35,7 @@ export const RIVERMOOT_NPC_SKILLS: Record<string, NpcSkillAssignment[]> = {
     { skillId: "martial_arts", tier: 6, techniques: ["swift_strike", "grapple_hold", "pressure_point"] },
     { skillId: "impact_technique", tier: 6, techniques: ["open_hand_strike", "flogging_rhythm", "precision_caning"] },
     { skillId: "domination", tier: 4, techniques: ["commanding_presence", "protocol_training"] },
-    { skillId: "edge_play", tier: 3, techniques: [] },
+    { skillId: "edge_play", tier: 5, techniques: ["breath_control", "knife_trace"] },
   ],
   "rivermoot-npc-faelen": [
     { skillId: "enchantment", tier: 6, techniques: ["charm_person", "mass_suggestion"] },
