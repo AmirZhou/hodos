@@ -41,6 +41,9 @@ export function SceneView({ sessionId, currentCharacterId }: SceneViewProps) {
       : "skip"
   );
 
+  // Actions
+  const activateTechnique = useAction(api.game.techniqueAction.activateTechnique);
+
   // Mutations
   const negotiateScene = useMutation(api.game.scene.negotiateScene);
   const performSceneAction = useMutation(api.game.scene.performSceneAction);
