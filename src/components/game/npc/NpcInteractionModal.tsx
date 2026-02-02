@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { X, MessageSquare, ShoppingBag, Info, Send, Loader2, GraduationCap } from "lucide-react";
 import { TrainingPanel } from "../skills/TrainingDialog";
 
-type Tab = "talk" | "trade" | "info";
+type Tab = "talk" | "trade" | "info" | "train";
 
 export function NpcInteractionModal({
   npcId,
