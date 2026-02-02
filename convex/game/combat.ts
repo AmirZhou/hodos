@@ -11,7 +11,8 @@ import { getExtraAttacks, getSneakAttackDice, getRageDamageBonus } from "../lib/
 import { hasSpellSlot, getCastingAbility, getSpellSaveDC, getSpellAttackBonus, getCantripDiceCount } from "../lib/spells";
 import { getSpellById } from "../data/spellData";
 import { getTechniqueById } from "../data/techniqueCatalog";
-import { getSkillById } from "../data/skillCatalog";
+import { getSkillById, XP_THRESHOLDS } from "../data/skillCatalog";
+import { canTierUp } from "../skills";
 import {
   calculateActorPower,
   calculateTargetResistance,
