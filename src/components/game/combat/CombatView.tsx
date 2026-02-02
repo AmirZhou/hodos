@@ -25,6 +25,7 @@ export function CombatView({
   gridWidth = 12,
   gridHeight = 8,
 }: CombatViewProps) {
+  const { campaignId } = useGame();
   const [selectedCombatantIndex, setSelectedCombatantIndex] = useState<number | null>(null);
   const [isMoving, setIsMoving] = useState(false);
 
