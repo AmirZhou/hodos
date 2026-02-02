@@ -243,6 +243,7 @@ export function SceneView({ sessionId, currentCharacterId }: SceneViewProps) {
             campaignId={campaignId}
             context="scene"
             onActivate={handleTechniqueActivate}
+            activatingTechniqueId={activatingTechnique ?? undefined}
           />
         )}
 
