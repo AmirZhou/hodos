@@ -39,6 +39,9 @@ export function CombatView({
   const endTurn = useMutation(api.game.combat.endTurn);
   const useSafeword = useMutation(api.game.combat.useSafeword);
 
+  // Actions
+  const activateTechnique = useAction(api.game.techniqueAction.activateTechnique);
+
   // Determine if it's the current user's turn
   const isMyTurn = useCallback(() => {
     if (!combatState || !currentCharacterId || currentTurn === null) return false;
