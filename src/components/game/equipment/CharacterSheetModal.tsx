@@ -28,7 +28,7 @@ interface CharacterSheetModalProps {
 }
 
 export function CharacterSheetModal({ characterId, onClose }: CharacterSheetModalProps) {
-  const { currentCharacter } = useGame();
+  const { currentCharacter, campaignId } = useGame();
   const [tab, setTab] = useState<Tab>("sheet");
   const [showInventoryModal, setShowInventoryModal] = useState(false);
 
