@@ -1217,6 +1217,72 @@ export const ALL_TECHNIQUES: TechniqueDefinition[] = [
     cooldown: 1,
     teachable: true,
   },
+
+  // ── SHIELD CRAFT (2 techniques) ─────────────────────────────────────────
+  {
+    id: "shield_bash",
+    name: "Shield Bash",
+    skillId: "shield_craft",
+    tierRequired: 0,
+    description: "Strike with shield to stun an opponent.",
+    contexts: ["combat"],
+    prerequisites: [],
+    effects: {
+      combat: { damage: 4, condition: "stunned" },
+    },
+    rollBonus: 0,
+    cooldown: 0,
+    teachable: true,
+  },
+  {
+    id: "shield_wall",
+    name: "Shield Wall",
+    skillId: "shield_craft",
+    tierRequired: 2,
+    description: "Defensive stance reducing incoming damage and improving armor.",
+    contexts: ["combat"],
+    prerequisites: ["shield_bash"],
+    effects: {
+      combat: { damageReduction: 8, acBonus: 3 },
+    },
+    rollBonus: 1,
+    cooldown: 0,
+    teachable: true,
+  },
+
+  // ── DIVINE MAGIC (2 techniques) ──────────────────────────────────────────
+  {
+    id: "holy_light",
+    name: "Holy Light",
+    skillId: "divine_magic",
+    tierRequired: 0,
+    description: "Radiant burst that damages undead and illuminates the area.",
+    contexts: ["combat", "scene"],
+    prerequisites: [],
+    effects: {
+      combat: { damage: 6, undeadBonus: 4 },
+      scene: { intensityChange: 5 },
+    },
+    rollBonus: 0,
+    cooldown: 0,
+    teachable: true,
+  },
+  {
+    id: "divine_ward",
+    name: "Divine Ward",
+    skillId: "divine_magic",
+    tierRequired: 2,
+    description: "Protective blessing that shields against dark magic and traps.",
+    contexts: ["combat", "exploration"],
+    prerequisites: ["holy_light"],
+    effects: {
+      combat: { damageReduction: 6, magicResist: 4 },
+      exploration: { trapResist: 5 },
+    },
+    rollBonus: 1,
+    cooldown: 0,
+    teachable: true,
+  },
 ];
 
 // ---------------------------------------------------------------------------
