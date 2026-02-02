@@ -52,6 +52,14 @@ export function CombatView({
   // Actions
   const activateTechnique = useAction(api.game.techniqueAction.activateTechnique);
 
+  // Auto-clear technique error after 4 seconds
+  useEffect(() => {
+    if (techniqueError) {
+      const timer = setTimeout(() => setTechniqueError(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [techniqueError]);
+
   // Determine if it's the current user's turn
   const isMyTurn = useCallback(() => {
     if (!combatState || !currentCharacterId || currentTurn === null) return false;
