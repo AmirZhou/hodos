@@ -140,6 +140,27 @@ export function CombatView({
     [useSafeword, sessionId]
   );
 
+  // Handle technique activation
+  const handleTechniqueActivate = useCallback(async (techniqueId: string) => {
+    if (!currentCharacterId || !campaignId) return;
+    try {
+      await activateTechnique({
+        campaignId,
+        characterId: currentCharacterId,
+        techniqueId,
+        targetId: selectedCombatantIndex !== null && selectedCombatantIndex !== combatState?.currentTurnIndex
+          ? combatState?.combatants[selectedCombatantIndex]?.entityId
+          : undefined,
+        targetType: selectedCombatantIndex !== null && selectedCombatantIndex !== combatState?.currentTurnIndex
+          ? combatState?.combatants[selectedCombatantIndex]?.entityType as "character" | "npc" | undefined
+          : undefined,
+        context: "combat",
+      });
+    } catch (error) {
+      console.error("Technique activation failed:", error);
+    }
+  }, [activateTechnique, currentCharacterId, campaignId, selectedCombatantIndex, combatState]);
+
   // Loading state
   if (!combatState) {
     return (
