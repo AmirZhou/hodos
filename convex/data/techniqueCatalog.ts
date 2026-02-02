@@ -750,6 +750,473 @@ export const ALL_TECHNIQUES: TechniqueDefinition[] = [
     cooldown: 0,
     teachable: true,
   },
+
+  // ── HEAVY WEAPONS (2 techniques) ─────────────────────────────────────
+  {
+    id: "crushing_blow",
+    name: "Crushing Blow",
+    skillId: "heavy_weapons",
+    tierRequired: 0,
+    description: "A powerful overhead strike that exploits the weight of a heavy weapon.",
+    contexts: ["combat"],
+    prerequisites: [],
+    effects: {
+      combat: { damage: 5 },
+    },
+    rollBonus: 0,
+    cooldown: 0,
+    teachable: true,
+  },
+  {
+    id: "sundering_strike",
+    name: "Sundering Strike",
+    skillId: "heavy_weapons",
+    tierRequired: 2,
+    description: "A targeted blow aimed at breaking armor and shields.",
+    contexts: ["combat"],
+    prerequisites: ["crushing_blow"],
+    effects: {
+      combat: { damage: 4, condition: "armor_broken" },
+    },
+    rollBonus: 1,
+    cooldown: 1,
+    teachable: false,
+  },
+
+  // ── ARCHERY (2 techniques) ───────────────────────────────────────────
+  {
+    id: "aimed_shot",
+    name: "Aimed Shot",
+    skillId: "archery",
+    tierRequired: 0,
+    description: "Take a moment to steady your aim for a precise ranged attack.",
+    contexts: ["combat"],
+    prerequisites: [],
+    effects: {
+      combat: { damage: 4 },
+    },
+    rollBonus: 1,
+    cooldown: 0,
+    teachable: true,
+  },
+  {
+    id: "pinning_arrow",
+    name: "Pinning Arrow",
+    skillId: "archery",
+    tierRequired: 2,
+    description: "Pin a target's clothing or limb to a surface, restricting movement.",
+    contexts: ["combat"],
+    prerequisites: ["aimed_shot"],
+    effects: {
+      combat: { damage: 2, condition: "pinned" },
+    },
+    rollBonus: 1,
+    cooldown: 1,
+    teachable: false,
+  },
+
+  // ── ICE MAGIC (2 techniques) ─────────────────────────────────────────
+  {
+    id: "frost_bolt",
+    name: "Frost Bolt",
+    skillId: "ice_magic",
+    tierRequired: 0,
+    description: "Launch a shard of magical ice at a target.",
+    contexts: ["combat"],
+    prerequisites: [],
+    effects: {
+      combat: { damage: 4, condition: "chilled" },
+    },
+    rollBonus: 0,
+    cooldown: 0,
+    teachable: true,
+  },
+  {
+    id: "frozen_ground",
+    name: "Frozen Ground",
+    skillId: "ice_magic",
+    tierRequired: 2,
+    description: "Coat the ground in treacherous ice, slowing all who cross it.",
+    contexts: ["combat", "exploration"],
+    prerequisites: ["frost_bolt"],
+    effects: {
+      combat: { condition: "slowed" },
+      exploration: { stealthBonus: 1 },
+    },
+    rollBonus: 1,
+    cooldown: 1,
+    teachable: false,
+  },
+
+  // ── SHADOW MAGIC (2 techniques) ──────────────────────────────────────
+  {
+    id: "shadow_cloak",
+    name: "Shadow Cloak",
+    skillId: "shadow_magic",
+    tierRequired: 1,
+    description: "Wrap yourself in living shadow, blending into darkness.",
+    contexts: ["exploration", "combat"],
+    prerequisites: [],
+    effects: {
+      exploration: { stealthBonus: 3 },
+      combat: { acBonus: 1 },
+    },
+    rollBonus: 1,
+    cooldown: 0,
+    teachable: true,
+  },
+  {
+    id: "umbral_bolt",
+    name: "Umbral Bolt",
+    skillId: "shadow_magic",
+    tierRequired: 2,
+    description: "Hurl a bolt of condensed darkness that saps the target's strength.",
+    contexts: ["combat"],
+    prerequisites: ["shadow_cloak"],
+    effects: {
+      combat: { damage: 5, condition: "weakened" },
+    },
+    rollBonus: 1,
+    cooldown: 1,
+    teachable: false,
+  },
+
+  // ── DECEPTION (2 techniques) ─────────────────────────────────────────
+  {
+    id: "convincing_lie",
+    name: "Convincing Lie",
+    skillId: "deception",
+    tierRequired: 0,
+    description: "Deliver a falsehood with such confidence that it sounds like truth.",
+    contexts: ["social"],
+    prerequisites: [],
+    effects: {
+      social: { persuasionBonus: 2 },
+    },
+    rollBonus: 1,
+    cooldown: 0,
+    teachable: true,
+  },
+  {
+    id: "misdirection",
+    name: "Misdirection",
+    skillId: "deception",
+    tierRequired: 2,
+    description: "Create a distraction that draws attention away from your true intent.",
+    contexts: ["social", "combat"],
+    prerequisites: ["convincing_lie"],
+    effects: {
+      social: { insightReveal: true },
+      combat: { condition: "distracted" },
+    },
+    rollBonus: 1,
+    cooldown: 1,
+    teachable: false,
+  },
+
+  // ── HERBALISM (2 techniques) ─────────────────────────────────────────
+  {
+    id: "healing_poultice",
+    name: "Healing Poultice",
+    skillId: "herbalism",
+    tierRequired: 0,
+    description: "Prepare a soothing herbal poultice to treat minor injuries.",
+    contexts: ["exploration"],
+    prerequisites: [],
+    effects: {
+      exploration: { perceptionBonus: 1 },
+    },
+    rollBonus: 0,
+    cooldown: 0,
+    teachable: true,
+  },
+  {
+    id: "poison_extraction",
+    name: "Poison Extraction",
+    skillId: "herbalism",
+    tierRequired: 2,
+    description: "Identify and extract toxins from wounds or tainted food.",
+    contexts: ["exploration", "combat"],
+    prerequisites: ["healing_poultice"],
+    effects: {
+      exploration: { perceptionBonus: 2 },
+      combat: { healing: 3 },
+    },
+    rollBonus: 1,
+    cooldown: 1,
+    teachable: false,
+  },
+
+  // ── NEGOTIATION (2 techniques) ───────────────────────────────────────
+  {
+    id: "opening_offer",
+    name: "Opening Offer",
+    skillId: "negotiation",
+    tierRequired: 0,
+    description: "Frame the terms of a deal to your advantage from the start.",
+    contexts: ["social"],
+    prerequisites: [],
+    effects: {
+      social: { persuasionBonus: 2 },
+    },
+    rollBonus: 0,
+    cooldown: 0,
+    teachable: true,
+  },
+  {
+    id: "hard_bargain",
+    name: "Hard Bargain",
+    skillId: "negotiation",
+    tierRequired: 2,
+    description: "Press aggressively for concessions, leveraging every advantage.",
+    contexts: ["social"],
+    prerequisites: ["opening_offer"],
+    effects: {
+      social: { persuasionBonus: 3, intimidationBonus: 1 },
+    },
+    rollBonus: 1,
+    cooldown: 1,
+    teachable: false,
+  },
+
+  // ── LOCKPICKING (2 techniques) ───────────────────────────────────────
+  {
+    id: "pick_lock",
+    name: "Pick Lock",
+    skillId: "lockpicking",
+    tierRequired: 0,
+    description: "Manipulate tumblers and pins to open a standard lock.",
+    contexts: ["exploration"],
+    prerequisites: [],
+    effects: {
+      exploration: { trapDisable: true },
+    },
+    rollBonus: 0,
+    cooldown: 0,
+    teachable: true,
+  },
+  {
+    id: "disarm_trap",
+    name: "Disarm Trap",
+    skillId: "lockpicking",
+    tierRequired: 2,
+    description: "Safely neutralize mechanical traps and pressure plates.",
+    contexts: ["exploration"],
+    prerequisites: ["pick_lock"],
+    effects: {
+      exploration: { trapDisable: true, perceptionBonus: 2 },
+    },
+    rollBonus: 1,
+    cooldown: 0,
+    teachable: false,
+  },
+
+  // ── DIRTY FIGHTING (2 techniques) ────────────────────────────────────
+  {
+    id: "low_blow",
+    name: "Low Blow",
+    skillId: "dirty_fighting",
+    tierRequired: 0,
+    description: "A cheap shot aimed at vulnerable areas to stagger an opponent.",
+    contexts: ["combat"],
+    prerequisites: [],
+    effects: {
+      combat: { damage: 3, condition: "staggered" },
+    },
+    rollBonus: 0,
+    cooldown: 0,
+    teachable: true,
+  },
+  {
+    id: "pocket_sand",
+    name: "Pocket Sand",
+    skillId: "dirty_fighting",
+    tierRequired: 1,
+    description: "Throw a handful of grit into an enemy's eyes to blind them briefly.",
+    contexts: ["combat"],
+    prerequisites: ["low_blow"],
+    effects: {
+      combat: { condition: "blinded" },
+    },
+    rollBonus: 1,
+    cooldown: 1,
+    teachable: false,
+  },
+
+  // ── BLADE MASTERY — TIER 6 CAPSTONE (1 technique) ────────────────────
+  {
+    id: "thousand_cuts",
+    name: "Thousand Cuts",
+    skillId: "blade_mastery",
+    tierRequired: 6,
+    description: "A blinding flurry of slashes so fast the eye cannot follow, leaving foes riddled with wounds.",
+    contexts: ["combat"],
+    prerequisites: ["whirlwind_slash"],
+    effects: {
+      combat: { damage: 14, condition: "bleeding" },
+    },
+    rollBonus: 3,
+    cooldown: 2,
+    teachable: false,
+  },
+
+  // ── FIRE MAGIC — TIER 6 CAPSTONE (1 technique) ──────────────────────
+  {
+    id: "phoenix_flame",
+    name: "Phoenix Flame",
+    skillId: "fire_magic",
+    tierRequired: 6,
+    description: "Channel the mythic phoenix to immolate foes and heal allies in the same blaze.",
+    contexts: ["combat"],
+    prerequisites: ["fireball"],
+    effects: {
+      combat: { damage: 16, healing: 8, condition: "burning" },
+    },
+    rollBonus: 3,
+    cooldown: 2,
+    teachable: false,
+  },
+
+  // ── DOMINATION — TIER 6 CAPSTONE (1 technique) ──────────────────────
+  {
+    id: "absolute_authority",
+    name: "Absolute Authority",
+    skillId: "domination",
+    tierRequired: 6,
+    description: "Your command becomes law — even the strong-willed find it nearly impossible to resist.",
+    contexts: ["scene", "social", "combat"],
+    prerequisites: ["mental_subjugation"],
+    effects: {
+      scene: { intensityChange: 6, comfortImpact: -1, moodShift: "dominated" },
+      social: { intimidationBonus: 5 },
+      combat: { condition: "paralyzed" },
+    },
+    rollBonus: 4,
+    cooldown: 2,
+    teachable: false,
+  },
+
+  // ── MARTIAL ARTS — TIER 8 CAPSTONE (1 technique) ────────────────────
+  {
+    id: "quivering_palm",
+    name: "Quivering Palm",
+    skillId: "martial_arts",
+    tierRequired: 8,
+    description: "A legendary strike that sets up lethal vibrations within the target's body.",
+    contexts: ["combat"],
+    prerequisites: ["iron_fist"],
+    effects: {
+      combat: { damage: 25, condition: "doomed" },
+    },
+    rollBonus: 5,
+    cooldown: 3,
+    teachable: false,
+  },
+
+  // ── ENCHANTMENT — TIER 8 CAPSTONE (1 technique) ─────────────────────
+  {
+    id: "dominate_will",
+    name: "Dominate Will",
+    skillId: "enchantment",
+    tierRequired: 8,
+    description: "Seize total control of a target's mind, bending them to your will completely.",
+    contexts: ["social", "combat"],
+    prerequisites: ["mass_suggestion"],
+    effects: {
+      social: { persuasionBonus: 8 },
+      combat: { condition: "dominated" },
+    },
+    rollBonus: 5,
+    cooldown: 3,
+    teachable: false,
+  },
+
+  // ── ROPE ARTS — TIER 8 CAPSTONE (1 technique) ──────────────────────
+  {
+    id: "living_web",
+    name: "Living Web",
+    skillId: "rope_arts",
+    tierRequired: 8,
+    description: "An impossibly intricate full-body rig that responds to the slightest movement, a masterwork of the art.",
+    contexts: ["scene"],
+    prerequisites: ["predicament_bondage"],
+    effects: {
+      scene: { intensityChange: 7, comfortImpact: 0, moodShift: "transcendent" },
+    },
+    rollBonus: 5,
+    cooldown: 3,
+    teachable: false,
+  },
+
+  // ── HERBALISM — EXPLORATION ADDITION (1 technique) ───────────────────
+  {
+    id: "forage_remedy",
+    name: "Forage Remedy",
+    skillId: "herbalism",
+    tierRequired: 1,
+    description: "Scour the surroundings for wild herbs to prepare a field remedy.",
+    contexts: ["exploration"],
+    prerequisites: ["healing_poultice"],
+    effects: {
+      exploration: { perceptionBonus: 3 },
+    },
+    rollBonus: 1,
+    cooldown: 1,
+    teachable: true,
+  },
+
+  // ── LOCKPICKING — EXPLORATION ADDITION (1 technique) ─────────────────
+  {
+    id: "bypass_mechanism",
+    name: "Bypass Mechanism",
+    skillId: "lockpicking",
+    tierRequired: 3,
+    description: "Analyze and bypass complex mechanical puzzles and sealed doors.",
+    contexts: ["exploration"],
+    prerequisites: ["disarm_trap"],
+    effects: {
+      exploration: { trapDisable: true, perceptionBonus: 3 },
+    },
+    rollBonus: 2,
+    cooldown: 1,
+    teachable: true,
+  },
+
+  // ── PERCEPTION — EXPLORATION ADDITION (1 technique) ──────────────────
+  {
+    id: "danger_sense",
+    name: "Danger Sense",
+    skillId: "perception",
+    tierRequired: 3,
+    description: "A heightened awareness that warns you of hidden threats before they strike.",
+    contexts: ["exploration", "combat"],
+    prerequisites: ["keen_eye"],
+    effects: {
+      exploration: { perceptionBonus: 4, trapDisable: true },
+      combat: { acBonus: 1 },
+    },
+    rollBonus: 2,
+    cooldown: 0,
+    teachable: true,
+  },
+
+  // ── STEALTH — EXPLORATION ADDITION (1 technique) ─────────────────────
+  {
+    id: "vanish",
+    name: "Vanish",
+    skillId: "stealth",
+    tierRequired: 4,
+    description: "Disappear from sight even in the middle of a confrontation.",
+    contexts: ["exploration", "combat"],
+    prerequisites: ["shadow_step"],
+    effects: {
+      exploration: { stealthBonus: 5 },
+      combat: { acBonus: 2 },
+    },
+    rollBonus: 2,
+    cooldown: 1,
+    teachable: true,
+  },
 ];
 
 // ---------------------------------------------------------------------------
