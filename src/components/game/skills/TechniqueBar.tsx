@@ -14,6 +14,7 @@ interface TechniqueBarProps {
   campaignId: Id<"campaigns">;
   context: TechniqueContext;
   onActivate: (techniqueId: string) => void;
+  activatingTechniqueId?: string;
 }
 
 export function TechniqueBar({
