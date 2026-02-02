@@ -60,6 +60,7 @@ export function NpcInteractionModal({
     { id: "talk", label: "Talk", icon: <MessageSquare className="h-4 w-4" /> },
     { id: "trade", label: "Trade", icon: <ShoppingBag className="h-4 w-4" /> },
     { id: "info", label: "Info", icon: <Info className="h-4 w-4" /> },
+    { id: "train", label: "Train", icon: <GraduationCap className="h-4 w-4" /> },
   ];
 
   return (
