@@ -4,6 +4,8 @@ import { requireAuth, requireCampaignMember, requireCharacterOwner } from "./lib
 import { computeEquipmentBonuses, computeDerivedStats } from "./lib/stats";
 import { initializeSpellSlots, isCaster } from "./lib/spells";
 import { initializeClassResources } from "./lib/classFeatures";
+import { RIVERMOOT_SKILL_IDS } from "./data/rivermootSkillPack";
+import { XP_THRESHOLDS } from "./data/skillCatalog";
 
 const defaultSkills: Record<string, number> = {
   // Strength
@@ -209,6 +211,20 @@ export const create = mutation({
 
       createdAt: Date.now(),
     });
+
+    // Initialize entity skills for all skills in the campaign skill pack
+    for (const skillId of RIVERMOOT_SKILL_IDS) {
+      await ctx.db.insert("entitySkills", {
+        entityId: characterId,
+        entityType: "character",
+        campaignId: args.campaignId,
+        skillId,
+        currentTier: 0,
+        ceiling: 0,
+        practiceXp: 0,
+        xpToNextTier: XP_THRESHOLDS[0],
+      });
+    }
 
     // Link character to campaign membership
     const membership = await ctx.db

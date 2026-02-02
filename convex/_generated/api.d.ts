@@ -23,6 +23,7 @@ import type * as data_rivermootCity from "../data/rivermootCity.js";
 import type * as data_rivermootGrid from "../data/rivermootGrid.js";
 import type * as data_rivermootNpcSkills from "../data/rivermootNpcSkills.js";
 import type * as data_rivermootNpcs from "../data/rivermootNpcs.js";
+import type * as data_rivermootSkillPack from "../data/rivermootSkillPack.js";
 import type * as data_skillCatalog from "../data/skillCatalog.js";
 import type * as data_spellData from "../data/spellData.js";
 import type * as data_techniqueCatalog from "../data/techniqueCatalog.js";
@@ -94,6 +95,7 @@ declare const fullApi: ApiFromModules<{
   "data/rivermootGrid": typeof data_rivermootGrid;
   "data/rivermootNpcSkills": typeof data_rivermootNpcSkills;
   "data/rivermootNpcs": typeof data_rivermootNpcs;
+  "data/rivermootSkillPack": typeof data_rivermootSkillPack;
   "data/skillCatalog": typeof data_skillCatalog;
   "data/spellData": typeof data_spellData;
   "data/techniqueCatalog": typeof data_techniqueCatalog;
