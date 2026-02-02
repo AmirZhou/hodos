@@ -241,6 +241,7 @@ export function CombatView({
             campaignId={campaignId}
             context="combat"
             onActivate={handleTechniqueActivate}
+            activatingTechniqueId={activatingTechnique ?? undefined}
           />
         )}
 
