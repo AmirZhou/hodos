@@ -27,7 +27,7 @@ export const RIVERMOOT_NPC_SKILLS: Record<string, NpcSkillAssignment[]> = {
   ],
   "rivermoot-npc-brother-aldric": [
     { skillId: "healing_magic", tier: 4, techniques: ["mend_wounds", "restoration"] },
-    { skillId: "divine_magic", tier: 3, techniques: [] },
+    { skillId: "divine_magic", tier: 3, techniques: ["holy_light", "divine_ward"] },
     { skillId: "aftercare", tier: 5, techniques: ["comfort_touch", "emotional_grounding"] },
     { skillId: "submission_arts", tier: 3, techniques: ["graceful_surrender", "service_devotion"] },
   ],
