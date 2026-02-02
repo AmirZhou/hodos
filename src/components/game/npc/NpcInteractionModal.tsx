@@ -6,7 +6,8 @@ import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { X, MessageSquare, ShoppingBag, Info, Send, Loader2 } from "lucide-react";
+import { X, MessageSquare, ShoppingBag, Info, Send, Loader2, GraduationCap } from "lucide-react";
+import { TrainingPanel } from "../skills/TrainingDialog";
 
 type Tab = "talk" | "trade" | "info";
 
