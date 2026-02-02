@@ -168,6 +168,15 @@ export function NpcInteractionModal({
               )}
             </div>
           )}
+
+          {activeTab === "train" && (
+            <TrainingPanel
+              npcId={npcId}
+              npcName={npc.name}
+              characterId={characterId}
+              campaignId={campaignId}
+            />
+          )}
         </div>
       </div>
     </div>
