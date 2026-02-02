@@ -100,6 +100,21 @@ export function SceneView({ sessionId, currentCharacterId }: SceneViewProps) {
     await completeAftercare({ sessionId });
   }, [completeAftercare, sessionId]);
 
+  // Handle technique activation
+  const handleTechniqueActivate = useCallback(async (techniqueId: string) => {
+    if (!currentCharacterId || !campaignId) return;
+    try {
+      await activateTechnique({
+        campaignId,
+        characterId: currentCharacterId,
+        techniqueId,
+        context: "scene",
+      });
+    } catch (error) {
+      console.error("Technique activation failed:", error);
+    }
+  }, [activateTechnique, currentCharacterId, campaignId]);
+
   // Loading state
   if (!sceneState) {
     return (
