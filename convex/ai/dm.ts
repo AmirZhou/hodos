@@ -266,15 +266,24 @@ export const processPlayerInput = action({
 ${args.context.characterStats.equipped ? `- Equipment: ${args.context.characterStats.equipped}` : ""}
 ${args.context.characterStats.inventoryCount !== undefined ? `- Inventory items: ${args.context.characterStats.inventoryCount}` : ""}
 
-## Nearby NPCs
+## NPCs Present at This Location
 ${args.context.nearbyNpcs
+  .filter((npc) => npc.location === "here")
   .map(
     (npc) => `- ${npc.name}: ${npc.description}
   Personality: ${npc.personality}
   ${npc.relationshipWithPlayer ? `Relationship: Affinity ${npc.relationshipWithPlayer.affinity}, Trust ${npc.relationshipWithPlayer.trust}, Attraction ${npc.relationshipWithPlayer.attraction}` : ""}
 ${npc.memory ? formatNpcMemoryForPrompt(npc.memory) : ""}`
   )
-  .join("\n")}
+  .join("\n") || "(none)"}
+
+## Known NPCs (Not Present)
+${args.context.nearbyNpcs
+  .filter((npc) => npc.location === "elsewhere")
+  .map(
+    (npc) => `- ${npc.name}${npc.relationshipWithPlayer ? `: Affinity ${npc.relationshipWithPlayer.affinity}, Trust ${npc.relationshipWithPlayer.trust}` : ""}`
+  )
+  .join("\n") || "(none)"}
 
 ## Recent History
 ${args.context.recentHistory
