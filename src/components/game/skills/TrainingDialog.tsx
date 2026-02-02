@@ -56,16 +56,22 @@ interface TeachingOptionView {
 }
 
 // ---------------------------------------------------------------------------
-// Component
+// TrainingPanel — inline content (no modal overlay)
 // ---------------------------------------------------------------------------
 
-export function TrainingDialog({
+interface TrainingPanelProps {
+  npcId: Id<"npcs">;
+  npcName: string;
+  characterId: Id<"characters">;
+  campaignId: Id<"campaigns">;
+}
+
+export function TrainingPanel({
   npcId,
   npcName,
   characterId,
   campaignId,
-  onClose,
-}: TrainingDialogProps) {
+}: TrainingPanelProps) {
   // ---- State ----
   const [trainingStatus, setTrainingStatus] = useState<TrainingStatus>("idle");
   const [trainingTarget, setTrainingTarget] = useState<string | null>(null);
@@ -229,6 +235,83 @@ export function TrainingDialog({
 
   // ---- Render ----
   return (
+    <div>
+      {/* Trust bar */}
+      {relationship !== undefined && (
+        <div className="py-2 mb-3">
+          <div className="flex items-center justify-between text-xs mb-1">
+            <span className="text-[var(--foreground-secondary)]">
+              Your trust with {npcName}
+            </span>
+            <span className="font-medium text-[var(--foreground)]">
+              {currentTrust}
+            </span>
+          </div>
+          <div className="h-1.5 rounded-full bg-[var(--background)] border border-[var(--border)]">
+            <div
+              className="h-full rounded-full bg-[var(--accent-green)] transition-all"
+              style={{ width: `${Math.min(100, currentTrust)}%` }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Success / Error messages */}
+      {successMessage && (
+        <div className="mb-3 flex items-center gap-2 rounded-lg bg-[var(--accent-green)]/15 border border-[var(--accent-green)]/30 px-3 py-2 text-sm text-[var(--accent-green)]">
+          <Check className="h-4 w-4 shrink-0" />
+          {successMessage}
+        </div>
+      )}
+      {errorMessage && (
+        <div className="mb-3 flex items-center gap-2 rounded-lg bg-[var(--accent-red)]/15 border border-[var(--accent-red)]/30 px-3 py-2 text-sm text-[var(--accent-red)]">
+          <AlertTriangle className="h-4 w-4 shrink-0" />
+          {errorMessage}
+        </div>
+      )}
+
+      {/* Content */}
+      <div className="space-y-3">
+        {isLoading ? (
+          <LoadingSkeleton />
+        ) : options.length === 0 ? (
+          <div className="text-center py-8 text-[var(--foreground-secondary)]">
+            <GraduationCap className="h-8 w-8 mx-auto mb-2 opacity-50" />
+            <p className="text-sm">
+              {npcName} has nothing to teach right now.
+            </p>
+          </div>
+        ) : (
+          options.map((option) => (
+            <TeachingOptionCard
+              key={option._id}
+              option={option}
+              currentTrust={currentTrust}
+              isTraining={
+                trainingStatus === "training" &&
+                trainingTarget === option.techniqueId
+              }
+              onTrain={() => handleTrain(option)}
+            />
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// TrainingDialog — standalone modal wrapper around TrainingPanel
+// ---------------------------------------------------------------------------
+
+export function TrainingDialog({
+  npcId,
+  npcName,
+  characterId,
+  campaignId,
+  onClose,
+}: TrainingDialogProps) {
+  return (
     <div
       className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
       onClick={onClose}
@@ -250,65 +333,14 @@ export function TrainingDialog({
           </Button>
         </div>
 
-        {/* Trust bar */}
-        {relationship !== undefined && (
-          <div className="px-4 py-2 bg-[var(--background)] border-b border-[var(--border)]">
-            <div className="flex items-center justify-between text-xs mb-1">
-              <span className="text-[var(--foreground-secondary)]">
-                Your trust with {npcName}
-              </span>
-              <span className="font-medium text-[var(--foreground)]">
-                {currentTrust}
-              </span>
-            </div>
-            <div className="h-1.5 rounded-full bg-[var(--background)] border border-[var(--border)]">
-              <div
-                className="h-full rounded-full bg-[var(--accent-green)] transition-all"
-                style={{ width: `${Math.min(100, currentTrust)}%` }}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Success / Error messages */}
-        {successMessage && (
-          <div className="mx-4 mt-3 flex items-center gap-2 rounded-lg bg-[var(--accent-green)]/15 border border-[var(--accent-green)]/30 px-3 py-2 text-sm text-[var(--accent-green)]">
-            <Check className="h-4 w-4 shrink-0" />
-            {successMessage}
-          </div>
-        )}
-        {errorMessage && (
-          <div className="mx-4 mt-3 flex items-center gap-2 rounded-lg bg-[var(--accent-red)]/15 border border-[var(--accent-red)]/30 px-3 py-2 text-sm text-[var(--accent-red)]">
-            <AlertTriangle className="h-4 w-4 shrink-0" />
-            {errorMessage}
-          </div>
-        )}
-
-        {/* Content */}
-        <div className="p-4 space-y-3 max-h-[60vh] overflow-y-auto">
-          {isLoading ? (
-            <LoadingSkeleton />
-          ) : options.length === 0 ? (
-            <div className="text-center py-8 text-[var(--foreground-secondary)]">
-              <GraduationCap className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">
-                {npcName} has nothing to teach right now.
-              </p>
-            </div>
-          ) : (
-            options.map((option) => (
-              <TeachingOptionCard
-                key={option._id}
-                option={option}
-                currentTrust={currentTrust}
-                isTraining={
-                  trainingStatus === "training" &&
-                  trainingTarget === option.techniqueId
-                }
-                onTrain={() => handleTrain(option)}
-              />
-            ))
-          )}
+        {/* Panel content */}
+        <div className="p-4 max-h-[60vh] overflow-y-auto">
+          <TrainingPanel
+            npcId={npcId}
+            npcName={npcName}
+            characterId={characterId}
+            campaignId={campaignId}
+          />
         </div>
       </div>
     </div>
