@@ -194,6 +194,7 @@ export const activateTechnique = action({
       skillId: string;
       timesUsed: number;
       usesToday: number;
+      lastDayReset: number;
     }>;
 
     const entityTechnique = entityTechniques.find(
@@ -203,6 +204,21 @@ export const activateTechnique = action({
       throw new Error(
         `Character has not learned technique "${technique.name}"`,
       );
+    }
+
+    // 5b. Enforce cooldown — if the technique has a daily use limit,
+    // check whether the character has already hit it today
+    if (technique.cooldown > 0) {
+      const currentDay = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
+      const usesToday =
+        entityTechnique.lastDayReset === currentDay
+          ? entityTechnique.usesToday
+          : 0;
+      if (usesToday >= technique.cooldown) {
+        throw new Error(
+          `Technique "${technique.name}" is on cooldown (${usesToday}/${technique.cooldown} uses today)`,
+        );
+      }
     }
 
     // 6. Calculate actor power
