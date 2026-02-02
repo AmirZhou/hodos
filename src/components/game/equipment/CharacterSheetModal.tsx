@@ -9,7 +9,7 @@ import { useGame } from "@/components/game/engine";
 import { InventoryModal } from "./InventoryModal";
 import { SkillPanel } from "../skills/SkillPanel";
 
-type Tab = "sheet" | "inventory" | "relationships";
+type Tab = "sheet" | "inventory" | "relationships" | "skills";
 
 const ABILITY_LABELS = ["STR", "DEX", "CON", "INT", "WIS", "CHA"] as const;
 const ABILITY_KEYS = ["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"] as const;
