@@ -14,7 +14,7 @@ export interface NpcSkillAssignment {
 export const RIVERMOOT_NPC_SKILLS: Record<string, NpcSkillAssignment[]> = {
   "rivermoot-npc-captain-varn": [
     { skillId: "blade_mastery", tier: 5, techniques: ["quick_draw", "parry_riposte"] },
-    { skillId: "shield_craft", tier: 4, techniques: [] },
+    { skillId: "shield_craft", tier: 4, techniques: ["shield_bash", "shield_wall"] },
     { skillId: "intimidation", tier: 4, techniques: ["menacing_glare"] },
     { skillId: "domination", tier: 4, techniques: ["commanding_presence", "protocol_training"] },
     { skillId: "rope_arts", tier: 3, techniques: ["basic_binding", "quick_release", "decorative_harness"] },
