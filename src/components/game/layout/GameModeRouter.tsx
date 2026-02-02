@@ -170,6 +170,25 @@ function ExplorationView({
     }
   };
 
+  const handleTechniqueActivate = useCallback(async (techniqueId: string) => {
+    if (!currentCharacter?._id || !campaignId) return;
+    setActivatingTechnique(true);
+    setTechniqueError(null);
+    try {
+      await activateTechnique({
+        campaignId,
+        characterId: currentCharacter._id,
+        techniqueId,
+        context: "exploration",
+      });
+    } catch (error) {
+      console.error("Technique activation failed:", error);
+      setTechniqueError(error instanceof Error ? error.message : "Technique activation failed");
+    } finally {
+      setActivatingTechnique(false);
+    }
+  }, [activateTechnique, currentCharacter?._id, campaignId]);
+
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [gameState.gameLog.length]);
