@@ -131,7 +131,13 @@ export const activateTechnique = action({
       v.literal("exploration"),
     ),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<{
+    potency: string;
+    effectsApplied: Record<string, unknown>;
+    xpAwarded: number;
+    summary: string;
+    narration: string | undefined;
+  }> => {
     const { campaignId, characterId, techniqueId, targetId, targetType, context } = args;
 
     // 1. Validate technique exists and supports the requested context
