@@ -14,6 +14,10 @@ export interface TechniqueEffects {
     acBonus?: number;
     tempHp?: number;
     healing?: number;
+    damageReduction?: number;
+    magicResist?: number;
+    stunChance?: number;
+    undeadBonus?: number;
   };
   scene?: {
     intensityChange?: number;
@@ -29,6 +33,7 @@ export interface TechniqueEffects {
     stealthBonus?: number;
     perceptionBonus?: number;
     trapDisable?: boolean;
+    trapResist?: number;
   };
 }
 
