@@ -119,6 +119,7 @@ function ExplorationView({
 
   const submitAction = useAction(api.game.actions.submitAction);
   const submitQuickAction = useAction(api.game.actions.submitQuickAction);
+  const activateTechnique = useAction(api.game.techniqueAction.activateTechnique);
 
   const relationships = useQuery(
     api.relationships.getForCharacter,
