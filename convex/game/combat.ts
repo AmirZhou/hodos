@@ -1382,17 +1382,9 @@ export const executeAction = mutation({
           let { practiceXp, currentTier: skillTier, ceiling } = actorSkillRecord;
           practiceXp += xpAmount;
 
-          // Auto tier-up loop
-          const XP_THRESHOLDS: Record<number, number> = {
-            0: 50, 1: 120, 2: 220, 3: 360, 4: 550, 5: 800, 6: 1100, 7: 1500,
-          };
-          while (
-            skillTier < 8 &&
-            skillTier < ceiling &&
-            XP_THRESHOLDS[skillTier] !== undefined &&
-            practiceXp >= XP_THRESHOLDS[skillTier]
-          ) {
-            practiceXp -= XP_THRESHOLDS[skillTier];
+          // Auto tier-up loop (uses shared canTierUp + XP_THRESHOLDS)
+          while (canTierUp(practiceXp, skillTier, ceiling)) {
+            practiceXp -= XP_THRESHOLDS[skillTier]!;
             skillTier += 1;
           }
 
