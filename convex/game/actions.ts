@@ -5,6 +5,8 @@ import { Id, Doc } from "../_generated/dataModel";
 import { validateItemGrants } from "./itemGrants";
 import { findMatchingNpc } from "./npcNameResolver";
 import { validateStringLength, clampAffinity, clampPercentage } from "../lib/validation";
+import { getTechniqueById } from "../data/techniqueCatalog";
+import { getSkillById } from "../data/skillCatalog";
 
 // Type definitions for the response
 interface DMResponse {
@@ -25,6 +27,7 @@ interface DMResponse {
     flags?: Record<string, boolean>;
     relationshipChanges?: Record<string, { affinity?: number; trust?: number; attraction?: number }>;
   };
+  suggestTechnique?: string; // technique_id if DM thinks freeform action matches a known technique
   itemsGranted?: Array<{ itemId: string; source: string; reason: string }>;
   containersCreated?: Array<{
     containerType: "ground" | "chest" | "corpse" | "container";
@@ -52,6 +55,7 @@ interface ActionResult {
   npcDialogue?: Array<{ name: string; text: string }>;
   roll?: RollResult | null;
   suggestedActions?: Array<{ text: string; type: string }>;
+  suggestTechnique?: string;
   // For pending roll responses
   success?: boolean;
   requiresRoll?: boolean;
@@ -173,6 +177,24 @@ async function executeAction(
     }
   }
 
+  // 5d. Get character's learned techniques for DM context
+  const entityTechniques = await ctx.runQuery(api.skills.getEntityTechniques, {
+    entityId: characterId as string,
+    entityType: "character",
+    campaignId,
+  }) as Array<{ techniqueId: string; skillId: string }>;
+
+  // Build technique context for DM
+  const techniqueContext = entityTechniques.map((et) => {
+    const tech = getTechniqueById(et.techniqueId);
+    const skill = getSkillById(tech?.skillId ?? "");
+    return {
+      name: tech?.name ?? et.techniqueId,
+      skillName: skill?.name ?? "",
+      tier: tech?.tierRequired ?? 0,
+    };
+  });
+
   // 6. Log the player action
   await ctx.runMutation(api.game.log.add, {
     campaignId,
@@ -211,6 +233,7 @@ async function executeAction(
       },
       sessionMode: session?.mode || "exploration",
       lootContainers: lootContainersContext,
+      characterTechniques: techniqueContext,
     },
   }) as { response: DMResponse; usage: any };
 
@@ -455,6 +478,7 @@ async function executeAction(
     npcDialogue: response.npcDialogue,
     roll: null,
     suggestedActions: response.suggestedActions,
+    suggestTechnique: response.suggestTechnique,
   };
 }
 

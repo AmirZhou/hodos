@@ -170,7 +170,13 @@ ${getItemCatalogForPrompt()}
 - NPCs should be ACTIVE, not passive - they make demands, set terms, push boundaries
 - A dominant NPC should DOMINATE, not wait for input
 - Aftercare matters - track whether it happened, NPCs remember
-- Safeword system: GREEN (continue), YELLOW (slow down), RED (stop immediately)`;
+- Safeword system: GREEN (continue), YELLOW (slow down), RED (stop immediately)
+
+## Skill & Technique System
+- When a technique activates, you NARRATE the outcome. You do not decide success or failure.
+- Describe techniques vividly based on potency: "critical" = legendary, "overwhelming" = exceptional, "full" = competent, "standard" = adequate, "reduced" = struggling, "negated"/"resisted" = target shrugs it off.
+- You may suggest mood and relationship changes, but cannot alter mechanical effects.
+- For freeform actions: if the action maps to a known technique the character has learned, include "suggestTechnique": "technique_id" in your JSON response. The system will prompt the player to use it instead of rolling.`;
 
 
 // Main DM action - processes player input and generates response
@@ -252,6 +258,11 @@ export const processPlayerInput = action({
       }),
       sessionMode: v.string(),
       lootContainers: v.optional(v.string()),
+      characterTechniques: v.optional(v.array(v.object({
+        name: v.string(),
+        skillName: v.string(),
+        tier: v.number(),
+      }))),
     }),
   },
   handler: async (ctx, args) => {
@@ -293,6 +304,9 @@ ${args.context.lootContainers ? `
 ## Loot Containers at Location
 ${args.context.lootContainers}
 ` : ""}
+## Character Techniques
+${args.context.characterTechniques?.map((t) => `- ${t.name} (${t.skillName}, Tier ${t.tier})`).join("\n") || "(none learned yet)"}
+
 ## Player Action
 ${args.input}
 `;
@@ -539,6 +553,38 @@ Respond with JSON:
         consequences: [],
         followUpOptions: [],
       };
+    }
+
+    return { response: parsedResponse, usage, provider, model, latencyMs };
+  },
+});
+
+// Narrate the outcome of a deterministic technique activation
+export const narrateTechniqueOutcome = action({
+  args: {
+    techniqueSummary: v.string(),
+    llmProvider: v.optional(v.union(v.literal("deepseek"), v.literal("openai"))),
+  },
+  handler: async (ctx, args) => {
+    const messages: LLMMessage[] = [
+      { role: "system", content: DM_SYSTEM_PROMPT },
+      {
+        role: "user",
+        content: `${args.techniqueSummary}\n\nRespond with JSON:\n{\n  "narration": "Vivid description of what happens",\n  "suggestedActions": [{ "text": "Action description", "type": "dialogue|action|intimate" }]\n}`,
+      },
+    ];
+
+    const { content, usage, provider, model, latencyMs } = await callLLM(messages, {
+      jsonMode: true,
+      provider: args.llmProvider,
+    });
+    console.log(`[LLM] ${provider}/${model} responded in ${latencyMs}ms`);
+
+    let parsedResponse;
+    try {
+      parsedResponse = JSON.parse(content);
+    } catch {
+      parsedResponse = { narration: content, suggestedActions: [] };
     }
 
     return { response: parsedResponse, usage, provider, model, latencyMs };
