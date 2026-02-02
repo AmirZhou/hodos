@@ -398,6 +398,93 @@ export default defineSchema({
     firstMetAt: v.optional(v.number()),
   }).index("by_campaign", ["campaignId"]),
 
+  // ============ ENTITY SKILLS ============
+  entitySkills: defineTable({
+    entityId: v.string(),
+    entityType: v.union(v.literal("character"), v.literal("npc")),
+    campaignId: v.id("campaigns"),
+    skillId: v.string(),
+    currentTier: v.number(),   // 0-8
+    ceiling: v.number(),       // max tier reachable (raised by NPCs/discoveries)
+    practiceXp: v.number(),    // progress toward next tier
+    xpToNextTier: v.number(),  // threshold from XP_THRESHOLDS
+  })
+    .index("by_entity", ["entityId", "entityType"])
+    .index("by_campaign_entity", ["campaignId", "entityId", "entityType"])
+    .index("by_campaign_skill", ["campaignId", "skillId"]),
+
+  // ============ ENTITY TECHNIQUES ============
+  entityTechniques: defineTable({
+    entityId: v.string(),
+    entityType: v.union(v.literal("character"), v.literal("npc")),
+    campaignId: v.id("campaigns"),
+    techniqueId: v.string(),
+    skillId: v.string(),       // denormalized for fast queries
+    timesUsed: v.number(),
+    lastUsedAt: v.number(),
+    usesToday: v.number(),     // reset per in-game day, caps at 3 for XP
+    lastDayReset: v.number(),  // tracks which in-game day the counter was reset
+  })
+    .index("by_entity", ["entityId", "entityType"])
+    .index("by_campaign_entity", ["campaignId", "entityId", "entityType"])
+    .index("by_entity_technique", ["entityId", "entityType", "techniqueId"]),
+
+  // ============ TEACHING AVAILABILITY ============
+  teachingAvailability: defineTable({
+    npcId: v.id("npcs"),
+    campaignId: v.id("campaigns"),
+    techniqueId: v.string(),
+    skillId: v.string(),
+    trustRequired: v.number(),
+    ceilingGrant: v.number(),
+    questPrerequisite: v.optional(v.string()),
+  })
+    .index("by_npc", ["npcId"])
+    .index("by_campaign", ["campaignId"]),
+
+  // ============ CEILING RAISES (audit log) ============
+  ceilingRaises: defineTable({
+    characterId: v.id("characters"),
+    campaignId: v.id("campaigns"),
+    skillId: v.string(),
+    previousCeiling: v.number(),
+    newCeiling: v.number(),
+    source: v.union(v.literal("npc_training"), v.literal("discovery"), v.literal("milestone")),
+    sourceId: v.string(),
+    timestamp: v.number(),
+  })
+    .index("by_character", ["characterId"])
+    .index("by_campaign", ["campaignId"]),
+
+  // ============ TECHNIQUE ACTIVATIONS (resolution log) ============
+  techniqueActivations: defineTable({
+    campaignId: v.id("campaigns"),
+    actorId: v.string(),
+    actorType: v.union(v.literal("character"), v.literal("npc")),
+    targetId: v.optional(v.string()),
+    targetType: v.optional(v.union(v.literal("character"), v.literal("npc"))),
+    techniqueId: v.string(),
+    skillId: v.string(),
+    context: v.union(v.literal("combat"), v.literal("scene"), v.literal("social"), v.literal("exploration")),
+    actorPower: v.number(),
+    targetResistance: v.number(),
+    potency: v.string(),
+    effectsApplied: v.any(),
+    xpAwarded: v.number(),
+    bonusXp: v.number(),
+    timestamp: v.number(),
+  })
+    .index("by_campaign", ["campaignId"])
+    .index("by_actor", ["actorId", "actorType"]),
+
+  // ============ CAMPAIGN SKILL PACKS ============
+  campaignSkillPacks: defineTable({
+    campaignId: v.id("campaigns"),
+    skillIds: v.array(v.string()),
+    techniqueIds: v.array(v.string()),
+  })
+    .index("by_campaign", ["campaignId"]),
+
   // ============ RELATIONSHIPS ============
   relationships: defineTable({
     campaignId: v.id("campaigns"),
