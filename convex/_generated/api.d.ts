@@ -24,6 +24,7 @@ import type * as data_rivermootGrid from "../data/rivermootGrid.js";
 import type * as data_rivermootNpcs from "../data/rivermootNpcs.js";
 import type * as data_skillCatalog from "../data/skillCatalog.js";
 import type * as data_spellData from "../data/spellData.js";
+import type * as data_techniqueCatalog from "../data/techniqueCatalog.js";
 import type * as data_worldMap from "../data/worldMap.js";
 import type * as dice from "../dice.js";
 import type * as equipment from "../equipment.js";
@@ -90,6 +91,7 @@ declare const fullApi: ApiFromModules<{
   "data/rivermootNpcs": typeof data_rivermootNpcs;
   "data/skillCatalog": typeof data_skillCatalog;
   "data/spellData": typeof data_spellData;
+  "data/techniqueCatalog": typeof data_techniqueCatalog;
   "data/worldMap": typeof data_worldMap;
   dice: typeof dice;
   equipment: typeof equipment;
