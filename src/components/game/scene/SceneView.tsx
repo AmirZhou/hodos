@@ -122,15 +122,26 @@ export function SceneView({ sessionId, currentCharacterId }: SceneViewProps) {
   // Handle technique activation
   const handleTechniqueActivate = useCallback(async (techniqueId: string) => {
     if (!currentCharacterId || !campaignId) return;
+    setActivatingTechnique(techniqueId);
+    setTechniqueError(null);
     try {
-      await activateTechnique({
+      const result = await activateTechnique({
         campaignId,
         characterId: currentCharacterId,
         techniqueId,
         context: "scene",
       });
+      const def = getTechniqueById(techniqueId);
+      setTechniqueResult({
+        techniqueName: def?.name ?? techniqueId,
+        potency: result.potency,
+        narration: result.narration ?? undefined,
+        xpAwarded: result.xpAwarded,
+      });
     } catch (error) {
-      console.error("Technique activation failed:", error);
+      setTechniqueError(error instanceof Error ? error.message : "Technique failed");
+    } finally {
+      setActivatingTechnique(null);
     }
   }, [activateTechnique, currentCharacterId, campaignId]);
 
