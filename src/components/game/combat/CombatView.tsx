@@ -30,6 +30,14 @@ export function CombatView({
   const { campaignId } = useGame();
   const [selectedCombatantIndex, setSelectedCombatantIndex] = useState<number | null>(null);
   const [isMoving, setIsMoving] = useState(false);
+  const [techniqueResult, setTechniqueResult] = useState<{
+    techniqueName: string;
+    potency: string;
+    narration?: string;
+    xpAwarded: number;
+  } | null>(null);
+  const [activatingTechnique, setActivatingTechnique] = useState<string | null>(null);
+  const [techniqueError, setTechniqueError] = useState<string | null>(null);
 
   // Queries
   const combatState = useQuery(api.game.combat.getCombatState, { sessionId });
