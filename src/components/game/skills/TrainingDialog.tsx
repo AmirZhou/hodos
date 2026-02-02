@@ -28,14 +28,6 @@ import {
 // Types
 // ---------------------------------------------------------------------------
 
-interface TrainingDialogProps {
-  npcId: Id<"npcs">;
-  npcName: string;
-  characterId: Id<"characters">;
-  campaignId: Id<"campaigns">;
-  onClose: () => void;
-}
-
 type TrainingStatus = "idle" | "training" | "success" | "error";
 
 interface TeachingOptionView {
