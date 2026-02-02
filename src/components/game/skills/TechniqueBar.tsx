@@ -22,6 +22,7 @@ export function TechniqueBar({
   campaignId,
   context,
   onActivate,
+  activatingTechniqueId,
 }: TechniqueBarProps) {
   const entityTechniques = useQuery(
     api.skills.getEntityTechniques,
