@@ -67,6 +67,7 @@ import type * as npcMemories from "../npcMemories.js";
 import type * as npcs from "../npcs.js";
 import type * as presence from "../presence.js";
 import type * as relationships from "../relationships.js";
+import type * as skills from "../skills.js";
 import type * as users from "../users.js";
 
 import type {
@@ -135,6 +136,7 @@ declare const fullApi: ApiFromModules<{
   npcs: typeof npcs;
   presence: typeof presence;
   relationships: typeof relationships;
+  skills: typeof skills;
   users: typeof users;
 }>;
 
