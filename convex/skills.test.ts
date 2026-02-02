@@ -53,7 +53,7 @@ describe("canTierUp edge cases", () => {
     expect(canTierUp(99999, 8, 10)).toBe(false);
   });
   it("returns false when threshold not defined (tier 9+)", () => {
-    // @ts-expect-error — testing invalid tier
+    // tier 9 has no threshold in XP_THRESHOLDS, so canTierUp returns false
     expect(canTierUp(99999, 9, 10)).toBe(false);
   });
 });
