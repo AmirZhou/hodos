@@ -2224,7 +2224,7 @@ export const endTurn = mutation({
     if (currentCombatant.entityType === "character") {
       const char = await ctx.db.get(currentCombatant.entityId as Id<"characters">);
       if (char) {
-        const updatedConditions = processConditionDurations(
+        let updatedConditions = processConditionDurations(
           char.conditions.map(c => ({
             name: c.name,
             duration: c.duration,
@@ -2235,6 +2235,13 @@ export const endTurn = mutation({
           })),
           "end",
         );
+        // Repeated saves at end of turn (D&D 5e: "at the end of each of its turns")
+        const { kept } = processRepeatedSaves(
+          updatedConditions,
+          char.abilities as unknown as Record<string, number>,
+          char.proficiencyBonus,
+        );
+        updatedConditions = kept;
         await ctx.db.patch(currentCombatant.entityId as Id<"characters">, {
           conditions: updatedConditions.map(serializeCondition),
         });
@@ -2242,7 +2249,7 @@ export const endTurn = mutation({
     } else {
       const npc = await ctx.db.get(currentCombatant.entityId as Id<"npcs">);
       if (npc) {
-        const updatedConditions = processConditionDurations(
+        let updatedConditions = processConditionDurations(
           npc.conditions.map(c => ({
             name: c.name,
             duration: c.duration,
@@ -2253,6 +2260,14 @@ export const endTurn = mutation({
           })),
           "end",
         );
+        // Repeated saves at end of turn for NPC (estimated proficiency from level)
+        const npcProfBonus = Math.max(2, Math.floor((npc.level - 1) / 4) + 2);
+        const { kept: npcKept } = processRepeatedSaves(
+          updatedConditions,
+          npc.abilities as unknown as Record<string, number>,
+          npcProfBonus,
+        );
+        updatedConditions = npcKept;
         await ctx.db.patch(currentCombatant.entityId as Id<"npcs">, {
           conditions: updatedConditions.map(serializeCondition),
         });
