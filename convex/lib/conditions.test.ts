@@ -18,8 +18,14 @@ import {
   applyDiminishingReturns,
   CC_CATEGORIES,
   DR_RESET_TURNS,
+  applyOrReplaceCondition,
+  applyCcResistance,
+  spellCcBaseDuration,
+  shouldBlockCc,
+  canUseLegendaryResistance,
+  processRepeatedSaves,
 } from "./conditions";
-import type { DrTracker } from "./conditions";
+import type { DrTracker, ActiveCondition } from "./conditions";
 
 describe("getCondition", () => {
   it("returns condition by name (case-insensitive)", () => {
