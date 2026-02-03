@@ -32,6 +32,7 @@ import {
   spellCcBaseDuration,
   applyCcResistance,
   canUseLegendaryResistance,
+  processRepeatedSaves,
 } from "../lib/conditions";
 import type { DrTracker, ActiveCondition } from "../lib/conditions";
 import {
