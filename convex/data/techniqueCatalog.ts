@@ -462,6 +462,8 @@ export const ALL_TECHNIQUES: TechniqueDefinition[] = [
     rollBonus: 3,
     cooldown: 2,
     teachable: false,
+    comboFrom: ["pressure_point"],
+    comboBonusDamage: 4,
   },
 
   // ── BLADE MASTERY (3 techniques) ────────────────────────────────────────
