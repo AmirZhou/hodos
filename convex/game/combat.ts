@@ -475,7 +475,7 @@ export const executeAction = mutation({
       if (npc) attackerConditions = npc.conditions.map(c => c.name);
     }
 
-    if (!canAct(attackerConditions) && args.action.type !== "other") {
+    if (!canAct(attackerConditions) && args.action.type !== "other" && args.action.type !== "cc_break" && args.action.type !== "iron_will") {
       throw new Error("Cannot act due to conditions");
     }
 
