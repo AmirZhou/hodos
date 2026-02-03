@@ -94,6 +94,19 @@ const FIGHTER_FEATURES: ClassFeature[] = [
     description: "Attack four times when you take the Attack action.",
     combatEffect: { extraAttacks: 3 },
   },
+  {
+    id: "indomitable_will",
+    name: "Indomitable Will",
+    level: 9,
+    description: "Use reaction to break free from stun, fear, or incapacitate effects. Recharges after 3 rounds.",
+    combatEffect: {
+      ccBreak: {
+        breaksCategories: ["stun", "fear", "incapacitate"],
+        actionCost: "reaction",
+        cooldownRounds: 3,
+      },
+    },
+  },
 ];
 
 const ROGUE_FEATURES: ClassFeature[] = [
