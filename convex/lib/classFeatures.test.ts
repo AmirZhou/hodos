@@ -165,3 +165,74 @@ describe("initializeClassResources", () => {
     expect(Object.keys(resources)).toHaveLength(0);
   });
 });
+
+// ============ CC BREAK FEATURES ============
+
+describe("getCcBreakFeature", () => {
+  it("fighter gets Indomitable Will at level 9", () => {
+    const ccBreak = getCcBreakFeature("fighter", 9);
+    expect(ccBreak).not.toBeNull();
+    expect(ccBreak!.breaksCategories).toContain("stun");
+    expect(ccBreak!.breaksCategories).toContain("fear");
+    expect(ccBreak!.breaksCategories).toContain("incapacitate");
+    expect(ccBreak!.actionCost).toBe("reaction");
+    expect(ccBreak!.cooldownRounds).toBe(3);
+  });
+
+  it("fighter does not have CC break at level 8", () => {
+    expect(getCcBreakFeature("fighter", 8)).toBeNull();
+  });
+
+  it("barbarian gets Rage Break at level 6", () => {
+    const ccBreak = getCcBreakFeature("barbarian", 6);
+    expect(ccBreak).not.toBeNull();
+    expect(ccBreak!.actionCost).toBe("passive");
+    expect(ccBreak!.requiresRaging).toBe(true);
+    expect(ccBreak!.breaksCategories).toContain("stun");
+  });
+
+  it("barbarian does not have CC break at level 5", () => {
+    expect(getCcBreakFeature("barbarian", 5)).toBeNull();
+  });
+
+  it("paladin gets Divine Freedom at level 6", () => {
+    const ccBreak = getCcBreakFeature("paladin", 6);
+    expect(ccBreak).not.toBeNull();
+    expect(ccBreak!.breaksCategories).toHaveLength(7); // ALL categories
+    expect(ccBreak!.actionCost).toBe("bonus_action");
+    expect(ccBreak!.cooldownRounds).toBe(5);
+  });
+
+  it("rogue gets Slip Free at level 5", () => {
+    const ccBreak = getCcBreakFeature("rogue", 5);
+    expect(ccBreak).not.toBeNull();
+    expect(ccBreak!.breaksCategories).toContain("root");
+    expect(ccBreak!.breaksCategories).toContain("slow");
+    expect(ccBreak!.breaksCategories).toContain("stun");
+    expect(ccBreak!.grantsStealthOnUse).toBe(true);
+    expect(ccBreak!.cooldownRounds).toBe(2);
+  });
+
+  it("monk gets Stillness of Mind at level 7", () => {
+    const ccBreak = getCcBreakFeature("monk", 7);
+    expect(ccBreak).not.toBeNull();
+    expect(ccBreak!.breaksCategories).toContain("fear");
+    expect(ccBreak!.breaksCategories).toContain("incapacitate");
+    expect(ccBreak!.breaksCategories).toContain("disorient");
+    expect(ccBreak!.actionCost).toBe("reaction");
+    expect(ccBreak!.resourceCost).toEqual({ resource: "ki", amount: 1 });
+  });
+
+  it("ranger gets Nature's Stride at level 6", () => {
+    const ccBreak = getCcBreakFeature("ranger", 6);
+    expect(ccBreak).not.toBeNull();
+    expect(ccBreak!.breaksCategories).toContain("root");
+    expect(ccBreak!.breaksCategories).toContain("slow");
+    expect(ccBreak!.actionCost).toBe("passive");
+    expect(ccBreak!.cooldownRounds).toBe(0);
+  });
+
+  it("returns null for unknown class", () => {
+    expect(getCcBreakFeature("unknown", 20)).toBeNull();
+  });
+});
