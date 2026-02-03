@@ -27,8 +27,13 @@ import {
   removeConditionsOnDamage,
   CC_CATEGORIES,
   applyDiminishingReturns,
+  applyOrReplaceCondition,
+  shouldBlockCc,
+  spellCcBaseDuration,
+  applyCcResistance,
+  canUseLegendaryResistance,
 } from "../lib/conditions";
-import type { DrTracker } from "../lib/conditions";
+import type { DrTracker, ActiveCondition } from "../lib/conditions";
 import {
   potencyToCcDuration,
   applyVulnerabilityBonus,
