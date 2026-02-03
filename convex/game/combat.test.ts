@@ -5,6 +5,7 @@ import {
   getSneakAttackDice,
   getRageDamageBonus,
   getFeaturesForClassAtLevel,
+  getCcBreakFeature,
 } from "../lib/classFeatures";
 import {
   hasSpellSlot,
