@@ -8,7 +8,7 @@ import { resolveAttackAdvantage, canAct, canMove, canCast, getEffectiveSpeed, is
 import type { DrTracker } from "../lib/conditions";
 import { getNpcAttackBonus, getNpcDamageDice } from "../lib/npcCombat";
 import { parseDiceString } from "../lib/validation";
-import { getExtraAttacks, getSneakAttackDice, getRageDamageBonus } from "../lib/classFeatures";
+import { getExtraAttacks, getSneakAttackDice, getRageDamageBonus, getCcBreakFeature } from "../lib/classFeatures";
 import { hasSpellSlot, getCastingAbility, getSpellSaveDC, getSpellAttackBonus, getCantripDiceCount } from "../lib/spells";
 import { getSpellById } from "../data/spellData";
 import { getTechniqueById } from "../data/techniqueCatalog";
