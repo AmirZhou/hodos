@@ -4,7 +4,7 @@ import { api } from "../_generated/api";
 import { Id } from "../_generated/dataModel";
 import { requireCampaignMember } from "../lib/auth";
 import { getEffectiveStats } from "../lib/statHelpers";
-import { resolveAttackAdvantage, canAct, canMove, canCast, getEffectiveSpeed, isAutoCrit, hasResistanceAll, processConditionDurations, concentrationSaveDC, getOutgoingDamageMultiplier, removeConditionsOnDamage, getAcModifier, CC_CATEGORIES, applyDiminishingReturns } from "../lib/conditions";
+import { resolveAttackAdvantage, canAct, canMove, canCast, getEffectiveSpeed, isAutoCrit, hasResistanceAll, processConditionDurations, concentrationSaveDC, getOutgoingDamageMultiplier, removeConditionsOnDamage, getAcModifier, CC_CATEGORIES, applyDiminishingReturns, getDotDamage } from "../lib/conditions";
 import type { DrTracker } from "../lib/conditions";
 import { getNpcAttackBonus, getNpcDamageDice } from "../lib/npcCombat";
 import { parseDiceString } from "../lib/validation";
