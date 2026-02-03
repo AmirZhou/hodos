@@ -2405,12 +2405,8 @@ export const endTurn = mutation({
 
             // If 3 failures: character dies — add "dead" condition, remove unconscious
             if (ds.failures >= 3) {
-              const deathConditions = (patch.conditions as Array<{ name: string; duration?: number; source?: string }>) ??
-                updatedConditions.map(c => ({
-                  name: c.name,
-                  ...(c.duration !== undefined ? { duration: c.duration } : {}),
-                  ...(c.source ? { source: c.source } : {}),
-                }));
+              const deathConditions = (patch.conditions as ReturnType<typeof serializeCondition>[]) ??
+                updatedConditions.map(serializeCondition);
               patch.conditions = deathConditions
                 .filter((c: { name: string }) => c.name !== "unconscious")
                 .concat([{ name: "dead" }]);
