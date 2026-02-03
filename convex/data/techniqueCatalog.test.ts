@@ -46,6 +46,29 @@ describe("techniqueCatalog", () => {
       }
     }
   });
+
+  it("comboFrom references valid technique ids", () => {
+    for (const tech of ALL_TECHNIQUES) {
+      if (tech.comboFrom) {
+        for (const comboId of tech.comboFrom) {
+          expect(getTechniqueById(comboId), `Technique "${tech.id}" has comboFrom "${comboId}" which does not exist`).toBeDefined();
+        }
+      }
+    }
+  });
+
+  it("comboBonusDamage is present when comboFrom is set", () => {
+    for (const tech of ALL_TECHNIQUES) {
+      if (tech.comboFrom && tech.comboFrom.length > 0) {
+        expect(tech.comboBonusDamage, `Technique "${tech.id}" has comboFrom but no comboBonusDamage`).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it("techniques with combo chains exist", () => {
+    const combos = ALL_TECHNIQUES.filter(t => t.comboFrom && t.comboFrom.length > 0);
+    expect(combos.length).toBeGreaterThanOrEqual(8);
+  });
 });
 
 describe("rivermoot NPC skill assignments", () => {
