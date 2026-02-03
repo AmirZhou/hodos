@@ -1082,30 +1082,30 @@ export const executeAction = mutation({
             if (target.entityType === "character") {
               const ch = await ctx.db.get(target.entityId as Id<"characters">);
               if (ch) {
-                const conds = [...ch.conditions];
+                let conds = [...ch.conditions];
                 for (const condName of spell.conditions) {
-                  if (!conds.some(c => c.name === condName)) {
-                    conds.push({
-                      name: condName,
-                      ...(spell.concentration ? { duration: 10 } : { duration: 1 }),
-                      source: spell.id,
-                    });
-                  }
+                  const baseDur = spellCcBaseDuration(spell);
+                  conds = applyOrReplaceCondition(conds, {
+                    name: condName,
+                    duration: baseDur,
+                    source: spell.id,
+                    ...(spell.saveType ? { saveDC: spellSaveDC, saveAbility: spell.saveType } : {}),
+                  });
                 }
                 await ctx.db.patch(target.entityId as Id<"characters">, { conditions: conds });
               }
             } else {
               const np = await ctx.db.get(target.entityId as Id<"npcs">);
               if (np) {
-                const conds = [...np.conditions];
+                let conds = [...np.conditions];
                 for (const condName of spell.conditions) {
-                  if (!conds.some(c => c.name === condName)) {
-                    conds.push({
-                      name: condName,
-                      ...(spell.concentration ? { duration: 10 } : { duration: 1 }),
-                      source: spell.id,
-                    });
-                  }
+                  const baseDur = spellCcBaseDuration(spell);
+                  conds = applyOrReplaceCondition(conds, {
+                    name: condName,
+                    duration: baseDur,
+                    source: spell.id,
+                    ...(spell.saveType ? { saveDC: spellSaveDC, saveAbility: spell.saveType } : {}),
+                  });
                 }
                 await ctx.db.patch(target.entityId as Id<"npcs">, { conditions: conds });
               }
