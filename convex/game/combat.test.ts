@@ -569,3 +569,263 @@ describe("Dead condition", () => {
     expect(canMove(["dead"])).toBe(false);
   });
 });
+
+// ============ CC SYSTEM INTEGRATION TESTS ============
+
+describe("DR integration: potency → duration → DR → effective duration", () => {
+  it("critical potency stunned: 3 turns, then 1 turn (50% floored), then 1 turn (25% min 1), then immune", () => {
+    const potency: Potency = "critical";
+    const baseDuration = potencyToCcDuration(potency);
+    expect(baseDuration).toBe(3);
+
+    let tracker: DrTracker = {};
+
+    // 1st application: 100% → 3 turns
+    let result = applyDiminishingReturns(baseDuration, "stunned", tracker, 1);
+    expect(result.duration).toBe(3);
+    tracker = result.updatedTracker;
+
+    // 2nd application: 50% → floor(3 * 0.5) = floor(1.5) = 1, max(1,1) = 1
+    result = applyDiminishingReturns(baseDuration, "stunned", tracker, 2);
+    expect(result.duration).toBe(1);
+    tracker = result.updatedTracker;
+
+    // 3rd application: 25% → floor(3 * 0.25) = floor(0.75) = 0, max(1,0) = 1
+    result = applyDiminishingReturns(baseDuration, "stunned", tracker, 3);
+    expect(result.duration).toBe(1);
+    tracker = result.updatedTracker;
+
+    // 4th application: immune → 0 turns
+    result = applyDiminishingReturns(baseDuration, "stunned", tracker, 4);
+    expect(result.duration).toBe(0);
+  });
+
+  it("standard potency gives 1 turn base, DR still applies", () => {
+    const baseDuration = potencyToCcDuration("standard");
+    expect(baseDuration).toBe(1);
+
+    let tracker: DrTracker = {};
+
+    // 1st: 100% → 1 turn
+    let result = applyDiminishingReturns(baseDuration, "frightened", tracker, 1);
+    expect(result.duration).toBe(1);
+    tracker = result.updatedTracker;
+
+    // 2nd: 50% → floor(1 * 0.5) = 0, max(1,0) = 1
+    result = applyDiminishingReturns(baseDuration, "frightened", tracker, 2);
+    expect(result.duration).toBe(1);
+    tracker = result.updatedTracker;
+
+    // 3rd: 25% → floor(1 * 0.25) = 0, max(1,0) = 1
+    result = applyDiminishingReturns(baseDuration, "frightened", tracker, 3);
+    expect(result.duration).toBe(1);
+    tracker = result.updatedTracker;
+
+    // 4th: immune → 0
+    result = applyDiminishingReturns(baseDuration, "frightened", tracker, 4);
+    expect(result.duration).toBe(0);
+  });
+
+  it("negated/resisted potency gives 0 duration — never applies", () => {
+    expect(potencyToCcDuration("negated")).toBe(0);
+    expect(potencyToCcDuration("resisted")).toBe(0);
+  });
+
+  it("DR resets after 3 turns without CC in that category", () => {
+    let tracker: DrTracker = {};
+    const baseDuration = potencyToCcDuration("overwhelming");
+    expect(baseDuration).toBe(2);
+
+    // Apply twice
+    let result = applyDiminishingReturns(baseDuration, "stunned", tracker, 1);
+    tracker = result.updatedTracker;
+    result = applyDiminishingReturns(baseDuration, "stunned", tracker, 2);
+    tracker = result.updatedTracker;
+    expect(result.duration).toBe(1); // 50%
+
+    // Wait 3+ turns
+    result = applyDiminishingReturns(baseDuration, "stunned", tracker, 6);
+    expect(result.duration).toBe(2); // reset, full duration
+  });
+});
+
+describe("vulnerability damage: burning + fire_magic = +50%", () => {
+  it("burning target takes 50% more from fire_magic", () => {
+    const result = applyVulnerabilityBonus(10, ["burning"], "fire_magic");
+    expect(result).toBe(15); // floor(10 * 1.5)
+  });
+
+  it("chilled target takes 50% more from ice_magic", () => {
+    expect(applyVulnerabilityBonus(10, ["chilled"], "ice_magic")).toBe(15);
+  });
+
+  it("armor_broken target takes 50% more from heavy_weapons", () => {
+    expect(applyVulnerabilityBonus(10, ["armor_broken"], "heavy_weapons")).toBe(15);
+  });
+
+  it("armor_broken target takes 50% more from archery", () => {
+    expect(applyVulnerabilityBonus(10, ["armor_broken"], "archery")).toBe(15);
+  });
+
+  it("no vulnerability = base damage unchanged", () => {
+    expect(applyVulnerabilityBonus(10, ["stunned"], "fire_magic")).toBe(10);
+  });
+
+  it("multiple vulnerabilities don't double-stack (still 1.5x)", () => {
+    // burning gives vulnerability to fire_magic, bleeding gives vulnerability to blade_mastery
+    // if target has both but skill is fire_magic, only burning matters
+    expect(applyVulnerabilityBonus(10, ["burning", "bleeding"], "fire_magic")).toBe(15);
+  });
+});
+
+describe("DoT ticking", () => {
+  it("burning deals 3 damage per turn", () => {
+    expect(getDotDamage(["burning"])).toBe(3);
+  });
+
+  it("bleeding deals 2 damage per turn", () => {
+    expect(getDotDamage(["bleeding"])).toBe(2);
+  });
+
+  it("doomed deals 5 damage per turn", () => {
+    expect(getDotDamage(["doomed"])).toBe(5);
+  });
+
+  it("burning_intense deals 5 damage per turn", () => {
+    expect(getDotDamage(["burning_intense"])).toBe(5);
+  });
+
+  it("multiple DoTs stack additively", () => {
+    expect(getDotDamage(["burning", "bleeding"])).toBe(5);
+    expect(getDotDamage(["burning", "bleeding", "doomed"])).toBe(10);
+  });
+
+  it("non-DoT conditions contribute 0", () => {
+    expect(getDotDamage(["stunned", "frightened"])).toBe(0);
+  });
+});
+
+describe("combo bonus: technique chains", () => {
+  it("grapple_hold → pressure_point gives +3 bonus", () => {
+    expect(calculateComboBonus("pressure_point", "grapple_hold", 1, 2)).toBe(3);
+  });
+
+  it("quick_draw → whirlwind_slash gives +4 bonus", () => {
+    expect(calculateComboBonus("whirlwind_slash", "quick_draw", 1, 2)).toBe(4);
+  });
+
+  it("fire_bolt → fireball gives +5 bonus", () => {
+    expect(calculateComboBonus("fireball", "fire_bolt", 1, 2)).toBe(5);
+  });
+
+  it("combo expired after 2-turn window returns 0", () => {
+    expect(calculateComboBonus("pressure_point", "grapple_hold", 1, 4)).toBe(0);
+  });
+
+  it("non-matching predecessor returns 0", () => {
+    expect(calculateComboBonus("pressure_point", "fire_bolt", 1, 2)).toBe(0);
+  });
+
+  it("no previous technique returns 0", () => {
+    expect(calculateComboBonus("pressure_point", undefined, undefined, 2)).toBe(0);
+  });
+});
+
+describe("new condition mechanics", () => {
+  it("silenced blocks casting", () => {
+    expect(canCast(["silenced"])).toBe(false);
+  });
+
+  it("confused blocks casting", () => {
+    expect(canCast(["confused"])).toBe(false);
+  });
+
+  it("stunned blocks casting", () => {
+    expect(canCast(["stunned"])).toBe(false);
+  });
+
+  it("normal conditions don't block casting", () => {
+    expect(canCast(["burning", "bleeding"])).toBe(true);
+    expect(canCast([])).toBe(true);
+  });
+
+  it("armor_broken reduces AC by 3", () => {
+    expect(getAcModifier(["armor_broken"])).toBe(-3);
+  });
+
+  it("weakened reduces outgoing damage to 50%", () => {
+    expect(getOutgoingDamageMultiplier(["weakened"])).toBe(0.5);
+  });
+
+  it("breakOnDamage removes charmed and dominated", () => {
+    const conditions = [
+      { name: "charmed", duration: 3, source: "spell" },
+      { name: "stunned", duration: 1, source: "attack" },
+      { name: "dominated", duration: 2, source: "spell" },
+    ];
+    const cleaned = removeConditionsOnDamage(conditions);
+    expect(cleaned).toHaveLength(1);
+    expect(cleaned[0].name).toBe("stunned");
+  });
+
+  it("CC_CATEGORIES maps conditions correctly", () => {
+    expect(CC_CATEGORIES["stunned"]).toBe("stun");
+    expect(CC_CATEGORIES["paralyzed"]).toBe("stun");
+    expect(CC_CATEGORIES["frightened"]).toBe("fear");
+    expect(CC_CATEGORIES["grappled"]).toBe("root");
+    expect(CC_CATEGORIES["blinded"]).toBe("disorient");
+    expect(CC_CATEGORIES["silenced"]).toBe("silence");
+    expect(CC_CATEGORIES["slowed"]).toBe("slow");
+    expect(CC_CATEGORIES["charmed"]).toBe("incapacitate");
+  });
+});
+
+describe("CC break availability per class at correct levels", () => {
+  it("fighter has no CC break before level 9", () => {
+    expect(getCcBreakFeature("fighter", 8)).toBeNull();
+  });
+
+  it("fighter gets Indomitable Will at level 9", () => {
+    const feature = getCcBreakFeature("fighter", 9);
+    expect(feature).not.toBeNull();
+    expect(feature!.breaksCategories).toContain("stun");
+    expect(feature!.actionCost).toBe("reaction");
+    expect(feature!.cooldownRounds).toBe(3);
+  });
+
+  it("barbarian gets Rage Break at level 6 (passive, requires raging)", () => {
+    const feature = getCcBreakFeature("barbarian", 6);
+    expect(feature).not.toBeNull();
+    expect(feature!.actionCost).toBe("passive");
+    expect(feature!.requiresRaging).toBe(true);
+  });
+
+  it("paladin gets Divine Freedom at level 6 (breaks ALL CC)", () => {
+    const feature = getCcBreakFeature("paladin", 6);
+    expect(feature).not.toBeNull();
+    expect(feature!.breaksCategories).toHaveLength(7);
+    expect(feature!.actionCost).toBe("bonus_action");
+  });
+
+  it("rogue gets Slip Free at level 5 (grants stealth)", () => {
+    const feature = getCcBreakFeature("rogue", 5);
+    expect(feature).not.toBeNull();
+    expect(feature!.grantsStealthOnUse).toBe(true);
+    expect(feature!.cooldownRounds).toBe(2);
+  });
+
+  it("monk gets Stillness of Mind at level 7 (costs 1 ki)", () => {
+    const feature = getCcBreakFeature("monk", 7);
+    expect(feature).not.toBeNull();
+    expect(feature!.resourceCost).toEqual({ resource: "ki", amount: 1 });
+  });
+
+  it("ranger gets Nature's Stride at level 6 (passive, no cooldown)", () => {
+    const feature = getCcBreakFeature("ranger", 6);
+    expect(feature).not.toBeNull();
+    expect(feature!.actionCost).toBe("passive");
+    expect(feature!.cooldownRounds).toBe(0);
+    expect(feature!.breaksCategories).toContain("root");
+    expect(feature!.breaksCategories).toContain("slow");
+  });
+});
