@@ -2043,6 +2043,38 @@ export const endTurn = mutation({
           })),
         };
 
+        // === DoT damage at start of turn ===
+        const dotDmg = getDotDamage(char.conditions.map(c => c.name));
+        if (dotDmg > 0 && char.hp > 0) {
+          let rem = dotDmg;
+          let tp = (patch.tempHp as number | undefined) ?? char.tempHp;
+          if (tp > 0) {
+            const absorbed = Math.min(tp, rem);
+            tp -= absorbed;
+            rem -= absorbed;
+            patch.tempHp = tp;
+          }
+          const newHp = Math.max(0, char.hp - rem);
+          patch.hp = newHp;
+          // DoT dropping to 0 HP → unconscious
+          if (newHp === 0 && char.hp > 0) {
+            const condsList = (patch.conditions as Array<{ name: string; duration?: number; source?: string }>);
+            if (!condsList.some(c => c.name === "unconscious")) {
+              condsList.push({ name: "unconscious" });
+            }
+            patch.conditions = condsList;
+            patch.deathSaves = { successes: 0, failures: 0 };
+          }
+          // Concentration save from DoT damage
+          if (char.concentration && rem > 0) {
+            const dc = concentrationSaveDC(rem);
+            const mod = Math.floor((char.abilities.constitution - 10) / 2);
+            if (Math.floor(Math.random() * 20) + 1 + mod + char.proficiencyBonus < dc) {
+              patch.concentration = undefined;
+            }
+          }
+        }
+
         // Death saves: if at 0 HP, roll death save
         if (char.hp === 0) {
           const ds = { ...char.deathSaves };
