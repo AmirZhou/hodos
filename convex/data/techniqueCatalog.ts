@@ -445,6 +445,8 @@ export const ALL_TECHNIQUES: TechniqueDefinition[] = [
     rollBonus: 2,
     cooldown: 1,
     teachable: true,
+    comboFrom: ["grapple_hold"],
+    comboBonusDamage: 3,
   },
   {
     id: "iron_fist",
