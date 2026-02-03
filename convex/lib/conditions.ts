@@ -1,7 +1,8 @@
 /**
  * D&D 5e Conditions System
  *
- * All 14 standard conditions with mechanical effects.
+ * All 14 standard conditions with mechanical effects, plus custom conditions
+ * for CC categories, DoT, vulnerability, and combat mechanics.
  */
 
 export interface ConditionEffect {
@@ -22,6 +23,14 @@ export interface ConditionEffect {
   cannotAttackCharmer?: boolean;
   meleeAttackedAdvantage?: boolean;
   rangedAttackedDisadvantage?: boolean;
+  // New fields for CC/DoT/vulnerability system
+  dotDamage?: number;
+  speedMultiplier?: number;
+  acModifier?: number;
+  cannotCast?: boolean;
+  damageVulnerability?: string[];
+  breakOnDamage?: boolean;
+  outgoingDamageMultiplier?: number;
 }
 
 export interface ConditionDefinition {
@@ -29,6 +38,42 @@ export interface ConditionDefinition {
   description: string;
   effects: ConditionEffect;
 }
+
+// ---------------------------------------------------------------------------
+// CC Categories (WoW-style DR grouping)
+// ---------------------------------------------------------------------------
+
+export type CcCategory =
+  | "stun"
+  | "incapacitate"
+  | "fear"
+  | "root"
+  | "slow"
+  | "silence"
+  | "disorient";
+
+export const CC_CATEGORIES: Record<string, CcCategory> = {
+  stunned: "stun",
+  paralyzed: "stun",
+  charmed: "incapacitate",
+  unconscious: "incapacitate",
+  dominated: "incapacitate",
+  frightened: "fear",
+  shaken: "fear",
+  grappled: "root",
+  restrained: "root",
+  pinned: "root",
+  slowed: "slow",
+  chilled: "slow",
+  silenced: "silence",
+  confused: "silence",
+  blinded: "disorient",
+  distracted: "disorient",
+};
+
+// ---------------------------------------------------------------------------
+// Condition definitions
+// ---------------------------------------------------------------------------
 
 export const CONDITIONS: Record<string, ConditionDefinition> = {
   blinded: {
@@ -46,6 +91,7 @@ export const CONDITIONS: Record<string, ConditionDefinition> = {
       "Can't attack the charmer or target them with harmful abilities. Charmer has advantage on social checks.",
     effects: {
       cannotAttackCharmer: true,
+      breakOnDamage: true,
     },
   },
   deafened: {
@@ -162,6 +208,7 @@ export const CONDITIONS: Record<string, ConditionDefinition> = {
       autoFailStrDexSaves: true,
       attackedAdvantage: true,
       critWithin5ft: true,
+      breakOnDamage: true,
     },
   },
   dodging: {
@@ -194,6 +241,135 @@ export const CONDITIONS: Record<string, ConditionDefinition> = {
       cannotAct: true,
       cannotMove: true,
     },
+  },
+
+  // ── NEW CONDITIONS ─────────────────────────────────────────────────────
+
+  shaken: {
+    name: "Shaken",
+    description: "Unnerved. Disadvantage on attack rolls from fear.",
+    effects: {
+      attackDisadvantage: true,
+      cannotApproachSource: true,
+    },
+  },
+  weakened: {
+    name: "Weakened",
+    description: "Sapped of strength. Outgoing damage reduced by 50%.",
+    effects: {
+      outgoingDamageMultiplier: 0.5,
+    },
+  },
+  burning: {
+    name: "Burning",
+    description: "On fire. Takes 3 damage at start of turn. Vulnerable to fire magic.",
+    effects: {
+      dotDamage: 3,
+      damageVulnerability: ["fire_magic"],
+    },
+  },
+  confused: {
+    name: "Confused",
+    description: "Mind is scrambled. Cannot cast spells or use techniques.",
+    effects: {
+      cannotCast: true,
+      abilityCheckDisadvantage: true,
+    },
+  },
+  chilled: {
+    name: "Chilled",
+    description: "Slowed by cold. Half movement speed. Vulnerable to ice magic.",
+    effects: {
+      speedMultiplier: 0.5,
+      damageVulnerability: ["ice_magic"],
+    },
+  },
+  slowed: {
+    name: "Slowed",
+    description: "Movement is impaired. Half movement speed.",
+    effects: {
+      speedMultiplier: 0.5,
+    },
+  },
+  armor_broken: {
+    name: "Armor Broken",
+    description: "Armor is damaged. AC reduced by 3. Vulnerable to heavy weapons and archery.",
+    effects: {
+      acModifier: -3,
+      damageVulnerability: ["heavy_weapons", "archery"],
+    },
+  },
+  pinned: {
+    name: "Pinned",
+    description: "Pinned in place. Speed 0. Vulnerable to archery.",
+    effects: {
+      speedZero: true,
+      damageVulnerability: ["archery"],
+    },
+  },
+  distracted: {
+    name: "Distracted",
+    description: "Attention diverted. Disadvantage on attacks and ability checks.",
+    effects: {
+      attackDisadvantage: true,
+      abilityCheckDisadvantage: true,
+      attackedAdvantage: true,
+    },
+  },
+  freed: {
+    name: "Freed",
+    description: "Released from restraints.",
+    effects: {},
+  },
+  silenced: {
+    name: "Silenced",
+    description: "Cannot speak or cast spells with verbal components.",
+    effects: {
+      cannotCast: true,
+    },
+  },
+  bleeding: {
+    name: "Bleeding",
+    description: "Losing blood. Takes 2 damage at start of turn. Vulnerable to blades and dirty fighting.",
+    effects: {
+      dotDamage: 2,
+      damageVulnerability: ["blade_mastery", "dirty_fighting"],
+    },
+  },
+  burning_intense: {
+    name: "Burning (Intense)",
+    description: "Engulfed in intense flames. Takes 5 damage at start of turn.",
+    effects: {
+      dotDamage: 5,
+      damageVulnerability: ["fire_magic"],
+    },
+  },
+  staggered: {
+    name: "Staggered",
+    description: "Off-balance. Disadvantage on next attack roll.",
+    effects: {
+      attackDisadvantage: true,
+    },
+  },
+  dominated: {
+    name: "Dominated",
+    description: "Under total mental control. Cannot act independently. Breaks on damage.",
+    effects: {
+      cannotAct: true,
+      breakOnDamage: true,
+    },
+  },
+  doomed: {
+    name: "Doomed",
+    description: "Marked for death. Takes 5 damage at start of turn from internal vibrations.",
+    effects: {
+      dotDamage: 5,
+    },
+  },
+  cc_immune: {
+    name: "CC Immune",
+    description: "Temporarily immune to crowd control effects in a specific category.",
+    effects: {},
   },
 };
 
@@ -268,14 +444,102 @@ export function canMove(conditions: string[]): boolean {
 }
 
 /**
- * Get effective speed considering conditions.
+ * Check if a combatant can cast spells/use techniques.
+ */
+export function canCast(conditions: string[]): boolean {
+  for (const name of conditions) {
+    const cond = getCondition(name);
+    if (cond?.effects.cannotCast) return false;
+    if (cond?.effects.cannotAct) return false;
+  }
+  return true;
+}
+
+/**
+ * Get effective speed considering conditions (speedZero and speedMultiplier).
  */
 export function getEffectiveSpeed(baseSpeed: number, conditions: string[]): number {
+  let multiplier = 1;
   for (const name of conditions) {
     const cond = getCondition(name);
     if (cond?.effects.speedZero) return 0;
+    if (cond?.effects.speedMultiplier !== undefined) {
+      multiplier = Math.min(multiplier, cond.effects.speedMultiplier);
+    }
   }
-  return baseSpeed;
+  return Math.floor(baseSpeed * multiplier);
+}
+
+/**
+ * Get total DoT damage from all conditions.
+ */
+export function getDotDamage(conditions: string[]): number {
+  let total = 0;
+  for (const name of conditions) {
+    const cond = getCondition(name);
+    if (cond?.effects.dotDamage) {
+      total += cond.effects.dotDamage;
+    }
+  }
+  return total;
+}
+
+/**
+ * Get damage vulnerability multiplier for a given skill.
+ * Returns 1.5 if any condition grants vulnerability to the skill, 1.0 otherwise.
+ */
+export function getDamageVulnerabilityMultiplier(
+  conditions: string[],
+  skillId: string,
+): number {
+  for (const name of conditions) {
+    const cond = getCondition(name);
+    if (cond?.effects.damageVulnerability?.includes(skillId)) {
+      return 1.5;
+    }
+  }
+  return 1.0;
+}
+
+/**
+ * Get total AC modifier from conditions.
+ */
+export function getAcModifier(conditions: string[]): number {
+  let total = 0;
+  for (const name of conditions) {
+    const cond = getCondition(name);
+    if (cond?.effects.acModifier) {
+      total += cond.effects.acModifier;
+    }
+  }
+  return total;
+}
+
+/**
+ * Get the outgoing damage multiplier for an attacker's conditions.
+ * Returns the lowest multiplier (most penalizing).
+ */
+export function getOutgoingDamageMultiplier(conditions: string[]): number {
+  let multiplier = 1.0;
+  for (const name of conditions) {
+    const cond = getCondition(name);
+    if (cond?.effects.outgoingDamageMultiplier !== undefined) {
+      multiplier = Math.min(multiplier, cond.effects.outgoingDamageMultiplier);
+    }
+  }
+  return multiplier;
+}
+
+/**
+ * Remove conditions that break on damage. Returns the filtered list.
+ */
+export function removeConditionsOnDamage(
+  conditions: ActiveCondition[],
+): ActiveCondition[] {
+  return conditions.filter((c) => {
+    const def = getCondition(c.name);
+    return !def?.effects.breakOnDamage;
+  });
 }
 
 /**
@@ -333,4 +597,72 @@ export function processConditionDurations(
  */
 export function concentrationSaveDC(damage: number): number {
   return Math.max(10, Math.floor(damage / 2));
+}
+
+// ---------------------------------------------------------------------------
+// Diminishing Returns System
+// ---------------------------------------------------------------------------
+
+export const DR_RESET_TURNS = 3;
+
+export interface DrEntry {
+  count: number;
+  lastAppliedRound: number;
+}
+
+export type DrTracker = Record<string, DrEntry>;
+
+/**
+ * Apply diminishing returns to a CC duration.
+ *
+ * Returns the effective duration after DR, and the updated DR tracker.
+ * - 1st CC in category: 100% duration
+ * - 2nd CC: 50% (min 1)
+ * - 3rd CC: 25% (min 1)
+ * - 4th+: immune (0 duration)
+ *
+ * DR resets after DR_RESET_TURNS without CC in that category.
+ */
+export function applyDiminishingReturns(
+  baseDuration: number,
+  conditionName: string,
+  tracker: DrTracker,
+  currentRound: number,
+): { duration: number; updatedTracker: DrTracker } {
+  const category = CC_CATEGORIES[conditionName];
+
+  // Non-CC conditions bypass DR entirely
+  if (!category) {
+    return { duration: baseDuration, updatedTracker: tracker };
+  }
+
+  const updatedTracker = { ...tracker };
+  const entry = updatedTracker[category];
+
+  // Check if DR should reset (3+ turns since last application)
+  if (entry && currentRound - entry.lastAppliedRound >= DR_RESET_TURNS) {
+    delete updatedTracker[category];
+  }
+
+  const currentEntry = updatedTracker[category];
+  const count = currentEntry ? currentEntry.count : 0;
+
+  let effectiveDuration: number;
+  if (count === 0) {
+    effectiveDuration = baseDuration; // 100%
+  } else if (count === 1) {
+    effectiveDuration = Math.max(1, Math.floor(baseDuration * 0.5)); // 50%
+  } else if (count === 2) {
+    effectiveDuration = Math.max(1, Math.floor(baseDuration * 0.25)); // 25%
+  } else {
+    effectiveDuration = 0; // immune
+  }
+
+  // Update tracker
+  updatedTracker[category] = {
+    count: count + 1,
+    lastAppliedRound: currentRound,
+  };
+
+  return { duration: effectiveDuration, updatedTracker };
 }
