@@ -781,6 +781,11 @@ export const executeAction = mutation({
       const caster = await ctx.db.get(current.entityId as Id<"characters">);
       if (!caster) throw new Error("Caster not found");
 
+      // Check if caster can cast spells (silenced/confused blocks casting)
+      if (!canCast(attackerConditions)) {
+        throw new Error("Cannot cast spells due to conditions (silenced/confused)");
+      }
+
       const charClass = (caster.class || "").toLowerCase();
       const castingAbility = getCastingAbility(charClass);
       if (!castingAbility) throw new Error("Class cannot cast spells");
