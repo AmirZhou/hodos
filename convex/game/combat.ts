@@ -1557,6 +1557,118 @@ export const executeAction = mutation({
       serverRoll = actorPower;
     }
 
+    // ========== CC BREAK ACTION ==========
+    if (args.action.type === "cc_break") {
+      if (current.entityType !== "character") throw new Error("Only characters can use CC break");
+      const char = await ctx.db.get(current.entityId as Id<"characters">);
+      if (!char) throw new Error("Character not found");
+
+      const cls = (char.class || "").toLowerCase();
+      const ccBreak = getCcBreakFeature(cls, char.level);
+      if (!ccBreak) throw new Error("No CC break ability available for this class/level");
+
+      // Check cooldown
+      const cooldowns = combatants[currentIndex].ccBreakCooldowns ?? {};
+      const lastUsedRound = cooldowns["cc_break"] ?? -999;
+      if (ccBreak.cooldownRounds > 0 && (session.combat!.round - lastUsedRound < ccBreak.cooldownRounds)) {
+        throw new Error("CC break is on cooldown");
+      }
+
+      // Check resource cost
+      if (ccBreak.resourceCost) {
+        const resource = char.classResources?.[ccBreak.resourceCost.resource];
+        if (!resource || resource.current < ccBreak.resourceCost.amount) {
+          throw new Error(`Not enough ${ccBreak.resourceCost.resource} for CC break`);
+        }
+        // Consume resource
+        await ctx.db.patch(current.entityId as Id<"characters">, {
+          classResources: {
+            ...char.classResources,
+            [ccBreak.resourceCost.resource]: {
+              max: resource.max,
+              current: resource.current - ccBreak.resourceCost.amount,
+            },
+          },
+        });
+      }
+
+      // Check raging requirement
+      if (ccBreak.requiresRaging && !char.conditions.some(c => c.name === "raging")) {
+        throw new Error("Must be raging to use this CC break");
+      }
+
+      // Remove matching CC conditions
+      const updatedConditions = char.conditions.filter(c => {
+        const cat = CC_CATEGORIES[c.name];
+        return !(cat && ccBreak.breaksCategories.includes(cat));
+      });
+
+      // Grant stealth if applicable (rogue)
+      if (ccBreak.grantsStealthOnUse) {
+        if (!updatedConditions.some(c => c.name === "hidden")) {
+          updatedConditions.push({ name: "hidden", duration: 1, source: "slip_free" });
+        }
+      }
+
+      // Grant brief CC immunity (1 round)
+      if (!updatedConditions.some(c => c.name === "cc_immune")) {
+        updatedConditions.push({ name: "cc_immune", duration: 1, source: "cc_break" });
+      }
+
+      await ctx.db.patch(current.entityId as Id<"characters">, { conditions: updatedConditions });
+
+      // Record cooldown
+      combatants[currentIndex] = {
+        ...combatants[currentIndex],
+        ccBreakCooldowns: {
+          ...cooldowns,
+          cc_break: session.combat!.round,
+        },
+      };
+
+      // Consume the appropriate action resource
+      if (ccBreak.actionCost === "reaction") {
+        combatants[currentIndex] = { ...combatants[currentIndex], hasReaction: false };
+      } else if (ccBreak.actionCost === "bonus_action") {
+        combatants[currentIndex] = { ...combatants[currentIndex], hasBonusAction: false };
+      }
+      // "free" and "passive" don't consume anything
+
+      hitResult = true;
+    }
+
+    // ========== IRON WILL (universal CC break, once per combat) ==========
+    if (args.action.type === "iron_will") {
+      if (current.entityType !== "character") throw new Error("Only characters can use Iron Will");
+      const char = await ctx.db.get(current.entityId as Id<"characters">);
+      if (!char) throw new Error("Character not found");
+
+      if (combatants[currentIndex].ironWillUsed) {
+        throw new Error("Iron Will already used this combat");
+      }
+
+      // Remove ALL CC conditions
+      const updatedConditions = char.conditions.filter(c => {
+        return CC_CATEGORIES[c.name] === undefined;
+      });
+
+      // Grant CC immunity for 1 round
+      if (!updatedConditions.some(c => c.name === "cc_immune")) {
+        updatedConditions.push({ name: "cc_immune", duration: 1, source: "iron_will" });
+      }
+
+      await ctx.db.patch(current.entityId as Id<"characters">, { conditions: updatedConditions });
+
+      // Mark Iron Will as used
+      combatants[currentIndex] = {
+        ...combatants[currentIndex],
+        ironWillUsed: true,
+      };
+
+      // Iron Will is a free action — doesn't consume action/bonus/reaction
+      hitResult = true;
+    }
+
     // ========== HANDLE ACTION TYPE → CONSUME RESOURCES ==========
     if (args.action.type === "dash") {
       // Cunning Action: rogues use bonus action for dash
