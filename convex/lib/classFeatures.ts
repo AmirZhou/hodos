@@ -305,6 +305,19 @@ const PALADIN_FEATURES: ClassFeature[] = [
     level: 6,
     description: "You and allies within 10 ft gain bonus to saving throws equal to CHA modifier.",
   },
+  {
+    id: "divine_freedom",
+    name: "Divine Freedom",
+    level: 6,
+    description: "Use bonus action to break free from ALL crowd control effects. Recharges after 5 rounds.",
+    combatEffect: {
+      ccBreak: {
+        breaksCategories: ["stun", "incapacitate", "fear", "root", "slow", "silence", "disorient"],
+        actionCost: "bonus_action",
+        cooldownRounds: 5,
+      },
+    },
+  },
 ];
 
 const RANGER_FEATURES: ClassFeature[] = [
