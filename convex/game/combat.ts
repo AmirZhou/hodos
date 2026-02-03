@@ -2425,21 +2425,29 @@ export const endTurn = mutation({
       const npc = await ctx.db.get(nextCombatant.entityId as Id<"npcs">);
       if (npc) {
         // Process start-of-turn condition durations for NPC
-        const updatedConditions = processConditionDurations(
+        let updatedConditions = processConditionDurations(
           npc.conditions.map(c => ({
             name: c.name,
             duration: c.duration,
             source: c.source,
+            saveDC: c.saveDC,
+            saveAbility: c.saveAbility,
             expiresOn: "start" as const,
           })),
           "start",
         );
+
+        // Repeated saves for NPC (estimated proficiency from level)
+        const npcProfBonus = Math.max(2, Math.floor((npc.level - 1) / 4) + 2);
+        const { kept: npcKept } = processRepeatedSaves(
+          updatedConditions,
+          npc.abilities as unknown as Record<string, number>,
+          npcProfBonus,
+        );
+        updatedConditions = npcKept;
+
         const npcPatch: Record<string, unknown> = {
-          conditions: updatedConditions.map(c => ({
-            name: c.name,
-            ...(c.duration !== undefined ? { duration: c.duration } : {}),
-            ...(c.source ? { source: c.source } : {}),
-          })),
+          conditions: updatedConditions.map(serializeCondition),
         };
 
         // DoT damage at start of turn for NPC
