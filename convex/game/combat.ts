@@ -1065,7 +1065,21 @@ export const executeAction = mutation({
           }
 
           const saveRoll = Math.floor(Math.random() * 20) + 1 + saveMod;
-          const saveSuccess = saveRoll >= spellSaveDC;
+          let saveSuccess = saveRoll >= spellSaveDC;
+
+          // Legendary resistance: boss NPC auto-succeeds save, consuming a charge
+          if (!saveSuccess && target.entityType === "npc") {
+            const lrNpc = await ctx.db.get(target.entityId as Id<"npcs">);
+            if (lrNpc && canUseLegendaryResistance(lrNpc.legendaryResistances)) {
+              saveSuccess = true;
+              await ctx.db.patch(target.entityId as Id<"npcs">, {
+                legendaryResistances: {
+                  max: lrNpc.legendaryResistances!.max,
+                  current: lrNpc.legendaryResistances!.current - 1,
+                },
+              });
+            }
+          }
 
           // Apply damage (half on save for damage spells)
           if (spell.damage) {
