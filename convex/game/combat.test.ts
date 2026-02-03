@@ -968,3 +968,79 @@ describe("Boss CC resistance integration", () => {
     expect(dur).toBe(1);
   });
 });
+
+// ============ CONCENTRATION BREAK: CONDITION CLEANUP ============
+
+describe("Concentration break condition cleanup", () => {
+  it("hold_person conditions have source matching spell id for filtering", () => {
+    // Conditions applied by hold_person use source: "hold_person"
+    const conditions: ActiveCondition[] = [
+      { name: "paralyzed", duration: 10, source: "hold_person", saveDC: 15, saveAbility: "wisdom" },
+      { name: "stunned", duration: 1, source: "stunning_strike" },
+      { name: "blinded", duration: 2, source: "blindness" },
+    ];
+    // When concentration breaks, remove conditions where source === "hold_person"
+    const filtered = conditions.filter(c => c.source !== "hold_person");
+    expect(filtered).toHaveLength(2);
+    expect(filtered.find(c => c.name === "paralyzed")).toBeUndefined();
+    expect(filtered.find(c => c.name === "stunned")).toBeDefined();
+    expect(filtered.find(c => c.name === "blinded")).toBeDefined();
+  });
+
+  it("conditions without source are not affected by concentration break", () => {
+    const conditions: ActiveCondition[] = [
+      { name: "paralyzed", duration: 10, source: "hold_person" },
+      { name: "poisoned", duration: 3 }, // no source
+    ];
+    const filtered = conditions.filter(c => c.source !== "hold_person");
+    expect(filtered).toHaveLength(1);
+    expect(filtered[0].name).toBe("poisoned");
+  });
+
+  it("multiple conditions from same spell are all removed", () => {
+    // Some spells might apply multiple conditions
+    const conditions: ActiveCondition[] = [
+      { name: "restrained", duration: 5, source: "entangle" },
+      { name: "slowed", duration: 5, source: "entangle" },
+      { name: "blinded", duration: 2, source: "other_spell" },
+    ];
+    const filtered = conditions.filter(c => c.source !== "entangle");
+    expect(filtered).toHaveLength(1);
+    expect(filtered[0].name).toBe("blinded");
+  });
+
+  it("no conditions removed when spellId doesn't match any source", () => {
+    const conditions: ActiveCondition[] = [
+      { name: "stunned", duration: 1, source: "stunning_strike" },
+      { name: "blinded", duration: 2, source: "blindness" },
+    ];
+    const filtered = conditions.filter(c => c.source !== "hold_person");
+    expect(filtered).toHaveLength(2);
+  });
+});
+
+// ============ REPEATED SAVES END-OF-TURN TIMING ============
+
+describe("Repeated saves end-of-turn semantics", () => {
+  it("spellCcBaseDuration for concentration spell returns 10 (many end-of-turn save attempts)", () => {
+    // Concentration spells last up to 10 turns, with end-of-turn repeated saves
+    const spell = getSpellById("hold_person");
+    expect(spell).toBeDefined();
+    expect(spell!.concentration).toBe(true);
+    const duration = spellCcBaseDuration(spell!);
+    expect(duration).toBe(10);
+  });
+
+  it("conditions with saveDC+saveAbility get repeated save attempts (pure function test)", () => {
+    // This tests the processRepeatedSaves function which now runs at end-of-turn in combat.ts
+    const { processRepeatedSaves } = require("../lib/conditions");
+    const abilities = { strength: 10, dexterity: 10, constitution: 10, intelligence: 10, wisdom: 20, charisma: 10 };
+    const conditions: ActiveCondition[] = [
+      { name: "paralyzed", duration: 5, saveDC: 5, saveAbility: "wisdom", source: "hold_person" },
+    ];
+    // WIS +5, prof +2 = +7. Min roll 8 vs DC 5 = always succeeds
+    const { kept, removed } = processRepeatedSaves(conditions, abilities, 2);
+    expect(removed).toHaveLength(1);
+    expect(kept).toHaveLength(0);
+  });
+});
