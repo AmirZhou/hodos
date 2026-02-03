@@ -307,3 +307,84 @@ describe("calculateXpAward edge cases", () => {
     expect(calculateXpAward({ isFirstUse: false, targetTierHigher: false, potency: "standard", usesToday: 1, techniqueTier: 2, actorTier: 5 })).toBe(5);
   });
 });
+
+// ===========================================================================
+// POTENCY TO CC DURATION
+// ===========================================================================
+
+describe("potencyToCcDuration", () => {
+  it("critical → 3 turns", () => {
+    expect(potencyToCcDuration("critical")).toBe(3);
+  });
+  it("overwhelming → 2 turns", () => {
+    expect(potencyToCcDuration("overwhelming")).toBe(2);
+  });
+  it("full → 2 turns", () => {
+    expect(potencyToCcDuration("full")).toBe(2);
+  });
+  it("standard → 1 turn", () => {
+    expect(potencyToCcDuration("standard")).toBe(1);
+  });
+  it("reduced → 1 turn", () => {
+    expect(potencyToCcDuration("reduced")).toBe(1);
+  });
+  it("negated → 0 turns", () => {
+    expect(potencyToCcDuration("negated")).toBe(0);
+  });
+  it("resisted → 0 turns", () => {
+    expect(potencyToCcDuration("resisted")).toBe(0);
+  });
+});
+
+// ===========================================================================
+// VULNERABILITY BONUS
+// ===========================================================================
+
+describe("applyVulnerabilityBonus", () => {
+  it("returns base damage when no vulnerability", () => {
+    expect(applyVulnerabilityBonus(10, [], "fire_magic")).toBe(10);
+  });
+  it("applies 1.5x for matching vulnerability", () => {
+    expect(applyVulnerabilityBonus(10, ["burning"], "fire_magic")).toBe(15);
+  });
+  it("applies 1.5x for chilled + ice_magic", () => {
+    expect(applyVulnerabilityBonus(8, ["chilled"], "ice_magic")).toBe(12);
+  });
+  it("no bonus for non-matching vulnerability", () => {
+    expect(applyVulnerabilityBonus(10, ["burning"], "ice_magic")).toBe(10);
+  });
+  it("floors the result", () => {
+    expect(applyVulnerabilityBonus(7, ["burning"], "fire_magic")).toBe(10); // 7 * 1.5 = 10.5 → 10
+  });
+});
+
+// ===========================================================================
+// COMBO BONUS
+// ===========================================================================
+
+describe("calculateComboBonus", () => {
+  it("returns bonus for valid combo chain", () => {
+    expect(calculateComboBonus("pressure_point", "grapple_hold", 1, 2)).toBe(3);
+  });
+  it("returns bonus for whirlwind after quick_draw", () => {
+    expect(calculateComboBonus("whirlwind_slash", "quick_draw", 1, 2)).toBe(4);
+  });
+  it("returns bonus for fireball after fire_bolt", () => {
+    expect(calculateComboBonus("fireball", "fire_bolt", 1, 2)).toBe(5);
+  });
+  it("returns 0 if no last technique", () => {
+    expect(calculateComboBonus("pressure_point", undefined, undefined, 2)).toBe(0);
+  });
+  it("returns 0 if last technique doesn't match", () => {
+    expect(calculateComboBonus("pressure_point", "fire_bolt", 1, 2)).toBe(0);
+  });
+  it("returns 0 if combo window expired", () => {
+    expect(calculateComboBonus("pressure_point", "grapple_hold", 1, 1 + COMBO_WINDOW + 1)).toBe(0);
+  });
+  it("returns bonus at exact combo window boundary", () => {
+    expect(calculateComboBonus("pressure_point", "grapple_hold", 1, 1 + COMBO_WINDOW)).toBe(3);
+  });
+  it("returns 0 for technique with no combo chain", () => {
+    expect(calculateComboBonus("swift_strike", "grapple_hold", 1, 2)).toBe(0);
+  });
+});
