@@ -582,3 +582,247 @@ describe("applyDiminishingReturns", () => {
     expect(result.duration).toBe(1); // max(1, floor(1 * 0.25)) = max(1, 0) = 1
   });
 });
+
+// ============ APPLY OR REPLACE CONDITION ============
+
+describe("applyOrReplaceCondition", () => {
+  it("adds a new condition when not present", () => {
+    const conditions: ActiveCondition[] = [
+      { name: "blinded", duration: 2, source: "test" },
+    ];
+    const result = applyOrReplaceCondition(conditions, {
+      name: "stunned", duration: 1, source: "monk",
+    });
+    expect(result).toHaveLength(2);
+    expect(result.find(c => c.name === "stunned")).toBeDefined();
+    expect(result.find(c => c.name === "blinded")).toBeDefined();
+  });
+
+  it("replaces existing condition of same name", () => {
+    const conditions: ActiveCondition[] = [
+      { name: "stunned", duration: 3, source: "old" },
+      { name: "blinded", duration: 2, source: "test" },
+    ];
+    const result = applyOrReplaceCondition(conditions, {
+      name: "stunned", duration: 1, source: "new",
+    });
+    expect(result).toHaveLength(2);
+    const stunned = result.find(c => c.name === "stunned");
+    expect(stunned!.duration).toBe(1);
+    expect(stunned!.source).toBe("new");
+  });
+
+  it("shorter duration replaces longer (WoW overwrite)", () => {
+    const conditions: ActiveCondition[] = [
+      { name: "paralyzed", duration: 5, source: "old" },
+    ];
+    const result = applyOrReplaceCondition(conditions, {
+      name: "paralyzed", duration: 2, source: "new",
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].duration).toBe(2);
+  });
+
+  it("preserves other conditions", () => {
+    const conditions: ActiveCondition[] = [
+      { name: "blinded", duration: 2, source: "a" },
+      { name: "stunned", duration: 1, source: "b" },
+      { name: "poisoned", duration: 3, source: "c" },
+    ];
+    const result = applyOrReplaceCondition(conditions, {
+      name: "stunned", duration: 2, source: "new",
+    });
+    expect(result).toHaveLength(3);
+    expect(result.find(c => c.name === "blinded")!.source).toBe("a");
+    expect(result.find(c => c.name === "poisoned")!.source).toBe("c");
+  });
+
+  it("preserves saveDC and saveAbility on new condition", () => {
+    const conditions: ActiveCondition[] = [];
+    const result = applyOrReplaceCondition(conditions, {
+      name: "paralyzed", duration: 10, source: "hold_person",
+      saveDC: 15, saveAbility: "wisdom",
+    });
+    expect(result[0].saveDC).toBe(15);
+    expect(result[0].saveAbility).toBe("wisdom");
+  });
+});
+
+// ============ SPELL CC BASE DURATION ============
+
+describe("spellCcBaseDuration", () => {
+  it("returns 10 for concentration spells", () => {
+    expect(spellCcBaseDuration({ concentration: true, level: 2 })).toBe(10);
+  });
+
+  it("returns 10 for concentration cantrip", () => {
+    expect(spellCcBaseDuration({ concentration: true, level: 0 })).toBe(10);
+  });
+
+  it("returns 2 for non-concentration level 1 spell (min 2)", () => {
+    expect(spellCcBaseDuration({ concentration: false, level: 1 })).toBe(2);
+  });
+
+  it("returns 2 for non-concentration level 2 spell", () => {
+    expect(spellCcBaseDuration({ concentration: false, level: 2 })).toBe(2);
+  });
+
+  it("returns 3 for non-concentration level 3 spell", () => {
+    expect(spellCcBaseDuration({ concentration: false, level: 3 })).toBe(3);
+  });
+
+  it("returns 5 for non-concentration level 5 spell", () => {
+    expect(spellCcBaseDuration({ concentration: false, level: 5 })).toBe(5);
+  });
+});
+
+// ============ APPLY CC RESISTANCE ============
+
+describe("applyCcResistance", () => {
+  it("returns unchanged duration with no rank", () => {
+    expect(applyCcResistance(3, undefined)).toBe(3);
+  });
+
+  it("reduces by 1 for elite (min 1)", () => {
+    expect(applyCcResistance(3, "elite")).toBe(2);
+  });
+
+  it("reduces by 2 for boss (min 1)", () => {
+    expect(applyCcResistance(3, "boss")).toBe(1);
+  });
+
+  it("elite min 1: duration 1 stays 1", () => {
+    expect(applyCcResistance(1, "elite")).toBe(1);
+  });
+
+  it("boss min 1: duration 2 stays 1", () => {
+    expect(applyCcResistance(2, "boss")).toBe(1);
+  });
+
+  it("boss min 1: duration 1 stays 1", () => {
+    expect(applyCcResistance(1, "boss")).toBe(1);
+  });
+
+  it("large duration with boss: -2", () => {
+    expect(applyCcResistance(10, "boss")).toBe(8);
+  });
+});
+
+// ============ SHOULD BLOCK CC ============
+
+describe("shouldBlockCc", () => {
+  it("returns true for cc_immune + CC condition", () => {
+    expect(shouldBlockCc(["cc_immune", "blinded"], "stunned")).toBe(true);
+  });
+
+  it("returns false for cc_immune + non-CC condition", () => {
+    expect(shouldBlockCc(["cc_immune"], "poisoned")).toBe(false);
+  });
+
+  it("returns false when no cc_immune present", () => {
+    expect(shouldBlockCc(["blinded", "stunned"], "paralyzed")).toBe(false);
+  });
+
+  it("returns false for empty conditions", () => {
+    expect(shouldBlockCc([], "stunned")).toBe(false);
+  });
+
+  it("blocks all CC categories when cc_immune", () => {
+    const ccConditions = ["stunned", "paralyzed", "charmed", "frightened", "grappled", "slowed", "silenced", "blinded"];
+    for (const cond of ccConditions) {
+      expect(shouldBlockCc(["cc_immune"], cond)).toBe(true);
+    }
+  });
+});
+
+// ============ CAN USE LEGENDARY RESISTANCE ============
+
+describe("canUseLegendaryResistance", () => {
+  it("returns true when charges available", () => {
+    expect(canUseLegendaryResistance({ max: 3, current: 2 })).toBe(true);
+  });
+
+  it("returns true with 1 charge remaining", () => {
+    expect(canUseLegendaryResistance({ max: 3, current: 1 })).toBe(true);
+  });
+
+  it("returns false when no charges left", () => {
+    expect(canUseLegendaryResistance({ max: 3, current: 0 })).toBe(false);
+  });
+
+  it("returns false when undefined", () => {
+    expect(canUseLegendaryResistance(undefined)).toBe(false);
+  });
+});
+
+// ============ PROCESS REPEATED SAVES ============
+
+describe("processRepeatedSaves", () => {
+  const abilities = {
+    strength: 10,
+    dexterity: 10,
+    constitution: 10,
+    intelligence: 10,
+    wisdom: 20, // +5 mod
+    charisma: 10,
+  };
+  const profBonus = 2;
+
+  it("keeps conditions without saveDC", () => {
+    const conditions: ActiveCondition[] = [
+      { name: "blinded", duration: 2, source: "test" },
+      { name: "poisoned", duration: 3 },
+    ];
+    const { kept, removed } = processRepeatedSaves(conditions, abilities, profBonus);
+    expect(kept).toHaveLength(2);
+    expect(removed).toHaveLength(0);
+  });
+
+  it("keeps conditions without saveAbility even if saveDC set", () => {
+    const conditions: ActiveCondition[] = [
+      { name: "stunned", duration: 1, saveDC: 10 },
+    ];
+    const { kept, removed } = processRepeatedSaves(conditions, abilities, profBonus);
+    expect(kept).toHaveLength(1);
+    expect(removed).toHaveLength(0);
+  });
+
+  it("removes condition when save succeeds (high ability vs low DC)", () => {
+    // WIS +5, prof +2 = +7 minimum. Roll 1+7=8. DC 5 always succeeds.
+    const conditions: ActiveCondition[] = [
+      { name: "paralyzed", duration: 5, saveDC: 5, saveAbility: "wisdom" },
+    ];
+    // Run many times — with DC 5 and +7 mod, min roll = 8, always succeeds
+    let removedCount = 0;
+    for (let i = 0; i < 100; i++) {
+      const { removed } = processRepeatedSaves(conditions, abilities, profBonus);
+      if (removed.length > 0) removedCount++;
+    }
+    expect(removedCount).toBe(100); // always removed
+  });
+
+  it("keeps condition when save fails (low ability vs high DC)", () => {
+    // STR +0, prof +2 = +2. Roll max 20+2=22. DC 30 always fails.
+    const conditions: ActiveCondition[] = [
+      { name: "restrained", duration: 5, saveDC: 30, saveAbility: "strength" },
+    ];
+    let keptCount = 0;
+    for (let i = 0; i < 100; i++) {
+      const { kept } = processRepeatedSaves(conditions, abilities, profBonus);
+      if (kept.length > 0) keptCount++;
+    }
+    expect(keptCount).toBe(100); // always kept
+  });
+
+  it("mixes kept and removed correctly", () => {
+    const conditions: ActiveCondition[] = [
+      { name: "blinded", duration: 2, source: "test" }, // no saveDC → kept
+      { name: "paralyzed", duration: 5, saveDC: 5, saveAbility: "wisdom" }, // always succeeds
+    ];
+    const { kept, removed } = processRepeatedSaves(conditions, abilities, profBonus);
+    expect(kept).toHaveLength(1);
+    expect(kept[0].name).toBe("blinded");
+    expect(removed).toHaveLength(1);
+    expect(removed[0].name).toBe("paralyzed");
+  });
+});
