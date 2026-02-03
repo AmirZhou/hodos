@@ -1155,6 +1155,11 @@ export const executeAction = mutation({
       const combatEffects = technique.effects.combat;
       if (!combatEffects) throw new Error("Technique has no combat effects: " + args.action.techniqueId);
 
+      // Check if caster can use techniques (silenced/confused blocks casting)
+      if (!canCast(attackerConditions)) {
+        throw new Error("Cannot use techniques due to conditions (silenced/confused)");
+      }
+
       // Look up the skill definition for ability references
       const skill = getSkillById(technique.skillId);
       if (!skill) throw new Error("Unknown skill for technique: " + technique.skillId);
