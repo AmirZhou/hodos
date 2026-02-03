@@ -2426,6 +2426,7 @@ export const endTurn = mutation({
             const dc = concentrationSaveDC(rem);
             const mod = Math.floor((char.abilities.constitution - 10) / 2);
             if (Math.floor(Math.random() * 20) + 1 + mod + char.proficiencyBonus < dc) {
+              await removeConcentrationConditions(ctx, char.concentration, nextCombatant.entityId, combatants);
               patch.concentration = undefined;
             }
           }
