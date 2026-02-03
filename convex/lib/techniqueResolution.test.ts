@@ -5,6 +5,10 @@ import {
   determinePotency,
   calculateEffects,
   calculateXpAward,
+  potencyToCcDuration,
+  applyVulnerabilityBonus,
+  calculateComboBonus,
+  COMBO_WINDOW,
   type Potency,
 } from "./techniqueResolution";
 
