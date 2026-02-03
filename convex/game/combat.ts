@@ -2190,6 +2190,28 @@ export const endTurn = mutation({
     // Apply condition-based speed reduction
     speed = getEffectiveSpeed(speed, nextConditions);
 
+    // Passive CC break processing (Barbarian Rage Break, Ranger Nature's Stride)
+    if (nextCombatant.entityType === "character") {
+      const charForCcBreak = await ctx.db.get(nextCombatant.entityId as Id<"characters">);
+      if (charForCcBreak) {
+        const cls = (charForCcBreak.class || "").toLowerCase();
+        const ccBreak = getCcBreakFeature(cls, charForCcBreak.level);
+        if (ccBreak && ccBreak.actionCost === "passive") {
+          // Check raging requirement
+          const canUse = !ccBreak.requiresRaging || charForCcBreak.conditions.some(c => c.name === "raging");
+          if (canUse) {
+            const cleanedConditions = charForCcBreak.conditions.filter(c => {
+              const cat = CC_CATEGORIES[c.name];
+              return !(cat && ccBreak.breaksCategories.includes(cat));
+            });
+            if (cleanedConditions.length !== charForCcBreak.conditions.length) {
+              await ctx.db.patch(nextCombatant.entityId as Id<"characters">, { conditions: cleanedConditions });
+            }
+          }
+        }
+      }
+    }
+
     // Process start-of-turn for next combatant
     if (nextCombatant.entityType === "character") {
       const char = await ctx.db.get(nextCombatant.entityId as Id<"characters">);
