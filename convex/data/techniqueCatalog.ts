@@ -558,6 +558,8 @@ export const ALL_TECHNIQUES: TechniqueDefinition[] = [
     rollBonus: 2,
     cooldown: 2,
     teachable: true,
+    comboFrom: ["fire_bolt"],
+    comboBonusDamage: 5,
   },
   {
     id: "inferno",
