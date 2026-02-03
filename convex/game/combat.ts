@@ -20,6 +20,9 @@ import {
   determinePotency,
   calculateEffects,
   calculateXpAward,
+  potencyToCcDuration,
+  applyVulnerabilityBonus,
+  calculateComboBonus,
 } from "../lib/techniqueResolution";
 import { logAudit } from "../lib/auditLog";
 
