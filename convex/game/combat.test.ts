@@ -834,3 +834,137 @@ describe("CC break availability per class at correct levels", () => {
     expect(feature!.breaksCategories).toContain("slow");
   });
 });
+
+// ============ SPELL CC THROUGH DR (INTEGRATION) ============
+
+describe("Spell CC through DR integration", () => {
+  it("hold_person (concentration) applies paralyzed with base duration 10", () => {
+    const spell = getSpellById("hold_person");
+    expect(spell).toBeDefined();
+    expect(spell!.concentration).toBe(true);
+    const duration = spellCcBaseDuration(spell!);
+    expect(duration).toBe(10);
+  });
+
+  it("sleep (non-concentration, level 1) applies with base duration 2 (min 2)", () => {
+    const spell = getSpellById("sleep");
+    expect(spell).toBeDefined();
+    expect(spell!.concentration).toBe(false);
+    expect(spell!.level).toBe(1);
+    const duration = spellCcBaseDuration(spell!);
+    expect(duration).toBe(2);
+  });
+
+  it("hold_person through DR: 2nd application in stun category gets 50% duration", () => {
+    const spell = getSpellById("hold_person")!;
+    const baseDur = spellCcBaseDuration(spell); // 10
+    expect(baseDur).toBe(10);
+
+    // 1st application: full duration
+    let tracker: DrTracker = {};
+    let result = applyDiminishingReturns(baseDur, "paralyzed", tracker, 1);
+    expect(result.duration).toBe(10);
+    tracker = result.updatedTracker;
+
+    // 2nd application: 50%
+    result = applyDiminishingReturns(baseDur, "paralyzed", tracker, 2);
+    expect(result.duration).toBe(5); // floor(10 * 0.5)
+    tracker = result.updatedTracker;
+
+    // 3rd application: 25%
+    result = applyDiminishingReturns(baseDur, "paralyzed", tracker, 3);
+    expect(result.duration).toBe(2); // floor(10 * 0.25)
+    tracker = result.updatedTracker;
+
+    // 4th application: immune
+    result = applyDiminishingReturns(baseDur, "paralyzed", tracker, 4);
+    expect(result.duration).toBe(0);
+  });
+
+  it("hold_person applies saveDC and saveAbility via applyOrReplaceCondition", () => {
+    const conditions: ActiveCondition[] = [];
+    const conds = applyOrReplaceCondition(conditions, {
+      name: "paralyzed",
+      duration: 10,
+      source: "hold_person",
+      saveDC: 15,
+      saveAbility: "wisdom",
+    });
+    expect(conds).toHaveLength(1);
+    expect(conds[0].saveDC).toBe(15);
+    expect(conds[0].saveAbility).toBe("wisdom");
+  });
+
+  it("cc_immune blocks spell CC application", () => {
+    expect(shouldBlockCc(["cc_immune"], "paralyzed")).toBe(true);
+    expect(shouldBlockCc(["cc_immune"], "unconscious")).toBe(true);
+  });
+
+  it("2nd hold_person overwrites existing paralyzed (WoW overwrite)", () => {
+    const conditions: ActiveCondition[] = [
+      { name: "paralyzed", duration: 10, source: "hold_person", saveDC: 13, saveAbility: "wisdom" },
+      { name: "blinded", duration: 2, source: "other" },
+    ];
+    const result = applyOrReplaceCondition(conditions, {
+      name: "paralyzed", duration: 5, source: "hold_person_2nd",
+      saveDC: 15, saveAbility: "wisdom",
+    });
+    expect(result).toHaveLength(2);
+    const paralyzed = result.find(c => c.name === "paralyzed")!;
+    expect(paralyzed.duration).toBe(5);
+    expect(paralyzed.saveDC).toBe(15);
+    expect(paralyzed.source).toBe("hold_person_2nd");
+  });
+});
+
+// ============ BOSS CC RESISTANCE (INTEGRATION) ============
+
+describe("Boss CC resistance integration", () => {
+  it("elite NPC: hold_person duration reduced by 1", () => {
+    const baseDur = spellCcBaseDuration({ concentration: true, level: 2 }); // 10
+    const reduced = applyCcResistance(baseDur, "elite");
+    expect(reduced).toBe(9);
+  });
+
+  it("boss NPC: hold_person duration reduced by 2", () => {
+    const baseDur = spellCcBaseDuration({ concentration: true, level: 2 }); // 10
+    const reduced = applyCcResistance(baseDur, "boss");
+    expect(reduced).toBe(8);
+  });
+
+  it("boss NPC: stunning strike duration 1 stays at min 1", () => {
+    const reduced = applyCcResistance(1, "boss");
+    expect(reduced).toBe(1); // min 1
+  });
+
+  it("boss with legendary resistance can auto-succeed", () => {
+    const lr = { max: 3, current: 3 };
+    expect(canUseLegendaryResistance(lr)).toBe(true);
+    // After consuming
+    const used = { max: 3, current: 0 };
+    expect(canUseLegendaryResistance(used)).toBe(false);
+  });
+
+  it("boss CC resistance stacks with DR", () => {
+    // 1st hold_person: base 10, DR 100%, boss -2 = 8
+    let tracker: DrTracker = {};
+    let result = applyDiminishingReturns(10, "paralyzed", tracker, 1);
+    expect(result.duration).toBe(10);
+    let dur = applyCcResistance(result.duration, "boss");
+    expect(dur).toBe(8);
+    tracker = result.updatedTracker;
+
+    // 2nd: base 10, DR 50% = 5, boss -2 = 3
+    result = applyDiminishingReturns(10, "paralyzed", tracker, 2);
+    expect(result.duration).toBe(5);
+    dur = applyCcResistance(result.duration, "boss");
+    expect(dur).toBe(3);
+    tracker = result.updatedTracker;
+
+    // 3rd: base 10, DR 25% = 2, boss -2 = min 1
+    result = applyDiminishingReturns(10, "paralyzed", tracker, 3);
+    expect(result.duration).toBe(2);
+    dur = applyCcResistance(result.duration, "boss");
+    expect(dur).toBe(1);
+  });
+});
