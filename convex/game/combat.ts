@@ -841,6 +841,9 @@ export const executeAction = mutation({
           }
         }
 
+        // Apply condition-based AC modifier (e.g. armor_broken = -3)
+        targetAc += getAcModifier(targetConditions);
+
         const spellAttackBonus = getSpellAttackBonus(profBonus, castingAbilityScore);
         const distance = Math.abs(target.position.x - current.position.x) + Math.abs(target.position.y - current.position.y);
         const isMelee = distance <= 1;
