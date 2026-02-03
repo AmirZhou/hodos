@@ -13,6 +13,15 @@ export interface ClassFeature {
   resource?: ResourceDefinition;
 }
 
+export interface CcBreakEffect {
+  breaksCategories: string[];
+  actionCost: "reaction" | "bonus_action" | "free" | "passive";
+  cooldownRounds: number;
+  resourceCost?: { resource: string; amount: number };
+  grantsStealthOnUse?: boolean;
+  requiresRaging?: boolean;
+}
+
 export interface CombatEffect {
   extraAttacks?: number; // number of additional attacks per Attack action
   sneakAttackDice?: number; // number of d6 for sneak attack
@@ -22,6 +31,7 @@ export interface CombatEffect {
   martialArtsDie?: string; // e.g. "1d6" for monk
   actionSurge?: boolean; // extra action once per rest
   secondWind?: boolean; // bonus action heal
+  ccBreak?: CcBreakEffect; // CC break ability
 }
 
 export interface ResourceDefinition {
