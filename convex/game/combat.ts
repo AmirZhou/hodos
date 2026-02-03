@@ -2318,21 +2318,28 @@ export const endTurn = mutation({
       const char = await ctx.db.get(nextCombatant.entityId as Id<"characters">);
       if (char) {
         // Process start-of-turn condition durations
-        const updatedConditions = processConditionDurations(
+        let updatedConditions = processConditionDurations(
           char.conditions.map(c => ({
             name: c.name,
             duration: c.duration,
             source: c.source,
+            saveDC: c.saveDC,
+            saveAbility: c.saveAbility,
             expiresOn: "start" as const,
           })),
           "start",
         );
+
+        // Repeated saves: roll saves for conditions with saveDC/saveAbility
+        const { kept } = processRepeatedSaves(
+          updatedConditions,
+          char.abilities as unknown as Record<string, number>,
+          char.proficiencyBonus,
+        );
+        updatedConditions = kept;
+
         const patch: Record<string, unknown> = {
-          conditions: updatedConditions.map(c => ({
-            name: c.name,
-            ...(c.duration !== undefined ? { duration: c.duration } : {}),
-            ...(c.source ? { source: c.source } : {}),
-          })),
+          conditions: updatedConditions.map(serializeCondition),
         };
 
         // === DoT damage at start of turn ===
