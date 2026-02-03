@@ -424,6 +424,22 @@ export function getMartialArtsDie(level: number): string {
 }
 
 /**
+ * Get the CC break feature for a class at a given level, if any.
+ */
+export function getCcBreakFeature(
+  characterClass: string,
+  level: number,
+): CcBreakEffect | null {
+  const features = getFeaturesForClassAtLevel(characterClass, level);
+  for (const f of features) {
+    if (f.combatEffect?.ccBreak) {
+      return f.combatEffect.ccBreak;
+    }
+  }
+  return null;
+}
+
+/**
  * Initialize class resources for a character.
  * Returns a map of resource name → { max, current }.
  */
