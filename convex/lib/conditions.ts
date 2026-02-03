@@ -570,6 +570,8 @@ export interface ActiveCondition {
   duration?: number; // turns remaining
   expiresOn?: "start" | "end"; // when to check expiration
   source?: string;
+  saveDC?: number;       // DC for repeated saves to shake off
+  saveAbility?: string;  // ability used for repeated saves
 }
 
 /**
