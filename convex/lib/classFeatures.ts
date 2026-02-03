@@ -135,6 +135,20 @@ const ROGUE_FEATURES: ClassFeature[] = [
     level: 7,
     description: "On a successful DEX save, take no damage instead of half.",
   },
+  {
+    id: "slip_free",
+    name: "Slip Free",
+    level: 5,
+    description: "Use bonus action to escape root, slow, or stun effects and gain stealth. Recharges after 2 rounds.",
+    combatEffect: {
+      ccBreak: {
+        breaksCategories: ["root", "slow", "stun"],
+        actionCost: "bonus_action",
+        cooldownRounds: 2,
+        grantsStealthOnUse: true,
+      },
+    },
+  },
 ];
 
 const BARBARIAN_FEATURES: ClassFeature[] = [
