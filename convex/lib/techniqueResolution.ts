@@ -8,6 +8,7 @@
 
 import { abilityModifier } from "./stats";
 import type { TechniqueEffects, TechniqueContext } from "../data/techniqueCatalog";
+import { getDamageVulnerabilityMultiplier } from "./conditions";
 
 // ---------------------------------------------------------------------------
 // Potency
