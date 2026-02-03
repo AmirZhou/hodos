@@ -1487,6 +1487,15 @@ export const executeAction = mutation({
         }
       }
 
+      // Track last technique used for combo chain tracking
+      combatants[currentIndex] = {
+        ...combatants[currentIndex],
+        lastTechniqueUsed: {
+          techniqueId: args.action.techniqueId!,
+          round: session.combat!.round,
+        },
+      };
+
       // Set serverRoll to actorPower for display purposes (no dice roll in technique)
       serverRoll = actorPower;
     }
