@@ -406,6 +406,13 @@ export default defineSchema({
     // Simple AI memory (for backward compat)
     memories: v.array(v.string()),
 
+    // Boss/Elite rank for CC resistance
+    eliteRank: v.optional(v.union(v.literal("elite"), v.literal("boss"))),
+    legendaryResistances: v.optional(v.object({
+      max: v.number(),
+      current: v.number(),
+    })),
+
     // Auto-creation tracking
     autoCreated: v.optional(v.boolean()),
     firstMetAt: v.optional(v.number()),
