@@ -229,6 +229,61 @@ export const getAvailableActions = query({
           const hasAnySlot = Object.values(char.spellSlots).some(s => s.used < s.max);
           if (hasAnySlot) actions.push("divine_smite");
         }
+
+        // CC Break (class-specific)
+        const ccBreak = getCcBreakFeature(cls, char.level);
+        if (ccBreak) {
+          const hasCcConditions = char.conditions.some(c => {
+            const cat = CC_CATEGORIES[c.name];
+            return cat && ccBreak.breaksCategories.includes(cat);
+          });
+          if (hasCcConditions) {
+            // Check cooldown
+            const cooldowns = combatant.ccBreakCooldowns ?? {};
+            const lastUsedRound = cooldowns["cc_break"] ?? -999;
+            const currentRound = session.combat!.round;
+            const offCooldown = ccBreak.cooldownRounds === 0 || (currentRound - lastUsedRound >= ccBreak.cooldownRounds);
+
+            if (offCooldown) {
+              // Check action cost availability
+              if (ccBreak.actionCost === "reaction" && combatant.hasReaction) {
+                reactions.push("cc_break");
+              } else if (ccBreak.actionCost === "bonus_action" && combatant.hasBonusAction) {
+                bonusActions.push("cc_break");
+              } else if (ccBreak.actionCost === "free" || ccBreak.actionCost === "passive") {
+                actions.push("cc_break");
+              }
+
+              // Check resource availability
+              if (ccBreak.resourceCost) {
+                const resource = char.classResources?.[ccBreak.resourceCost.resource];
+                if (!resource || resource.current < ccBreak.resourceCost.amount) {
+                  // Remove cc_break from whichever list it was added to
+                  [actions, bonusActions, reactions].forEach(list => {
+                    const idx = list.indexOf("cc_break");
+                    if (idx !== -1) list.splice(idx, 1);
+                  });
+                }
+              }
+
+              // Check raging requirement (barbarian)
+              if (ccBreak.requiresRaging && !char.conditions.some(c => c.name === "raging")) {
+                [actions, bonusActions, reactions].forEach(list => {
+                  const idx = list.indexOf("cc_break");
+                  if (idx !== -1) list.splice(idx, 1);
+                });
+              }
+            }
+          }
+        }
+
+        // Iron Will (universal, once per combat)
+        if (!(combatant.ironWillUsed)) {
+          const hasCc = char.conditions.some(c => CC_CATEGORIES[c.name] !== undefined);
+          if (hasCc) {
+            actions.push("iron_will");
+          }
+        }
       }
     } else if (combatant.hasBonusAction) {
       bonusActions.push("offhand_attack");
