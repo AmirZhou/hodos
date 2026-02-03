@@ -2388,13 +2388,9 @@ export const endTurn = mutation({
               // Nat 20: regain 1 HP, remove unconscious
               patch.hp = 1;
               patch.deathSaves = { successes: 0, failures: 0 };
-              patch.conditions = (updatedConditions as Array<{ name: string; duration?: number; source?: string }>)
+              patch.conditions = updatedConditions
                 .filter(c => c.name !== "unconscious")
-                .map(c => ({
-                  name: c.name,
-                  ...(c.duration !== undefined ? { duration: c.duration } : {}),
-                  ...(c.source ? { source: c.source } : {}),
-                }));
+                .map(serializeCondition);
             } else if (deathRoll === 1) {
               // Nat 1: 2 failures
               ds.failures = Math.min(3, ds.failures + 2);
