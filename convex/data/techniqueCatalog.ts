@@ -1056,6 +1056,8 @@ export const ALL_TECHNIQUES: TechniqueDefinition[] = [
     rollBonus: 1,
     cooldown: 1,
     teachable: false,
+    comboFrom: ["low_blow"],
+    comboBonusDamage: 2,
   },
 
   // ── BLADE MASTERY — TIER 6 CAPSTONE (1 technique) ────────────────────
