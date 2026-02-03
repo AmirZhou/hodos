@@ -197,6 +197,20 @@ const BARBARIAN_FEATURES: ClassFeature[] = [
     level: 9,
     description: "Roll one additional weapon damage die on a critical hit.",
   },
+  {
+    id: "rage_break",
+    name: "Rage Break",
+    level: 6,
+    description: "While raging, automatically break free from stun, fear, and incapacitate effects at the start of your turn.",
+    combatEffect: {
+      ccBreak: {
+        breaksCategories: ["stun", "fear", "incapacitate"],
+        actionCost: "passive",
+        cooldownRounds: 0,
+        requiresRaging: true,
+      },
+    },
+  },
 ];
 
 const MONK_FEATURES: ClassFeature[] = [
