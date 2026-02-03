@@ -1263,7 +1263,34 @@ export const executeAction = mutation({
 
       // Apply damage to target
       if (scaledEffects.damage && scaledEffects.damage > 0 && target) {
-        const dmg = scaledEffects.damage;
+        let dmg = scaledEffects.damage;
+
+        // Apply outgoing damage multiplier (weakened = 50%)
+        dmg = Math.floor(dmg * getOutgoingDamageMultiplier(attackerConditions));
+
+        // Apply vulnerability bonus (+50% if target has matching condition)
+        {
+          let targetConditionNames: string[] = [];
+          if (target.entityType === "character") {
+            const tc = await ctx.db.get(target.entityId as Id<"characters">);
+            if (tc) targetConditionNames = tc.conditions.map(c => c.name);
+          } else {
+            const tn = await ctx.db.get(target.entityId as Id<"npcs">);
+            if (tn) targetConditionNames = tn.conditions.map(c => c.name);
+          }
+          dmg = applyVulnerabilityBonus(dmg, targetConditionNames, technique.skillId);
+        }
+
+        // Apply combo chain bonus
+        const lastTech = combatants[currentIndex].lastTechniqueUsed;
+        const comboBonus = calculateComboBonus(
+          args.action.techniqueId!,
+          lastTech?.techniqueId,
+          lastTech?.round,
+          session.combat!.round,
+        );
+        dmg += comboBonus;
+
         serverDamage = (serverDamage || 0) + dmg;
 
         if (target.entityType === "character") {
@@ -1296,6 +1323,28 @@ export const executeAction = mutation({
             await ctx.db.patch(target.entityId as Id<"npcs">, { hp: newHp, isAlive: newHp > 0 });
           }
         }
+
+        // Remove breakOnDamage conditions (charmed, dominated break on damage)
+        if (dmg > 0) {
+          if (target.entityType === "character") {
+            const ch = await ctx.db.get(target.entityId as Id<"characters">);
+            if (ch) {
+              const cleaned = removeConditionsOnDamage(ch.conditions);
+              if (cleaned.length !== ch.conditions.length) {
+                await ctx.db.patch(target.entityId as Id<"characters">, { conditions: cleaned });
+              }
+            }
+          } else {
+            const np = await ctx.db.get(target.entityId as Id<"npcs">);
+            if (np) {
+              const cleaned = removeConditionsOnDamage(np.conditions);
+              if (cleaned.length !== np.conditions.length) {
+                await ctx.db.patch(target.entityId as Id<"npcs">, { conditions: cleaned });
+              }
+            }
+          }
+        }
+
         hitResult = true;
       }
 
