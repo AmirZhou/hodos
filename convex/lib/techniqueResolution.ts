@@ -141,6 +141,104 @@ export function calculateEffects<C extends TechniqueContext>(
 }
 
 // ---------------------------------------------------------------------------
+// CC Duration from Potency
+// ---------------------------------------------------------------------------
+
+/**
+ * Convert a potency level to a CC duration in turns.
+ *
+ * | Potency       | Duration |
+ * |---------------|----------|
+ * | critical      | 3 turns  |
+ * | overwhelming  | 2 turns  |
+ * | full          | 2 turns  |
+ * | standard      | 1 turn   |
+ * | reduced       | 1 turn   |
+ * | negated       | 0        |
+ * | resisted      | 0        |
+ */
+export function potencyToCcDuration(potency: Potency): number {
+  switch (potency) {
+    case "critical":
+      return 3;
+    case "overwhelming":
+    case "full":
+      return 2;
+    case "standard":
+    case "reduced":
+      return 1;
+    case "negated":
+    case "resisted":
+      return 0;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Vulnerability Damage Bonus
+// ---------------------------------------------------------------------------
+
+/**
+ * Apply vulnerability bonus to base damage.
+ *
+ * If the target has any condition granting vulnerability to the technique's
+ * skill, the damage is multiplied by 1.5 (50% bonus).
+ */
+export function applyVulnerabilityBonus(
+  baseDamage: number,
+  targetConditionNames: string[],
+  skillId: string,
+): number {
+  const { getDamageVulnerabilityMultiplier } = require("./conditions");
+  const multiplier = getDamageVulnerabilityMultiplier(targetConditionNames, skillId);
+  return Math.floor(baseDamage * multiplier);
+}
+
+// ---------------------------------------------------------------------------
+// Combo Chain Bonus
+// ---------------------------------------------------------------------------
+
+/** Maximum number of rounds a combo chain remains valid. */
+export const COMBO_WINDOW = 2;
+
+/**
+ * Combo chain definitions: technique → valid setup techniques + bonus damage.
+ */
+export const COMBO_CHAINS: Record<string, { comboFrom: string[]; comboBonusDamage: number }> = {
+  pressure_point: { comboFrom: ["grapple_hold"], comboBonusDamage: 3 },
+  whirlwind_slash: { comboFrom: ["quick_draw"], comboBonusDamage: 4 },
+  fireball: { comboFrom: ["fire_bolt"], comboBonusDamage: 5 },
+  frozen_ground: { comboFrom: ["frost_bolt"], comboBonusDamage: 3 },
+  pocket_sand: { comboFrom: ["low_blow"], comboBonusDamage: 2 },
+  iron_fist: { comboFrom: ["pressure_point"], comboBonusDamage: 4 },
+  phoenix_flame: { comboFrom: ["fireball", "fire_bolt"], comboBonusDamage: 5 },
+  thousand_cuts: { comboFrom: ["whirlwind_slash", "quick_draw"], comboBonusDamage: 4 },
+};
+
+/**
+ * Calculate combo bonus damage for a technique, given the last technique used.
+ *
+ * Returns the bonus damage (0 if no combo or combo expired).
+ */
+export function calculateComboBonus(
+  techniqueId: string,
+  lastTechniqueId: string | undefined,
+  lastTechniqueRound: number | undefined,
+  currentRound: number,
+): number {
+  if (!lastTechniqueId || lastTechniqueRound === undefined) return 0;
+
+  const chain = COMBO_CHAINS[techniqueId];
+  if (!chain) return 0;
+
+  if (!chain.comboFrom.includes(lastTechniqueId)) return 0;
+
+  // Check combo window
+  if (currentRound - lastTechniqueRound > COMBO_WINDOW) return 0;
+
+  return chain.comboBonusDamage;
+}
+
+// ---------------------------------------------------------------------------
 // XP Award
 // ---------------------------------------------------------------------------
 
