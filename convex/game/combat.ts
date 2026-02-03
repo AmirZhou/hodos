@@ -1452,8 +1452,20 @@ export const executeAction = mutation({
         }
       }
 
+      // Check if target has CC immunity
+      let targetHasCcImmunity = false;
+      if (target) {
+        if (target.entityType === "character") {
+          const tc = await ctx.db.get(target.entityId as Id<"characters">);
+          if (tc) targetHasCcImmunity = tc.conditions.some(c => c.name === "cc_immune");
+        } else {
+          const tn = await ctx.db.get(target.entityId as Id<"npcs">);
+          if (tn) targetHasCcImmunity = tn.conditions.some(c => c.name === "cc_immune");
+        }
+      }
+
       // Apply condition to target
-      if (scaledEffects.condition && scaledEffects.condition !== "" && target) {
+      if (scaledEffects.condition && scaledEffects.condition !== "" && target && !targetHasCcImmunity) {
         const condName = scaledEffects.condition;
 
         // Calculate CC duration from potency + diminishing returns
