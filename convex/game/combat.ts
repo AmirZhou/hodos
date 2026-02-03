@@ -47,6 +47,53 @@ function serializeCondition(c: ActiveCondition): {
   };
 }
 
+/**
+ * When concentration breaks, remove conditions applied by that spell from all targets.
+ * The caller is still responsible for clearing `concentration` on the caster (via patch).
+ */
+async function removeConcentrationConditions(
+  ctx: { db: { get: (id: any) => Promise<any>; patch: (id: any, patch: any) => Promise<void> } },
+  concentration: { spellId: string; targetId?: string },
+  casterId: string,
+  combatants: Array<{ entityId: string; entityType: string }>,
+) {
+  const { spellId, targetId } = concentration;
+
+  async function removeFromEntity(entityId: string, entityType: string) {
+    if (entityType === "character") {
+      const entity = await ctx.db.get(entityId as Id<"characters">);
+      if (entity) {
+        const filtered = entity.conditions.filter((c: { source?: string }) => c.source !== spellId);
+        if (filtered.length !== entity.conditions.length) {
+          await ctx.db.patch(entityId as Id<"characters">, { conditions: filtered });
+        }
+      }
+    } else {
+      const entity = await ctx.db.get(entityId as Id<"npcs">);
+      if (entity) {
+        const filtered = entity.conditions.filter((c: { source?: string }) => c.source !== spellId);
+        if (filtered.length !== entity.conditions.length) {
+          await ctx.db.patch(entityId as Id<"npcs">, { conditions: filtered });
+        }
+      }
+    }
+  }
+
+  if (targetId) {
+    // Single-target spell: remove from specific target
+    const target = combatants.find(c => c.entityId === targetId);
+    if (target) {
+      await removeFromEntity(targetId, target.entityType);
+    }
+  } else {
+    // AoE/self spell: scan all combatants except caster
+    for (const c of combatants) {
+      if (c.entityId === casterId) continue;
+      await removeFromEntity(c.entityId, c.entityType);
+    }
+  }
+}
+
 // ============ VALIDATORS ============
 
 const combatantInput = v.object({
