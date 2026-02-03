@@ -887,6 +887,7 @@ export const executeAction = mutation({
                 const conMod = Math.floor((character.abilities.constitution - 10) / 2);
                 const conSave = Math.floor(Math.random() * 20) + 1 + conMod + character.proficiencyBonus;
                 if (conSave < conSaveDC) {
+                  await removeConcentrationConditions(ctx, character.concentration, target.entityId, combatants);
                   patch.concentration = undefined;
                 }
               }
