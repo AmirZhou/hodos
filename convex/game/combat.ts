@@ -2425,15 +2425,6 @@ export const endTurn = mutation({
           "start",
         );
 
-        // Repeated saves for NPC (estimated proficiency from level)
-        const npcProfBonus = Math.max(2, Math.floor((npc.level - 1) / 4) + 2);
-        const { kept: npcKept } = processRepeatedSaves(
-          updatedConditions,
-          npc.abilities as unknown as Record<string, number>,
-          npcProfBonus,
-        );
-        updatedConditions = npcKept;
-
         const npcPatch: Record<string, unknown> = {
           conditions: updatedConditions.map(serializeCondition),
         };
