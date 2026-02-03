@@ -971,6 +971,7 @@ export const executeAction = mutation({
 
       // Handle concentration: drop existing before setting new
       if (spell.concentration && caster.concentration) {
+        await removeConcentrationConditions(ctx, caster.concentration, current.entityId, combatants);
         await ctx.db.patch(current.entityId as Id<"characters">, { concentration: undefined });
       }
 
