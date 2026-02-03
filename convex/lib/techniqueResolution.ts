@@ -189,7 +189,6 @@ export function applyVulnerabilityBonus(
   targetConditionNames: string[],
   skillId: string,
 ): number {
-  const { getDamageVulnerabilityMultiplier } = require("./conditions");
   const multiplier = getDamageVulnerabilityMultiplier(targetConditionNames, skillId);
   return Math.floor(baseDamage * multiplier);
 }
