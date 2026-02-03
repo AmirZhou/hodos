@@ -49,6 +49,8 @@ export interface TechniqueDefinition {
   rollBonus: number;
   cooldown: number;
   teachable: boolean;
+  comboFrom?: string[];
+  comboBonusDamage?: number;
 }
 
 // ---------------------------------------------------------------------------
