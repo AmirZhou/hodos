@@ -859,6 +859,8 @@ export const ALL_TECHNIQUES: TechniqueDefinition[] = [
     rollBonus: 1,
     cooldown: 1,
     teachable: false,
+    comboFrom: ["frost_bolt"],
+    comboBonusDamage: 3,
   },
 
   // ── SHADOW MAGIC (2 techniques) ──────────────────────────────────────
