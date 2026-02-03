@@ -1077,6 +1077,7 @@ export const executeAction = mutation({
           }
 
           // Apply conditions on failed save (hold_person → paralyzed, etc.)
+          // Wired through DR, cc_immune check, and boss CC resistance
           if (spell.conditions && !saveSuccess) {
             hitResult = true;
             if (target.entityType === "character") {
@@ -1084,10 +1085,17 @@ export const executeAction = mutation({
               if (ch) {
                 let conds = [...ch.conditions];
                 for (const condName of spell.conditions) {
-                  const baseDur = spellCcBaseDuration(spell);
+                  if (shouldBlockCc(ch.conditions.map(c => c.name), condName)) continue;
+                  let dur = spellCcBaseDuration(spell);
+                  // Apply diminishing returns
+                  const targetDrTracker: DrTracker = combatants[tIdx].drTracker ?? {};
+                  const drResult = applyDiminishingReturns(dur, condName, targetDrTracker, session.combat!.round);
+                  dur = drResult.duration;
+                  combatants[tIdx] = { ...combatants[tIdx], drTracker: drResult.updatedTracker };
+                  if (dur <= 0) continue; // DR immunity
                   conds = applyOrReplaceCondition(conds, {
                     name: condName,
-                    duration: baseDur,
+                    duration: dur,
                     source: spell.id,
                     ...(spell.saveType ? { saveDC: spellSaveDC, saveAbility: spell.saveType } : {}),
                   });
@@ -1099,10 +1107,19 @@ export const executeAction = mutation({
               if (np) {
                 let conds = [...np.conditions];
                 for (const condName of spell.conditions) {
-                  const baseDur = spellCcBaseDuration(spell);
+                  if (shouldBlockCc(np.conditions.map(c => c.name), condName)) continue;
+                  let dur = spellCcBaseDuration(spell);
+                  // Apply diminishing returns
+                  const targetDrTracker: DrTracker = combatants[tIdx].drTracker ?? {};
+                  const drResult = applyDiminishingReturns(dur, condName, targetDrTracker, session.combat!.round);
+                  dur = drResult.duration;
+                  combatants[tIdx] = { ...combatants[tIdx], drTracker: drResult.updatedTracker };
+                  if (dur <= 0) continue; // DR immunity
+                  // Apply boss CC resistance
+                  dur = applyCcResistance(dur, np.eliteRank as "elite" | "boss" | undefined);
                   conds = applyOrReplaceCondition(conds, {
                     name: condName,
-                    duration: baseDur,
+                    duration: dur,
                     source: spell.id,
                     ...(spell.saveType ? { saveDC: spellSaveDC, saveAbility: spell.saveType } : {}),
                   });
