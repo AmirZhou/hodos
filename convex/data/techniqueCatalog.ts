@@ -509,6 +509,8 @@ export const ALL_TECHNIQUES: TechniqueDefinition[] = [
     rollBonus: 2,
     cooldown: 2,
     teachable: false,
+    comboFrom: ["quick_draw"],
+    comboBonusDamage: 4,
   },
 
   // ── FIRE MAGIC (4 techniques) ───────────────────────────────────────────
