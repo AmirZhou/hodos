@@ -668,3 +668,100 @@ export function applyDiminishingReturns(
 
   return { duration: effectiveDuration, updatedTracker };
 }
+
+// ---------------------------------------------------------------------------
+// CC Overwrite, Boss Resistance, Spell Duration, Repeated Saves
+// ---------------------------------------------------------------------------
+
+/**
+ * Replace an existing condition of the same name, or add if not present.
+ * WoW-style overwrite: newer application always wins (even if shorter).
+ * Returns a new array (does not mutate).
+ */
+export function applyOrReplaceCondition(
+  conditions: ActiveCondition[],
+  newCondition: ActiveCondition,
+): ActiveCondition[] {
+  const filtered = conditions.filter(c => c.name !== newCondition.name);
+  filtered.push(newCondition);
+  return filtered;
+}
+
+/**
+ * Reduce CC duration for elite/boss NPCs.
+ * - elite: -1 round (min 1)
+ * - boss:  -2 rounds (min 1)
+ * - no rank: unchanged
+ */
+export function applyCcResistance(
+  duration: number,
+  eliteRank?: "elite" | "boss",
+): number {
+  if (!eliteRank) return duration;
+  const reduction = eliteRank === "boss" ? 2 : 1;
+  return Math.max(1, duration - reduction);
+}
+
+/**
+ * Calculate base CC duration for a spell.
+ * - Concentration spells: 10 rounds (1 minute)
+ * - Non-concentration: max(2, spell.level)
+ */
+export function spellCcBaseDuration(spell: { concentration: boolean; level: number }): number {
+  if (spell.concentration) return 10;
+  return Math.max(2, spell.level);
+}
+
+/**
+ * Check if a CC condition should be blocked by cc_immune.
+ * Returns true if the target has cc_immune AND the condition is in CC_CATEGORIES.
+ */
+export function shouldBlockCc(
+  conditionNames: string[],
+  condName: string,
+): boolean {
+  if (!CC_CATEGORIES[condName]) return false; // not a CC condition
+  return conditionNames.some(c => c === "cc_immune");
+}
+
+/**
+ * Check if legendary resistance charges are available.
+ */
+export function canUseLegendaryResistance(
+  legendaryResistances?: { max: number; current: number },
+): boolean {
+  if (!legendaryResistances) return false;
+  return legendaryResistances.current > 0;
+}
+
+/**
+ * Process repeated saves for conditions with saveDC/saveAbility.
+ * Rolls a save for each such condition; on success the condition is removed.
+ *
+ * Returns { kept, removed } — the caller uses `kept` as the new conditions list.
+ */
+export function processRepeatedSaves(
+  conditions: ActiveCondition[],
+  abilities: Record<string, number>,
+  profBonus: number,
+): { kept: ActiveCondition[]; removed: ActiveCondition[] } {
+  const kept: ActiveCondition[] = [];
+  const removed: ActiveCondition[] = [];
+
+  for (const cond of conditions) {
+    if (cond.saveDC && cond.saveAbility) {
+      const abilityScore = abilities[cond.saveAbility] ?? 10;
+      const mod = Math.floor((abilityScore - 10) / 2);
+      const roll = Math.floor(Math.random() * 20) + 1 + mod + profBonus;
+      if (roll >= cond.saveDC) {
+        removed.push(cond);
+      } else {
+        kept.push(cond);
+      }
+    } else {
+      kept.push(cond);
+    }
+  }
+
+  return { kept, removed };
+}
