@@ -202,6 +202,8 @@ const condition = v.object({
   name: v.string(),
   duration: v.optional(v.number()), // turns remaining, or undefined for permanent
   source: v.optional(v.string()),
+  saveDC: v.optional(v.number()),       // DC for repeated saves to shake off
+  saveAbility: v.optional(v.string()),  // ability used for repeated saves
 });
 
 // Scene history entry for NPC memory
