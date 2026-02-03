@@ -2229,16 +2229,14 @@ export const endTurn = mutation({
             name: c.name,
             duration: c.duration,
             source: c.source,
+            saveDC: c.saveDC,
+            saveAbility: c.saveAbility,
             expiresOn: "end" as const,
           })),
           "end",
         );
         await ctx.db.patch(currentCombatant.entityId as Id<"characters">, {
-          conditions: updatedConditions.map(c => ({
-            name: c.name,
-            ...(c.duration !== undefined ? { duration: c.duration } : {}),
-            ...(c.source ? { source: c.source } : {}),
-          })),
+          conditions: updatedConditions.map(serializeCondition),
         });
       }
     } else {
@@ -2249,16 +2247,14 @@ export const endTurn = mutation({
             name: c.name,
             duration: c.duration,
             source: c.source,
+            saveDC: c.saveDC,
+            saveAbility: c.saveAbility,
             expiresOn: "end" as const,
           })),
           "end",
         );
         await ctx.db.patch(currentCombatant.entityId as Id<"npcs">, {
-          conditions: updatedConditions.map(c => ({
-            name: c.name,
-            ...(c.duration !== undefined ? { duration: c.duration } : {}),
-            ...(c.source ? { source: c.source } : {}),
-          })),
+          conditions: updatedConditions.map(serializeCondition),
         });
       }
     }
