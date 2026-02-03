@@ -1094,6 +1094,8 @@ export const ALL_TECHNIQUES: TechniqueDefinition[] = [
     rollBonus: 3,
     cooldown: 2,
     teachable: false,
+    comboFrom: ["fireball", "fire_bolt"],
+    comboBonusDamage: 5,
   },
 
   // ── DOMINATION — TIER 6 CAPSTONE (1 technique) ──────────────────────
