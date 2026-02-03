@@ -6,6 +6,7 @@ import {
   getRageDamageBonus,
   getMartialArtsDie,
   initializeClassResources,
+  getCcBreakFeature,
 } from "./classFeatures";
 
 describe("getFeaturesForClassAtLevel", () => {
