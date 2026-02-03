@@ -1398,26 +1398,46 @@ export const executeAction = mutation({
       // Apply condition to target
       if (scaledEffects.condition && scaledEffects.condition !== "" && target) {
         const condName = scaledEffects.condition;
-        if (target.entityType === "character") {
-          const ch = await ctx.db.get(target.entityId as Id<"characters">);
-          if (ch) {
-            const conds = [...ch.conditions];
-            if (!conds.some(c => c.name === condName)) {
-              conds.push({ name: condName, duration: 1, source: args.action.techniqueId! });
-            }
-            await ctx.db.patch(target.entityId as Id<"characters">, { conditions: conds });
-          }
-        } else {
-          const np = await ctx.db.get(target.entityId as Id<"npcs">);
-          if (np) {
-            const conds = [...np.conditions];
-            if (!conds.some(c => c.name === condName)) {
-              conds.push({ name: condName, duration: 1, source: args.action.techniqueId! });
-            }
-            await ctx.db.patch(target.entityId as Id<"npcs">, { conditions: conds });
-          }
+
+        // Calculate CC duration from potency + diminishing returns
+        const ccCategory = CC_CATEGORIES[condName];
+        let condDuration = potencyToCcDuration(potency);
+
+        if (ccCategory && condDuration > 0) {
+          // Apply diminishing returns
+          const targetDrTracker: DrTracker = combatants[args.action.targetIndex!].drTracker ?? {};
+          const drResult = applyDiminishingReturns(condDuration, condName, targetDrTracker, session.combat!.round);
+          condDuration = drResult.duration;
+          // Update DR tracker on combatant
+          combatants[args.action.targetIndex!] = {
+            ...combatants[args.action.targetIndex!],
+            drTracker: drResult.updatedTracker,
+          };
         }
-        hitResult = true;
+
+        // Only apply condition if duration > 0 (DR may grant immunity)
+        if (condDuration > 0) {
+          if (target.entityType === "character") {
+            const ch = await ctx.db.get(target.entityId as Id<"characters">);
+            if (ch) {
+              const conds = [...ch.conditions];
+              if (!conds.some(c => c.name === condName)) {
+                conds.push({ name: condName, duration: condDuration, source: args.action.techniqueId! });
+              }
+              await ctx.db.patch(target.entityId as Id<"characters">, { conditions: conds });
+            }
+          } else {
+            const np = await ctx.db.get(target.entityId as Id<"npcs">);
+            if (np) {
+              const conds = [...np.conditions];
+              if (!conds.some(c => c.name === condName)) {
+                conds.push({ name: condName, duration: condDuration, source: args.action.techniqueId! });
+              }
+              await ctx.db.patch(target.entityId as Id<"npcs">, { conditions: conds });
+            }
+          }
+          hitResult = true;
+        }
       }
 
       // Record technique use and award XP
