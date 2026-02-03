@@ -487,6 +487,9 @@ export const executeAction = mutation({
         }
       }
 
+      // Apply condition-based AC modifier (e.g. armor_broken = -3)
+      targetAc += getAcModifier(targetConditions);
+
       // Calculate attack bonus
       let attackBonus = 0;
       if (current.entityType === "character") {
