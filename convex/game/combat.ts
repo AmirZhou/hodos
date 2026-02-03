@@ -1554,6 +1554,8 @@ export const executeAction = mutation({
           } else {
             const np = await ctx.db.get(target.entityId as Id<"npcs">);
             if (np) {
+              // Apply boss CC resistance for NPC targets
+              condDuration = applyCcResistance(condDuration, np.eliteRank as "elite" | "boss" | undefined);
               const conds = applyOrReplaceCondition(np.conditions, {
                 name: condName, duration: condDuration, source: args.action.techniqueId!,
               });
