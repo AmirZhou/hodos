@@ -1489,19 +1489,17 @@ export const executeAction = mutation({
           if (target.entityType === "character") {
             const ch = await ctx.db.get(target.entityId as Id<"characters">);
             if (ch) {
-              const conds = [...ch.conditions];
-              if (!conds.some(c => c.name === condName)) {
-                conds.push({ name: condName, duration: condDuration, source: args.action.techniqueId! });
-              }
+              const conds = applyOrReplaceCondition(ch.conditions, {
+                name: condName, duration: condDuration, source: args.action.techniqueId!,
+              });
               await ctx.db.patch(target.entityId as Id<"characters">, { conditions: conds });
             }
           } else {
             const np = await ctx.db.get(target.entityId as Id<"npcs">);
             if (np) {
-              const conds = [...np.conditions];
-              if (!conds.some(c => c.name === condName)) {
-                conds.push({ name: condName, duration: condDuration, source: args.action.techniqueId! });
-              }
+              const conds = applyOrReplaceCondition(np.conditions, {
+                name: condName, duration: condDuration, source: args.action.techniqueId!,
+              });
               await ctx.db.patch(target.entityId as Id<"npcs">, { conditions: conds });
             }
           }
