@@ -35,6 +35,17 @@ const combatantState = v.object({
   hasReaction: v.boolean(),
   movementRemaining: v.number(),
   turnStartedAt: v.optional(v.number()),
+  // CC/DR tracking
+  drTracker: v.optional(v.record(v.string(), v.object({
+    count: v.number(),
+    lastAppliedRound: v.number(),
+  }))),
+  ironWillUsed: v.optional(v.boolean()),
+  ccBreakCooldowns: v.optional(v.record(v.string(), v.number())),
+  lastTechniqueUsed: v.optional(v.object({
+    techniqueId: v.string(),
+    round: v.number(),
+  })),
 });
 
 const combatState = v.object({
