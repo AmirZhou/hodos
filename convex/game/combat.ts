@@ -2129,6 +2129,42 @@ export const endTurn = mutation({
       }
     }
 
+    // Process start-of-turn for NPC
+    if (nextCombatant.entityType === "npc") {
+      const npc = await ctx.db.get(nextCombatant.entityId as Id<"npcs">);
+      if (npc) {
+        // Process start-of-turn condition durations for NPC
+        const updatedConditions = processConditionDurations(
+          npc.conditions.map(c => ({
+            name: c.name,
+            duration: c.duration,
+            source: c.source,
+            expiresOn: "start" as const,
+          })),
+          "start",
+        );
+        const npcPatch: Record<string, unknown> = {
+          conditions: updatedConditions.map(c => ({
+            name: c.name,
+            ...(c.duration !== undefined ? { duration: c.duration } : {}),
+            ...(c.source ? { source: c.source } : {}),
+          })),
+        };
+
+        // DoT damage at start of turn for NPC
+        const dotDmg = getDotDamage(npc.conditions.map(c => c.name));
+        if (dotDmg > 0 && npc.hp > 0) {
+          const newHp = Math.max(0, npc.hp - dotDmg);
+          npcPatch.hp = newHp;
+          if (newHp === 0) {
+            npcPatch.isAlive = false;
+          }
+        }
+
+        await ctx.db.patch(nextCombatant.entityId as Id<"npcs">, npcPatch);
+      }
+    }
+
     // Reset turn resources for next combatant
     combatants[nextIndex] = {
       ...combatants[nextIndex],
