@@ -2357,7 +2357,7 @@ export const endTurn = mutation({
           patch.hp = newHp;
           // DoT dropping to 0 HP → unconscious
           if (newHp === 0 && char.hp > 0) {
-            const condsList = (patch.conditions as Array<{ name: string; duration?: number; source?: string }>);
+            const condsList = (patch.conditions as ReturnType<typeof serializeCondition>[]);
             if (!condsList.some(c => c.name === "unconscious")) {
               condsList.push({ name: "unconscious" });
             }
