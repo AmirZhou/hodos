@@ -252,6 +252,20 @@ const MONK_FEATURES: ClassFeature[] = [
     level: 5,
     description: "Spend 1 ki: target must succeed on CON save or be stunned until end of your next turn.",
   },
+  {
+    id: "stillness_of_mind",
+    name: "Stillness of Mind",
+    level: 7,
+    description: "Use reaction and 1 ki to break free from fear, incapacitate, or disorient effects.",
+    combatEffect: {
+      ccBreak: {
+        breaksCategories: ["fear", "incapacitate", "disorient"],
+        actionCost: "reaction",
+        cooldownRounds: 0,
+        resourceCost: { resource: "ki", amount: 1 },
+      },
+    },
+  },
 ];
 
 const PALADIN_FEATURES: ClassFeature[] = [
