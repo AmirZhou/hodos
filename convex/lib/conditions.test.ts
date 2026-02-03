@@ -755,9 +755,10 @@ describe("canUseLegendaryResistance", () => {
   });
 });
 
-// ============ PROCESS REPEATED SAVES ============
+// ============ PROCESS REPEATED SAVES (end-of-turn per D&D 5e) ============
 
 describe("processRepeatedSaves", () => {
+  // Note: In combat.ts, processRepeatedSaves runs at end-of-turn (D&D 5e: "at the end of each of its turns").
   const abilities = {
     strength: 10,
     dexterity: 10,
