@@ -340,6 +340,19 @@ const RANGER_FEATURES: ClassFeature[] = [
     description: "Attack twice when you take the Attack action.",
     combatEffect: { extraAttacks: 1 },
   },
+  {
+    id: "natures_stride",
+    name: "Nature's Stride",
+    level: 6,
+    description: "Permanently immune to root and slow effects.",
+    combatEffect: {
+      ccBreak: {
+        breaksCategories: ["root", "slow"],
+        actionCost: "passive",
+        cooldownRounds: 0,
+      },
+    },
+  },
 ];
 
 // Map class names to feature lists
