@@ -19,7 +19,22 @@ import {
   concentrationSaveDC,
   canAct,
   canMove,
+  canCast,
+  getDotDamage,
+  getDamageVulnerabilityMultiplier,
+  getAcModifier,
+  getOutgoingDamageMultiplier,
+  removeConditionsOnDamage,
+  CC_CATEGORIES,
+  applyDiminishingReturns,
 } from "../lib/conditions";
+import type { DrTracker } from "../lib/conditions";
+import {
+  potencyToCcDuration,
+  applyVulnerabilityBonus,
+  calculateComboBonus,
+} from "../lib/techniqueResolution";
+import type { Potency } from "../lib/techniqueResolution";
 import { getSpellById } from "../data/spellData";
 
 // ============ EXTRA ATTACKS ============
