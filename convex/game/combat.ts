@@ -718,26 +718,66 @@ export const executeAction = mutation({
               const tc = await ctx.db.get(target.entityId as Id<"characters">);
               if (tc) targetConMod = Math.floor((tc.abilities.constitution - 10) / 2);
             }
+            // NPC con mod
+            if (target.entityType === "npc") {
+              const tn = await ctx.db.get(target.entityId as Id<"npcs">);
+              if (tn) targetConMod = Math.floor((tn.abilities.constitution - 10) / 2);
+            }
             const conSave = Math.floor(Math.random() * 20) + 1 + targetConMod;
-            if (conSave < kiSaveDC) {
-              // Stunned until end of monk's next turn
+            let stunSaveFailed = conSave < kiSaveDC;
+
+            // Legendary resistance: boss NPC auto-succeeds save, consuming a charge
+            if (stunSaveFailed && target.entityType === "npc") {
+              const tn = await ctx.db.get(target.entityId as Id<"npcs">);
+              if (tn && canUseLegendaryResistance(tn.legendaryResistances)) {
+                stunSaveFailed = false;
+                await ctx.db.patch(target.entityId as Id<"npcs">, {
+                  legendaryResistances: {
+                    max: tn.legendaryResistances!.max,
+                    current: tn.legendaryResistances!.current - 1,
+                  },
+                });
+              }
+            }
+
+            if (stunSaveFailed) {
+              // Check cc_immune and apply DR
               if (target.entityType === "character") {
                 const tc = await ctx.db.get(target.entityId as Id<"characters">);
                 if (tc) {
-                  const conds = applyOrReplaceCondition(tc.conditions, {
-                    name: "stunned", duration: 1, source: "stunning_strike",
-                    saveDC: kiSaveDC, saveAbility: "constitution",
-                  });
-                  await ctx.db.patch(target.entityId as Id<"characters">, { conditions: conds });
+                  if (!shouldBlockCc(tc.conditions.map(c => c.name), "stunned")) {
+                    let dur = 1;
+                    const targetDrTracker: DrTracker = combatants[args.action.targetIndex!].drTracker ?? {};
+                    const drResult = applyDiminishingReturns(dur, "stunned", targetDrTracker, session.combat!.round);
+                    dur = drResult.duration;
+                    combatants[args.action.targetIndex!] = { ...combatants[args.action.targetIndex!], drTracker: drResult.updatedTracker };
+                    if (dur > 0) {
+                      const conds = applyOrReplaceCondition(tc.conditions, {
+                        name: "stunned", duration: dur, source: "stunning_strike",
+                        saveDC: kiSaveDC, saveAbility: "constitution",
+                      });
+                      await ctx.db.patch(target.entityId as Id<"characters">, { conditions: conds });
+                    }
+                  }
                 }
               } else {
                 const tn = await ctx.db.get(target.entityId as Id<"npcs">);
                 if (tn) {
-                  const conds = applyOrReplaceCondition(tn.conditions, {
-                    name: "stunned", duration: 1, source: "stunning_strike",
-                    saveDC: kiSaveDC, saveAbility: "constitution",
-                  });
-                  await ctx.db.patch(target.entityId as Id<"npcs">, { conditions: conds });
+                  if (!shouldBlockCc(tn.conditions.map(c => c.name), "stunned")) {
+                    let dur = 1;
+                    const targetDrTracker: DrTracker = combatants[args.action.targetIndex!].drTracker ?? {};
+                    const drResult = applyDiminishingReturns(dur, "stunned", targetDrTracker, session.combat!.round);
+                    dur = drResult.duration;
+                    combatants[args.action.targetIndex!] = { ...combatants[args.action.targetIndex!], drTracker: drResult.updatedTracker };
+                    if (dur > 0) {
+                      dur = applyCcResistance(dur, tn.eliteRank as "elite" | "boss" | undefined);
+                      const conds = applyOrReplaceCondition(tn.conditions, {
+                        name: "stunned", duration: dur, source: "stunning_strike",
+                        saveDC: kiSaveDC, saveAbility: "constitution",
+                      });
+                      await ctx.db.patch(target.entityId as Id<"npcs">, { conditions: conds });
+                    }
+                  }
                 }
               }
             }
