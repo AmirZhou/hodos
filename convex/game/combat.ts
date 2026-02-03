@@ -25,9 +25,27 @@ import {
   calculateComboBonus,
 } from "../lib/techniqueResolution";
 import { logAudit } from "../lib/auditLog";
+import type { ActiveCondition } from "../lib/conditions";
 
 // Default turn timeout: 2 minutes
 const DEFAULT_TURN_TIMEOUT_MS = 120000;
+
+/** Serialize an ActiveCondition to the schema-compatible shape for DB storage. */
+function serializeCondition(c: ActiveCondition): {
+  name: string;
+  duration?: number;
+  source?: string;
+  saveDC?: number;
+  saveAbility?: string;
+} {
+  return {
+    name: c.name,
+    ...(c.duration !== undefined ? { duration: c.duration } : {}),
+    ...(c.source ? { source: c.source } : {}),
+    ...(c.saveDC !== undefined ? { saveDC: c.saveDC } : {}),
+    ...(c.saveAbility ? { saveAbility: c.saveAbility } : {}),
+  };
+}
 
 // ============ VALIDATORS ============
 
