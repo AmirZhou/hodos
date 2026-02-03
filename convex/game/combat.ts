@@ -724,20 +724,20 @@ export const executeAction = mutation({
               if (target.entityType === "character") {
                 const tc = await ctx.db.get(target.entityId as Id<"characters">);
                 if (tc) {
-                  const conds = [...tc.conditions];
-                  if (!conds.some(c => c.name === "stunned")) {
-                    conds.push({ name: "stunned", duration: 1, source: "stunning_strike" });
-                    await ctx.db.patch(target.entityId as Id<"characters">, { conditions: conds });
-                  }
+                  const conds = applyOrReplaceCondition(tc.conditions, {
+                    name: "stunned", duration: 1, source: "stunning_strike",
+                    saveDC: kiSaveDC, saveAbility: "constitution",
+                  });
+                  await ctx.db.patch(target.entityId as Id<"characters">, { conditions: conds });
                 }
               } else {
                 const tn = await ctx.db.get(target.entityId as Id<"npcs">);
                 if (tn) {
-                  const conds = [...tn.conditions];
-                  if (!conds.some(c => c.name === "stunned")) {
-                    conds.push({ name: "stunned", duration: 1, source: "stunning_strike" });
-                    await ctx.db.patch(target.entityId as Id<"npcs">, { conditions: conds });
-                  }
+                  const conds = applyOrReplaceCondition(tn.conditions, {
+                    name: "stunned", duration: 1, source: "stunning_strike",
+                    saveDC: kiSaveDC, saveAbility: "constitution",
+                  });
+                  await ctx.db.patch(target.entityId as Id<"npcs">, { conditions: conds });
                 }
               }
             }
