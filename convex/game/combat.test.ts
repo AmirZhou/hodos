@@ -1034,7 +1034,6 @@ describe("Repeated saves end-of-turn semantics", () => {
 
   it("conditions with saveDC+saveAbility get repeated save attempts (pure function test)", () => {
     // This tests the processRepeatedSaves function which now runs at end-of-turn in combat.ts
-    const { processRepeatedSaves } = require("../lib/conditions");
     const abilities = { strength: 10, dexterity: 10, constitution: 10, intelligence: 10, wisdom: 20, charisma: 10 };
     const conditions: ActiveCondition[] = [
       { name: "paralyzed", duration: 5, saveDC: 5, saveAbility: "wisdom", source: "hold_person" },
