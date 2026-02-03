@@ -2326,14 +2326,6 @@ export const endTurn = mutation({
           "start",
         );
 
-        // Repeated saves: roll saves for conditions with saveDC/saveAbility
-        const { kept } = processRepeatedSaves(
-          updatedConditions,
-          char.abilities as unknown as Record<string, number>,
-          char.proficiencyBonus,
-        );
-        updatedConditions = kept;
-
         const patch: Record<string, unknown> = {
           conditions: updatedConditions.map(serializeCondition),
         };
