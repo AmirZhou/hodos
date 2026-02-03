@@ -1315,6 +1315,7 @@ export const executeAction = mutation({
               const dc = concentrationSaveDC(rem);
               const mod = Math.floor((ch.abilities.constitution - 10) / 2);
               if (Math.floor(Math.random() * 20) + 1 + mod + ch.proficiencyBonus < dc) {
+                await removeConcentrationConditions(ctx, ch.concentration, target.entityId, combatants);
                 patch.concentration = undefined;
               }
             }
