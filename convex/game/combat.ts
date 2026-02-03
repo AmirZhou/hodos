@@ -50,6 +50,8 @@ const actionType = v.union(
   v.literal("use_item"),
   v.literal("second_wind"),
   v.literal("action_surge"),
+  v.literal("cc_break"),
+  v.literal("iron_will"),
   v.literal("other")
 );
 
