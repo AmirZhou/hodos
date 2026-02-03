@@ -1077,6 +1077,8 @@ export const ALL_TECHNIQUES: TechniqueDefinition[] = [
     rollBonus: 3,
     cooldown: 2,
     teachable: false,
+    comboFrom: ["whirlwind_slash", "quick_draw"],
+    comboBonusDamage: 4,
   },
 
   // ── FIRE MAGIC — TIER 6 CAPSTONE (1 technique) ──────────────────────
