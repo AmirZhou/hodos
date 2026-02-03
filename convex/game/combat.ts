@@ -2210,6 +2210,7 @@ export const move = mutation({
                 const conMod = Math.floor((ch.abilities.constitution - 10) / 2);
                 const conSave = Math.floor(Math.random() * 20) + 1 + conMod + ch.proficiencyBonus;
                 if (conSave < conSaveDC) {
+                  await removeConcentrationConditions(ctx, ch.concentration, combatant.entityId, combatants);
                   patch.concentration = undefined;
                 }
               }
