@@ -2253,6 +2253,7 @@ export const move = mutation({
           if (mn) {
             const newHp = Math.max(0, mn.hp - oaDamage);
             await ctx.db.patch(combatant.entityId as Id<"npcs">, { hp: newHp, isAlive: newHp > 0 });
+            await checkNpcConcentration(ctx, mn, combatant.entityId, oaDamage, combatants);
           }
         }
 
