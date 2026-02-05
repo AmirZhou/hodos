@@ -1576,6 +1576,7 @@ export const executeAction = mutation({
             if (newHp === 0 && ch.hp > 0) {
               const conds = [...ch.conditions];
               if (!conds.some(c => c.name === "unconscious")) conds.push({ name: "unconscious" });
+              if (!conds.some(c => c.name === "prone")) conds.push({ name: "prone" });
               patch.conditions = conds;
               patch.deathSaves = { successes: 0, failures: 0 };
             }
