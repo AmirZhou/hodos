@@ -2647,8 +2647,8 @@ export const endTurn = mutation({
           conditions: updatedConditions.map(serializeCondition),
         };
 
-        // DoT damage at start of turn for NPC
-        const dotDmg = getDotDamage(npc.conditions.map(c => c.name));
+        // DoT damage at start of turn for NPC (use processed conditions, not original)
+        const dotDmg = getDotDamage(updatedConditions.map(c => c.name));
         if (dotDmg > 0 && npc.hp > 0) {
           const newHp = Math.max(0, npc.hp - dotDmg);
           npcPatch.hp = newHp;
