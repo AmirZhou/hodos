@@ -865,6 +865,11 @@ export const executeAction = mutation({
                         saveDC: kiSaveDC, saveAbility: "constitution",
                       });
                       await ctx.db.patch(target.entityId as Id<"characters">, { conditions: conds });
+                      // Stunned = incapacitated → break concentration (D&D 5e rule)
+                      if (tc.concentration) {
+                        await removeConcentrationConditions(ctx, tc.concentration, target.entityId, combatants);
+                        await ctx.db.patch(target.entityId as Id<"characters">, { concentration: undefined });
+                      }
                     }
                   }
                 }
@@ -884,6 +889,11 @@ export const executeAction = mutation({
                         saveDC: kiSaveDC, saveAbility: "constitution",
                       });
                       await ctx.db.patch(target.entityId as Id<"npcs">, { conditions: conds });
+                      // Stunned = incapacitated → break concentration (D&D 5e rule)
+                      if (tn.concentration) {
+                        await removeConcentrationConditions(ctx, tn.concentration, target.entityId, combatants);
+                        await ctx.db.patch(target.entityId as Id<"npcs">, { concentration: undefined });
+                      }
                     }
                   }
                 }
