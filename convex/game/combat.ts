@@ -1634,14 +1634,24 @@ export const executeAction = mutation({
 
       // Apply AC bonus (as a temporary condition on actor)
       if (scaledEffects.acBonus && scaledEffects.acBonus > 0) {
+        // Use specific condition name based on bonus value (capped at 3)
+        const bonusLevel = Math.min(3, Math.max(1, scaledEffects.acBonus));
+        const acConditionName = `technique_ac_bonus_${bonusLevel}`;
         if (current.entityType === "character") {
           const ch = await ctx.db.get(current.entityId as Id<"characters">);
           if (ch) {
-            const conds = [...ch.conditions];
-            if (!conds.some(c => c.name === "technique_ac_bonus")) {
-              conds.push({ name: "technique_ac_bonus", duration: 1, source: args.action.techniqueId! });
-            }
+            // Remove any existing technique AC bonus conditions
+            const conds = ch.conditions.filter(c => !c.name.startsWith("technique_ac_bonus"));
+            conds.push({ name: acConditionName, duration: 1, source: args.action.techniqueId! });
             await ctx.db.patch(current.entityId as Id<"characters">, { conditions: conds });
+          }
+        } else {
+          // NPCs can also gain AC bonus from techniques
+          const npc = await ctx.db.get(current.entityId as Id<"npcs">);
+          if (npc) {
+            const conds = npc.conditions.filter(c => !c.name.startsWith("technique_ac_bonus"));
+            conds.push({ name: acConditionName, duration: 1, source: args.action.techniqueId! });
+            await ctx.db.patch(current.entityId as Id<"npcs">, { conditions: conds });
           }
         }
       }
