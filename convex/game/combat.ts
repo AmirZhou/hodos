@@ -2454,7 +2454,8 @@ export const endTurn = mutation({
 
         // === DoT damage at start of turn ===
         const dotDmg = getDotDamage(char.conditions.map(c => c.name));
-        if (dotDmg > 0 && char.hp > 0) {
+        const isDead = char.conditions.some(c => c.name === "dead");
+        if (dotDmg > 0 && char.hp > 0 && !isDead) {
           let rem = dotDmg;
           let tp = (patch.tempHp as number | undefined) ?? char.tempHp;
           if (tp > 0) {
