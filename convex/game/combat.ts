@@ -1017,10 +1017,9 @@ export const executeAction = mutation({
       // Unique source ID: prevents collision when two casters use the same spell
       const spellSourceId = `${spell.id}_${current.entityId}`;
 
-      // Handle concentration: drop existing before setting new
+      // Handle concentration: drop existing conditions before setting new (the concentration field itself is overwritten at the end)
       if (spell.concentration && caster.concentration) {
         await removeConcentrationConditions(ctx, caster.concentration, current.entityId, combatants);
-        await ctx.db.patch(current.entityId as Id<"characters">, { concentration: undefined });
       }
 
       // --- Spell attack roll spells (fire_bolt, eldritch_blast, ray_of_frost, chill_touch, scorching_ray) ---
