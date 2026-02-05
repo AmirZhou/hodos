@@ -1110,6 +1110,7 @@ export const executeAction = mutation({
                 if (np) {
                   const newHp = Math.max(0, np.hp - rayDamage);
                   await ctx.db.patch(target.entityId as Id<"npcs">, { hp: newHp, isAlive: newHp > 0 });
+                  await checkNpcConcentration(ctx, np, target.entityId, rayDamage, combatants);
                 }
               }
             }
