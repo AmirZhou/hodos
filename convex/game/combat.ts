@@ -2543,9 +2543,9 @@ export const endTurn = mutation({
           conditions: updatedConditions.map(serializeCondition),
         };
 
-        // === DoT damage at start of turn ===
-        const dotDmg = getDotDamage(char.conditions.map(c => c.name));
-        const isDead = char.conditions.some(c => c.name === "dead");
+        // === DoT damage at start of turn (use processed conditions, not original) ===
+        const dotDmg = getDotDamage(updatedConditions.map(c => c.name));
+        const isDead = updatedConditions.some(c => c.name === "dead");
         if (dotDmg > 0 && char.hp > 0 && !isDead) {
           let rem = dotDmg;
           let tp = (patch.tempHp as number | undefined) ?? char.tempHp;
