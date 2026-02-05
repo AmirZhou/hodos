@@ -34,6 +34,7 @@ const DEFAULT_TURN_TIMEOUT_MS = 120000;
 function serializeCondition(c: ActiveCondition): {
   name: string;
   duration?: number;
+  expiresOn?: "start" | "end";
   source?: string;
   saveDC?: number;
   saveAbility?: string;
@@ -41,6 +42,7 @@ function serializeCondition(c: ActiveCondition): {
   return {
     name: c.name,
     ...(c.duration !== undefined ? { duration: c.duration } : {}),
+    ...(c.expiresOn ? { expiresOn: c.expiresOn } : {}),
     ...(c.source ? { source: c.source } : {}),
     ...(c.saveDC !== undefined ? { saveDC: c.saveDC } : {}),
     ...(c.saveAbility ? { saveAbility: c.saveAbility } : {}),
