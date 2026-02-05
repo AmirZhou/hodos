@@ -1154,7 +1154,7 @@ export const executeAction = mutation({
                   if (ch.concentration && rem > 0) {
                     const dc = concentrationSaveDC(rem);
                     const mod = Math.floor((ch.abilities.constitution - 10) / 2);
-                    if (Math.floor(Math.random() * 20) + 1 + mod + ch.proficiencyBonus < dc) {
+                    if (Math.floor(Math.random() * 20) + 1 + mod < dc) { // CON save only, no prof
                       await removeConcentrationConditions(ctx, ch.concentration, target.entityId, combatants);
                       patch.concentration = undefined;
                     }
@@ -1268,7 +1268,7 @@ export const executeAction = mutation({
                 if (ch.concentration && rem > 0) {
                   const dc = concentrationSaveDC(rem);
                   const mod = Math.floor((ch.abilities.constitution - 10) / 2);
-                  if (Math.floor(Math.random() * 20) + 1 + mod + ch.proficiencyBonus < dc) {
+                  if (Math.floor(Math.random() * 20) + 1 + mod < dc) { // CON save only, no prof
                     await removeConcentrationConditions(ctx, ch.concentration, target.entityId, combatants);
                     patch.concentration = undefined;
                   }
@@ -1415,7 +1415,7 @@ export const executeAction = mutation({
             if (ch.concentration && rem > 0) {
               const dc = concentrationSaveDC(rem);
               const mod = Math.floor((ch.abilities.constitution - 10) / 2);
-              if (Math.floor(Math.random() * 20) + 1 + mod + ch.proficiencyBonus < dc) {
+              if (Math.floor(Math.random() * 20) + 1 + mod < dc) { // CON save only, no prof
                 await removeConcentrationConditions(ctx, ch.concentration, target.entityId, combatants);
                 patch.concentration = undefined;
               }
@@ -1611,7 +1611,7 @@ export const executeAction = mutation({
             if (ch.concentration && rem > 0) {
               const dc = concentrationSaveDC(rem);
               const mod = Math.floor((ch.abilities.constitution - 10) / 2);
-              if (Math.floor(Math.random() * 20) + 1 + mod + ch.proficiencyBonus < dc) {
+              if (Math.floor(Math.random() * 20) + 1 + mod < dc) { // CON save only, no prof
                 await removeConcentrationConditions(ctx, ch.concentration, target.entityId, combatants);
                 patch.concentration = undefined;
               }
