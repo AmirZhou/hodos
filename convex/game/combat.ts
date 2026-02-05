@@ -2090,15 +2090,18 @@ export const move = mutation({
 
     // Check if mover used Disengage — skip all opportunity attacks
     let moverDisengaged = false;
+    let moverConditions: string[] = [];
     if (combatant.entityType === "character") {
       const moverChar = await ctx.db.get(combatant.entityId as Id<"characters">);
-      if (moverChar?.conditions.some(c => c.name === "disengaged")) {
-        moverDisengaged = true;
+      if (moverChar) {
+        moverConditions = moverChar.conditions.map(c => c.name);
+        if (moverConditions.includes("disengaged")) moverDisengaged = true;
       }
     } else {
       const moverNpc = await ctx.db.get(combatant.entityId as Id<"npcs">);
-      if (moverNpc?.conditions.some(c => c.name === "disengaged")) {
-        moverDisengaged = true;
+      if (moverNpc) {
+        moverConditions = moverNpc.conditions.map(c => c.name);
+        if (moverConditions.includes("disengaged")) moverDisengaged = true;
       }
     }
 
