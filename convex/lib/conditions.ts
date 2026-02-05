@@ -242,6 +242,12 @@ export const CONDITIONS: Record<string, ConditionDefinition> = {
       cannotMove: true,
     },
   },
+  stabilized: {
+    name: "Stabilized",
+    description:
+      "The creature is stable at 0 HP. It does not make death saving throws but remains unconscious until healed.",
+    effects: {},
+  },
 
   // ── NEW CONDITIONS ─────────────────────────────────────────────────────
 
