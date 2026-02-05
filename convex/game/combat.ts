@@ -1222,7 +1222,7 @@ export const executeAction = mutation({
                   conds = applyOrReplaceCondition(conds, {
                     name: condName,
                     duration: dur,
-                    source: spell.id,
+                    source: spellSourceId,
                     ...(spell.saveType ? { saveDC: spellSaveDC, saveAbility: spell.saveType } : {}),
                   });
                 }
@@ -1246,7 +1246,7 @@ export const executeAction = mutation({
                   conds = applyOrReplaceCondition(conds, {
                     name: condName,
                     duration: dur,
-                    source: spell.id,
+                    source: spellSourceId,
                     ...(spell.saveType ? { saveDC: spellSaveDC, saveAbility: spell.saveType } : {}),
                   });
                 }
