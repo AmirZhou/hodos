@@ -969,6 +969,9 @@ export const executeAction = mutation({
         });
       }
 
+      // Unique source ID: prevents collision when two casters use the same spell
+      const spellSourceId = `${spell.id}_${current.entityId}`;
+
       // Handle concentration: drop existing before setting new
       if (spell.concentration && caster.concentration) {
         await removeConcentrationConditions(ctx, caster.concentration, current.entityId, combatants);
