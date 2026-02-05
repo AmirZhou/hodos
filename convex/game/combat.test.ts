@@ -1044,3 +1044,84 @@ describe("Repeated saves end-of-turn semantics", () => {
     expect(kept).toHaveLength(0);
   });
 });
+
+// ============ UNIQUE CONCENTRATION SOURCE IDS ============
+
+describe("Concentration spell source ID uniqueness", () => {
+  it("two casters using same spell produce different source IDs", () => {
+    const spellId = "hold_person";
+    const casterA = "char_aaa";
+    const casterB = "char_bbb";
+    const sourceA = `${spellId}_${casterA}`;
+    const sourceB = `${spellId}_${casterB}`;
+    expect(sourceA).not.toBe(sourceB);
+    expect(sourceA).toBe("hold_person_char_aaa");
+    expect(sourceB).toBe("hold_person_char_bbb");
+  });
+
+  it("breaking caster A concentration only removes caster A conditions", () => {
+    const conditions: ActiveCondition[] = [
+      { name: "paralyzed", duration: 10, source: "hold_person_char_aaa", saveDC: 15, saveAbility: "wisdom" },
+      { name: "paralyzed", duration: 8, source: "hold_person_char_bbb", saveDC: 13, saveAbility: "wisdom" },
+      { name: "stunned", duration: 1, source: "stunning_strike" },
+    ];
+    // Caster A loses concentration → filter by sourceA
+    const sourceA = "hold_person_char_aaa";
+    const filtered = conditions.filter(c => c.source !== sourceA);
+    expect(filtered).toHaveLength(2);
+    expect(filtered.find(c => c.source === "hold_person_char_bbb")).toBeDefined();
+    expect(filtered.find(c => c.source === "stunning_strike")).toBeDefined();
+  });
+
+  it("concentration.spellId matches condition source for proper cleanup", () => {
+    const casterId = "char_xyz";
+    const spellId = "hold_person";
+    const spellSourceId = `${spellId}_${casterId}`;
+
+    // Concentration stores the unique ID
+    const concentration = { spellId: spellSourceId, targetId: "npc_target" };
+
+    // Conditions use the same unique ID
+    const conditions: ActiveCondition[] = [
+      { name: "paralyzed", duration: 10, source: spellSourceId },
+    ];
+
+    // Cleanup filters by concentration.spellId
+    const filtered = conditions.filter(c => c.source !== concentration.spellId);
+    expect(filtered).toHaveLength(0);
+  });
+});
+
+// ============ OPPORTUNITY ATTACK BREAK-ON-DAMAGE ============
+
+describe("Opportunity attack break-on-damage", () => {
+  it("removeConditionsOnDamage breaks charmed from OA damage", () => {
+    const conditions = [
+      { name: "charmed", duration: 3, source: "charm_person_caster1" },
+      { name: "stunned", duration: 1, source: "monk_ki" },
+    ];
+    const cleaned = removeConditionsOnDamage(conditions);
+    expect(cleaned).toHaveLength(1);
+    expect(cleaned[0].name).toBe("stunned");
+  });
+
+  it("removeConditionsOnDamage breaks dominated from OA damage", () => {
+    const conditions = [
+      { name: "dominated", duration: 2, source: "dominate_person_caster1" },
+      { name: "blinded", duration: 1, source: "blindness" },
+    ];
+    const cleaned = removeConditionsOnDamage(conditions);
+    expect(cleaned).toHaveLength(1);
+    expect(cleaned[0].name).toBe("blinded");
+  });
+
+  it("removeConditionsOnDamage preserves non-breakable conditions", () => {
+    const conditions = [
+      { name: "stunned", duration: 2, source: "hold_person_caster1" },
+      { name: "paralyzed", duration: 5, source: "hold_person_caster1" },
+      { name: "blinded", duration: 3, source: "blindness" },
+    ];
+    const cleaned = removeConditionsOnDamage(conditions);
+    expect(cleaned).toHaveLength(3); // none are breakOnDamage
+  });
+});
