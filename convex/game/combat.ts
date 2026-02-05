@@ -2658,11 +2658,11 @@ export const endTurn = mutation({
             npcPatch.isAlive = false;
           }
           // Concentration save from DoT damage for NPC
+          // D&D 5e: Concentration saves use only CON modifier, no proficiency bonus
           if (npc.concentration && dotDmg > 0) {
             const dc = concentrationSaveDC(dotDmg);
             const conMod = Math.floor((npc.abilities.constitution - 10) / 2);
-            const npcProf = Math.max(2, Math.floor((npc.level - 1) / 4) + 2);
-            if (Math.floor(Math.random() * 20) + 1 + conMod + npcProf < dc) {
+            if (Math.floor(Math.random() * 20) + 1 + conMod < dc) {
               await removeConcentrationConditions(ctx, npc.concentration, nextCombatant.entityId, combatants);
               npcPatch.concentration = undefined;
             }
