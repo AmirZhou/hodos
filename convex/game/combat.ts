@@ -694,13 +694,14 @@ export const executeAction = mutation({
       // but attacks against you have advantage until your next turn
       if (args.action.reckless && charClass === "barbarian" && charLevel >= 2 && isMelee) {
         if (advState <= 0) advState = 1; // force advantage
-        // Apply "reckless" condition — attacks against have advantage until next turn
+        // Apply "reckless" condition — attacks against have advantage until start of next turn
         if (current.entityType === "character") {
           const rChar = await ctx.db.get(current.entityId as Id<"characters">);
           if (rChar) {
             const conds = [...rChar.conditions];
             if (!conds.some(c => c.name === "reckless")) {
-              conds.push({ name: "reckless", duration: 1, source: "reckless_attack" });
+              // D&D 5e: "until the start of your next turn" - expires at start, not end
+              conds.push({ name: "reckless", duration: 1, expiresOn: "start", source: "reckless_attack" });
               await ctx.db.patch(current.entityId as Id<"characters">, { conditions: conds });
             }
           }
