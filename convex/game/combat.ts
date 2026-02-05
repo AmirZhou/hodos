@@ -2206,7 +2206,7 @@ export const move = mutation({
         // Apply damage to the moving combatant
         if (combatant.entityType === "character") {
           const ch = await ctx.db.get(combatant.entityId as Id<"characters">);
-          if (ch) {
+          if (ch && !ch.conditions.some(c => c.name === "dead")) {
             // Damage at 0 HP → automatic death save failures (crit = 2)
             if (ch.hp === 0) {
               const ds = { ...ch.deathSaves };
