@@ -2237,10 +2237,17 @@ export const move = mutation({
           if (mn) moverAc = mn.ac;
         }
 
-        // Apply cover bonus to mover's AC for the OA
+        // Apply cover checks for the OA
         if (session.locationId) {
           const location = await ctx.db.get(session.locationId);
           if (location?.gridData) {
+            // Check enemy's cover - full cover prevents attacking
+            const enemyCell = location.gridData.cells.find(
+              c => c.x === enemy.position.x && c.y === enemy.position.y
+            );
+            if (enemyCell?.cover === "full") continue; // Enemy in full cover can't attack
+
+            // Check mover's cover - applies AC bonus or full immunity
             const moverCell = location.gridData.cells.find(
               c => c.x === from.x && c.y === from.y
             );
