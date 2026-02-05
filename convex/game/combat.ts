@@ -1384,6 +1384,18 @@ export const executeAction = mutation({
             }
             await ctx.db.patch(target.entityId as Id<"characters">, patch);
           }
+        } else {
+          // NPC healing
+          const np = await ctx.db.get(target.entityId as Id<"npcs">);
+          if (np) {
+            const newHp = Math.min(np.maxHp, np.hp + healAmount);
+            const patch: Record<string, unknown> = { hp: newHp };
+            // Revive NPC if healed from 0
+            if (np.hp === 0 && newHp > 0) {
+              patch.isAlive = true;
+            }
+            await ctx.db.patch(target.entityId as Id<"npcs">, patch);
+          }
         }
         hitResult = true;
 
