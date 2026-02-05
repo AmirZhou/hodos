@@ -941,7 +941,8 @@ export const executeAction = mutation({
               if (character.concentration && remainingDamage > 0) {
                 const conSaveDC = concentrationSaveDC(remainingDamage);
                 const conMod = Math.floor((character.abilities.constitution - 10) / 2);
-                const conSave = Math.floor(Math.random() * 20) + 1 + conMod + character.proficiencyBonus;
+                // D&D 5e: Concentration saves use only CON modifier, no proficiency bonus
+                const conSave = Math.floor(Math.random() * 20) + 1 + conMod;
                 if (conSave < conSaveDC) {
                   await removeConcentrationConditions(ctx, character.concentration, target.entityId, combatants);
                   patch.concentration = undefined;
