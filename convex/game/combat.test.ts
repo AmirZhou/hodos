@@ -1208,3 +1208,103 @@ describe("Dead character damage guard", () => {
     expect(newFailures).toBe(2);
   });
 });
+
+// ============ SPELL RANGE VALIDATION ============
+
+describe("Spell range validation", () => {
+  it("distance calculation: 1 cell = 5 feet", () => {
+    const caster = { x: 0, y: 0 };
+    const target = { x: 3, y: 4 };
+    const distanceCells = Math.abs(target.x - caster.x) + Math.abs(target.y - caster.y);
+    const distanceFeet = distanceCells * 5;
+    expect(distanceCells).toBe(7);
+    expect(distanceFeet).toBe(35);
+  });
+
+  it("fire_bolt range is 120 feet", () => {
+    const spell = getSpellById("fire_bolt");
+    expect(spell).toBeDefined();
+    expect(spell!.range).toBe(120);
+  });
+
+  it("cure_wounds is touch range (5 feet)", () => {
+    const spell = getSpellById("cure_wounds");
+    expect(spell).toBeDefined();
+    expect(spell!.range).toBe(5);
+  });
+
+  it("shield is self-only (range 0)", () => {
+    const spell = getSpellById("shield");
+    expect(spell).toBeDefined();
+    expect(spell!.range).toBe(0);
+  });
+
+  it("adjacent targets (1 cell) are within touch range", () => {
+    const caster = { x: 5, y: 5 };
+    const target = { x: 5, y: 6 };
+    const distanceCells = Math.abs(target.x - caster.x) + Math.abs(target.y - caster.y);
+    const distanceFeet = distanceCells * 5;
+    expect(distanceFeet).toBe(5);
+    expect(distanceFeet <= 5).toBe(true); // within touch range
+  });
+
+  it("diagonal targets (2 cells) are out of touch range", () => {
+    const caster = { x: 5, y: 5 };
+    const target = { x: 6, y: 6 };
+    const distanceCells = Math.abs(target.x - caster.x) + Math.abs(target.y - caster.y);
+    const distanceFeet = distanceCells * 5;
+    expect(distanceFeet).toBe(10);
+    expect(distanceFeet > 5).toBe(true); // out of touch range
+  });
+
+  it("24 cells is exactly 120 feet (fire_bolt max range)", () => {
+    const caster = { x: 0, y: 0 };
+    const target = { x: 24, y: 0 };
+    const distanceCells = Math.abs(target.x - caster.x) + Math.abs(target.y - caster.y);
+    const distanceFeet = distanceCells * 5;
+    expect(distanceFeet).toBe(120);
+    const spell = getSpellById("fire_bolt");
+    expect(distanceFeet <= spell!.range).toBe(true);
+  });
+});
+
+// ============ TECHNIQUE AC BONUS ============
+
+describe("Technique AC bonus conditions", () => {
+  it("technique_ac_bonus_1 grants +1 AC", () => {
+    const acMod = getAcModifier(["technique_ac_bonus_1"]);
+    expect(acMod).toBe(1);
+  });
+
+  it("technique_ac_bonus_2 grants +2 AC", () => {
+    const acMod = getAcModifier(["technique_ac_bonus_2"]);
+    expect(acMod).toBe(2);
+  });
+
+  it("technique_ac_bonus_3 grants +3 AC", () => {
+    const acMod = getAcModifier(["technique_ac_bonus_3"]);
+    expect(acMod).toBe(3);
+  });
+
+  it("technique AC bonus stacks with other AC modifiers", () => {
+    // armor_broken gives -3 AC, technique_ac_bonus_2 gives +2 AC
+    const acMod = getAcModifier(["armor_broken", "technique_ac_bonus_2"]);
+    expect(acMod).toBe(-1); // -3 + 2 = -1
+  });
+
+  it("bonusLevel calculation caps at 3", () => {
+    const bonusLevel = (acBonus: number) => Math.min(3, Math.max(1, acBonus));
+    expect(bonusLevel(1)).toBe(1);
+    expect(bonusLevel(2)).toBe(2);
+    expect(bonusLevel(3)).toBe(3);
+    expect(bonusLevel(5)).toBe(3); // capped
+    expect(bonusLevel(0)).toBe(1); // floored
+  });
+
+  it("condition name is dynamically constructed", () => {
+    const acBonus = 2;
+    const bonusLevel = Math.min(3, Math.max(1, acBonus));
+    const conditionName = `technique_ac_bonus_${bonusLevel}`;
+    expect(conditionName).toBe("technique_ac_bonus_2");
+  });
+});
