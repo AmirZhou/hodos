@@ -2560,6 +2560,16 @@ export const endTurn = mutation({
           if (newHp === 0) {
             npcPatch.isAlive = false;
           }
+          // Concentration save from DoT damage for NPC
+          if (npc.concentration && dotDmg > 0) {
+            const dc = concentrationSaveDC(dotDmg);
+            const conMod = Math.floor((npc.abilities.constitution - 10) / 2);
+            const npcProf = Math.max(2, Math.floor((npc.level - 1) / 4) + 2);
+            if (Math.floor(Math.random() * 20) + 1 + conMod + npcProf < dc) {
+              await removeConcentrationConditions(ctx, npc.concentration, nextCombatant.entityId, combatants);
+              npcPatch.concentration = undefined;
+            }
+          }
         }
 
         await ctx.db.patch(nextCombatant.entityId as Id<"npcs">, npcPatch);
