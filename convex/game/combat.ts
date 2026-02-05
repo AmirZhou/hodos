@@ -2297,6 +2297,9 @@ export const move = mutation({
                 if (!currentConditions.some(c => c.name === "unconscious")) {
                   currentConditions.push({ name: "unconscious" });
                 }
+                if (!currentConditions.some(c => c.name === "prone")) {
+                  currentConditions.push({ name: "prone" });
+                }
                 patch.conditions = currentConditions;
                 patch.deathSaves = { successes: 0, failures: 0 };
               }
