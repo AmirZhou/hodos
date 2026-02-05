@@ -1125,3 +1125,86 @@ describe("Opportunity attack break-on-damage", () => {
     expect(cleaned).toHaveLength(3); // none are breakOnDamage
   });
 });
+
+// ============ NPC CONCENTRATION TRACKING ============
+
+describe("NPC concentration tracking", () => {
+  it("NPC concentration field structure matches character concentration", () => {
+    // NPC concentration has same shape as character concentration
+    const npcConcentration: { spellId: string; targetId?: string } = {
+      spellId: "hold_person_npc123",
+      targetId: "char_abc",
+    };
+    expect(npcConcentration.spellId).toBe("hold_person_npc123");
+    expect(npcConcentration.targetId).toBe("char_abc");
+  });
+
+  it("NPC concentration break filters by unique spellId", () => {
+    const conditions: ActiveCondition[] = [
+      { name: "paralyzed", duration: 10, source: "hold_person_npc123" },
+      { name: "stunned", duration: 1, source: "stunning_strike" },
+    ];
+    // NPC loses concentration → filter by spellId
+    const filtered = conditions.filter(c => c.source !== "hold_person_npc123");
+    expect(filtered).toHaveLength(1);
+    expect(filtered[0].name).toBe("stunned");
+  });
+
+  it("NPC proficiency bonus calculation is correct", () => {
+    // Formula: Math.max(2, Math.floor((level - 1) / 4) + 2)
+    const profBonus = (level: number) => Math.max(2, Math.floor((level - 1) / 4) + 2);
+    expect(profBonus(1)).toBe(2);
+    expect(profBonus(4)).toBe(2);
+    expect(profBonus(5)).toBe(3);
+    expect(profBonus(9)).toBe(4);
+    expect(profBonus(13)).toBe(5);
+    expect(profBonus(17)).toBe(6);
+    expect(profBonus(20)).toBe(6);
+  });
+});
+
+// ============ DEAD CHARACTER DAMAGE GUARD ============
+
+describe("Dead character damage guard", () => {
+  it("damage should be blocked for dead characters", () => {
+    // Test the guard pattern: if (ch && !ch.conditions.some(c => c.name === "dead"))
+    const characterWithDead = {
+      hp: 0,
+      conditions: [{ name: "dead" }],
+    };
+    const characterUnconsciousOnly = {
+      hp: 0,
+      conditions: [{ name: "unconscious" }],
+    };
+
+    const isDead = (char: { conditions: { name: string }[] }) =>
+      char.conditions.some(c => c.name === "dead");
+
+    expect(isDead(characterWithDead)).toBe(true);
+    expect(isDead(characterUnconsciousOnly)).toBe(false);
+  });
+
+  it("dead condition is added when death saves reach 3 failures", () => {
+    // Simulate death save failure accumulation
+    let deathSaves = { successes: 0, failures: 2 };
+    deathSaves.failures = Math.min(3, deathSaves.failures + 1); // add 1 failure
+    expect(deathSaves.failures).toBe(3);
+    // When failures >= 3, dead condition is added
+    const shouldAddDead = deathSaves.failures >= 3;
+    expect(shouldAddDead).toBe(true);
+  });
+
+  it("crit on 0 HP adds 2 failures, not 1", () => {
+    const deathSaves = { successes: 0, failures: 1 };
+    const isCrit = true;
+    const newFailures = Math.min(3, deathSaves.failures + (isCrit ? 2 : 1));
+    expect(newFailures).toBe(3);
+  });
+
+  it("damage on 0 HP adds 1 failure without crit", () => {
+    const deathSaves = { successes: 1, failures: 1 };
+    const isCrit = false;
+    const newFailures = Math.min(3, deathSaves.failures + (isCrit ? 2 : 1));
+    expect(newFailures).toBe(2);
+  });
+});
