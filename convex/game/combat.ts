@@ -1335,11 +1335,11 @@ export const executeAction = mutation({
       }
       // Utility spells (shield, misty_step, haste, etc.) just consume the slot — effects tracked via concentration or conditions
 
-      // Set concentration for concentration spells
+      // Set concentration for concentration spells (uses spellSourceId for unique tracking)
       if (spell.concentration) {
         const concTarget = args.action.targetIndex !== undefined ? combatants[args.action.targetIndex]?.entityId : undefined;
         await ctx.db.patch(current.entityId as Id<"characters">, {
-          concentration: { spellId: spell.id, ...(concTarget ? { targetId: concTarget } : {}) },
+          concentration: { spellId: spellSourceId, ...(concTarget ? { targetId: concTarget } : {}) },
         });
       }
     }
