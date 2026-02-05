@@ -1286,8 +1286,10 @@ export const executeAction = mutation({
 
           // Apply conditions on failed save (hold_person → paralyzed, etc.)
           // Wired through DR, cc_immune check, and boss CC resistance
+          const INCAPACITATING_CONDITIONS = ["stunned", "paralyzed", "unconscious", "petrified", "incapacitated"];
           if (spell.conditions && !saveSuccess) {
             hitResult = true;
+            let appliedIncapacitating = false;
             if (target.entityType === "character") {
               const ch = await ctx.db.get(target.entityId as Id<"characters">);
               if (ch) {
@@ -1307,8 +1309,14 @@ export const executeAction = mutation({
                     source: spellSourceId,
                     ...(spell.saveType ? { saveDC: spellSaveDC, saveAbility: spell.saveType } : {}),
                   });
+                  if (INCAPACITATING_CONDITIONS.includes(condName)) appliedIncapacitating = true;
                 }
                 await ctx.db.patch(target.entityId as Id<"characters">, { conditions: conds });
+                // Incapacitated → break concentration (D&D 5e rule)
+                if (appliedIncapacitating && ch.concentration) {
+                  await removeConcentrationConditions(ctx, ch.concentration, target.entityId, combatants);
+                  await ctx.db.patch(target.entityId as Id<"characters">, { concentration: undefined });
+                }
               }
             } else {
               const np = await ctx.db.get(target.entityId as Id<"npcs">);
@@ -1331,8 +1339,14 @@ export const executeAction = mutation({
                     source: spellSourceId,
                     ...(spell.saveType ? { saveDC: spellSaveDC, saveAbility: spell.saveType } : {}),
                   });
+                  if (INCAPACITATING_CONDITIONS.includes(condName)) appliedIncapacitating = true;
                 }
                 await ctx.db.patch(target.entityId as Id<"npcs">, { conditions: conds });
+                // Incapacitated → break concentration (D&D 5e rule)
+                if (appliedIncapacitating && np.concentration) {
+                  await removeConcentrationConditions(ctx, np.concentration, target.entityId, combatants);
+                  await ctx.db.patch(target.entityId as Id<"npcs">, { concentration: undefined });
+                }
               }
             }
           }
