@@ -2533,11 +2533,14 @@ export const endTurn = mutation({
           }
           const newHp = Math.max(0, char.hp - rem);
           patch.hp = newHp;
-          // DoT dropping to 0 HP → unconscious
+          // DoT dropping to 0 HP → unconscious and prone
           if (newHp === 0 && char.hp > 0) {
             const condsList = (patch.conditions as ReturnType<typeof serializeCondition>[]);
             if (!condsList.some(c => c.name === "unconscious")) {
               condsList.push({ name: "unconscious" });
+            }
+            if (!condsList.some(c => c.name === "prone")) {
+              condsList.push({ name: "prone" });
             }
             patch.conditions = condsList;
             patch.deathSaves = { successes: 0, failures: 0 };
