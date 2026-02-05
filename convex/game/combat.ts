@@ -753,8 +753,9 @@ export const executeAction = mutation({
               .first();
             if (weapon?.stats.damage) damageDice = weapon.stats.damage;
 
-            // Sneak Attack (rogue, once per turn, requires advantage or ally adjacent)
-            if (charClass === "rogue" && !sneakAttackUsed && advState === 1) {
+            // Sneak Attack (rogue, once per turn, requires advantage OR ally within 5ft of target)
+            const allyAdjacent = hasAllyAdjacentToTarget(combatants, currentIndex, target.position);
+            if (charClass === "rogue" && !sneakAttackUsed && (advState === 1 || allyAdjacent)) {
               const sneakDice = getSneakAttackDice(charLevel);
               const sneakResult = parseDiceString(`${sneakDice}d6`);
               damageBonus += sneakResult.total;
