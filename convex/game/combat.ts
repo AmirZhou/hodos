@@ -1083,7 +1083,7 @@ export const executeAction = mutation({
               // Apply damage
               if (target.entityType === "character") {
                 const ch = await ctx.db.get(target.entityId as Id<"characters">);
-                if (ch) {
+                if (ch && !ch.conditions.some(c => c.name === "dead")) {
                   let rem = rayDamage;
                   let tp = ch.tempHp;
                   if (tp > 0) { const a = Math.min(tp, rem); tp -= a; rem -= a; }
