@@ -201,6 +201,7 @@ const cityGridData = v.object({
 const condition = v.object({
   name: v.string(),
   duration: v.optional(v.number()), // turns remaining, or undefined for permanent
+  expiresOn: v.optional(v.union(v.literal("start"), v.literal("end"))), // when to check expiration
   source: v.optional(v.string()),
   saveDC: v.optional(v.number()),       // DC for repeated saves to shake off
   saveAbility: v.optional(v.string()),  // ability used for repeated saves
