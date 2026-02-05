@@ -980,6 +980,27 @@ export const executeAction = mutation({
       const castingAbilityScore = caster.abilities[castingAbility as keyof typeof caster.abilities];
       const profBonus = caster.proficiencyBonus;
 
+      // Validate spell range
+      if (spell.range > 0 && args.action.targetIndex !== undefined) {
+        const target = combatants[args.action.targetIndex];
+        if (target) {
+          const distanceCells = Math.abs(target.position.x - current.position.x) +
+                                Math.abs(target.position.y - current.position.y);
+          const distanceFeet = distanceCells * 5;
+          if (distanceFeet > spell.range) {
+            throw new Error(`Target is out of range (${distanceFeet}ft > ${spell.range}ft)`);
+          }
+        }
+      } else if (spell.range > 0 && args.action.targetPosition) {
+        // AoE spells: check distance to target position
+        const distanceCells = Math.abs(args.action.targetPosition.x - current.position.x) +
+                              Math.abs(args.action.targetPosition.y - current.position.y);
+        const distanceFeet = distanceCells * 5;
+        if (distanceFeet > spell.range) {
+          throw new Error(`Target position is out of range (${distanceFeet}ft > ${spell.range}ft)`);
+        }
+      }
+
       // Check and consume spell slot (cantrips are free)
       if (spell.level > 0) {
         const slots = caster.spellSlots || {};
