@@ -108,8 +108,8 @@ async function checkNpcConcentration(
   if (!npc.concentration || damage <= 0) return;
   const dc = concentrationSaveDC(damage);
   const conMod = Math.floor((npc.abilities.constitution - 10) / 2);
-  const profBonus = Math.max(2, Math.floor((npc.level - 1) / 4) + 2);
-  const roll = Math.floor(Math.random() * 20) + 1 + conMod + profBonus;
+  // D&D 5e: Concentration saves use only CON modifier, no proficiency bonus
+  const roll = Math.floor(Math.random() * 20) + 1 + conMod;
   if (roll < dc) {
     await removeConcentrationConditions(ctx, npc.concentration, npcEntityId, combatants);
     await ctx.db.patch(npcEntityId as Id<"npcs">, { concentration: undefined });
