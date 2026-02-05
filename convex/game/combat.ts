@@ -2204,6 +2204,9 @@ export const move = mutation({
           }
         }
 
+        // Apply condition-based AC modifier (e.g. armor_broken = -3, technique_ac_bonus = +1/2/3)
+        moverAc += getAcModifier(moverConditions);
+
         // Roll d20 + attack bonus (no advantage/disadvantage for opportunity attacks)
         const naturalRoll = Math.floor(Math.random() * 20) + 1;
         const rollTotal = naturalRoll + attackBonus;
