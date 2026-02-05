@@ -2228,6 +2228,27 @@ export const move = mutation({
           }
         }
 
+        // Remove breakOnDamage conditions (charmed, dominated break on damage)
+        if (oaDamage > 0) {
+          if (combatant.entityType === "character") {
+            const ch = await ctx.db.get(combatant.entityId as Id<"characters">);
+            if (ch) {
+              const cleaned = removeConditionsOnDamage(ch.conditions);
+              if (cleaned.length !== ch.conditions.length) {
+                await ctx.db.patch(combatant.entityId as Id<"characters">, { conditions: cleaned });
+              }
+            }
+          } else {
+            const np = await ctx.db.get(combatant.entityId as Id<"npcs">);
+            if (np) {
+              const cleaned = removeConditionsOnDamage(np.conditions);
+              if (cleaned.length !== np.conditions.length) {
+                await ctx.db.patch(combatant.entityId as Id<"npcs">, { conditions: cleaned });
+              }
+            }
+          }
+        }
+
         opportunityAttacks.push({
           attackerIndex: ei,
           attackerName: enemyName,
