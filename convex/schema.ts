@@ -406,6 +406,12 @@ export default defineSchema({
     // Simple AI memory (for backward compat)
     memories: v.array(v.string()),
 
+    // Concentration tracking (same shape as characters)
+    concentration: v.optional(v.object({
+      spellId: v.string(),
+      targetId: v.optional(v.string()),
+    })),
+
     // Boss/Elite rank for CC resistance
     eliteRank: v.optional(v.union(v.literal("elite"), v.literal("boss"))),
     legendaryResistances: v.optional(v.object({
