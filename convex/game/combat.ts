@@ -2608,8 +2608,9 @@ export const endTurn = mutation({
         if (char.hp === 0) {
           const ds = { ...char.deathSaves };
 
-          // Skip if already stabilized or already dead
-          if (ds.successes >= 3 || ds.failures >= 3) {
+          // Skip if already stabilized (by condition or 3 successes), already dead, or 3 failures
+          const isStabilized = updatedConditions.some(c => c.name === "stabilized");
+          if (ds.successes >= 3 || ds.failures >= 3 || isStabilized) {
             await ctx.db.patch(nextCombatant.entityId as Id<"characters">, patch);
           } else {
             const deathRoll = Math.floor(Math.random() * 20) + 1;
