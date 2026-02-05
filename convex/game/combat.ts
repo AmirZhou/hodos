@@ -874,7 +874,7 @@ export const executeAction = mutation({
         // Apply damage to target
         if (target.entityType === "character") {
           const character = await ctx.db.get(target.entityId as Id<"characters">);
-          if (character) {
+          if (character && !character.conditions.some(c => c.name === "dead")) {
             // Damage at 0 HP → automatic death save failures (crit = 2 failures)
             if (character.hp === 0) {
               const ds = { ...character.deathSaves };
