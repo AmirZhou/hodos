@@ -943,7 +943,7 @@ export const executeAction = mutation({
         if (target) {
           if (target.entityType === "character") {
             const character = await ctx.db.get(target.entityId as Id<"characters">);
-            if (character) {
+            if (character && !character.conditions.some(c => c.name === "dead")) {
               const newHp = Math.max(0, character.hp - serverDamage);
               await ctx.db.patch(target.entityId as Id<"characters">, { hp: newHp });
             }
