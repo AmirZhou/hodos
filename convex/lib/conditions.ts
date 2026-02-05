@@ -371,6 +371,28 @@ export const CONDITIONS: Record<string, ConditionDefinition> = {
     description: "Temporarily immune to crowd control effects in a specific category.",
     effects: {},
   },
+  // Technique AC bonuses (applied by combat techniques)
+  technique_ac_bonus_1: {
+    name: "Technique AC Bonus +1",
+    description: "Defensive technique grants +1 AC until start of next turn.",
+    effects: {
+      acModifier: 1,
+    },
+  },
+  technique_ac_bonus_2: {
+    name: "Technique AC Bonus +2",
+    description: "Defensive technique grants +2 AC until start of next turn.",
+    effects: {
+      acModifier: 2,
+    },
+  },
+  technique_ac_bonus_3: {
+    name: "Technique AC Bonus +3",
+    description: "Defensive technique grants +3 AC until start of next turn.",
+    effects: {
+      acModifier: 3,
+    },
+  },
 };
 
 // ============ HELPERS ============
