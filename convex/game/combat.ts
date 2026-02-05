@@ -116,6 +116,26 @@ async function checkNpcConcentration(
   }
 }
 
+/**
+ * Check if any ally is adjacent (within 5ft / 1 cell) to the target position.
+ * Allies are combatants of the same entityType as the attacker (characters ally with characters).
+ */
+function hasAllyAdjacentToTarget(
+  combatants: Array<{ entityId: string; entityType: string; position: { x: number; y: number } }>,
+  attackerIndex: number,
+  targetPosition: { x: number; y: number },
+): boolean {
+  const attacker = combatants[attackerIndex];
+  for (let i = 0; i < combatants.length; i++) {
+    if (i === attackerIndex) continue; // skip self
+    const c = combatants[i];
+    if (c.entityType !== attacker.entityType) continue; // not an ally
+    const dist = Math.abs(c.position.x - targetPosition.x) + Math.abs(c.position.y - targetPosition.y);
+    if (dist <= 1) return true; // within 5ft
+  }
+  return false;
+}
+
 // ============ VALIDATORS ============
 
 const combatantInput = v.object({
