@@ -94,6 +94,28 @@ async function removeConcentrationConditions(
   }
 }
 
+/**
+ * Check NPC concentration save after taking damage. If the save fails,
+ * removes conditions from targets and clears concentration on the NPC.
+ */
+async function checkNpcConcentration(
+  ctx: { db: { get: (id: any) => Promise<any>; patch: (id: any, patch: any) => Promise<void> } },
+  npc: { concentration?: { spellId: string; targetId?: string }; abilities: { constitution: number }; level: number },
+  npcEntityId: string,
+  damage: number,
+  combatants: Array<{ entityId: string; entityType: string }>,
+) {
+  if (!npc.concentration || damage <= 0) return;
+  const dc = concentrationSaveDC(damage);
+  const conMod = Math.floor((npc.abilities.constitution - 10) / 2);
+  const profBonus = Math.max(2, Math.floor((npc.level - 1) / 4) + 2);
+  const roll = Math.floor(Math.random() * 20) + 1 + conMod + profBonus;
+  if (roll < dc) {
+    await removeConcentrationConditions(ctx, npc.concentration, npcEntityId, combatants);
+    await ctx.db.patch(npcEntityId as Id<"npcs">, { concentration: undefined });
+  }
+}
+
 // ============ VALIDATORS ============
 
 const combatantInput = v.object({
