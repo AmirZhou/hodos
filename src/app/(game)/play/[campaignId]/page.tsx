@@ -115,6 +115,7 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
           <GameErrorBoundary fallbackLabel="Sidebar">
             <GameSidebar
               campaignId={campaignId}
+              sessionId={gameState.sessionId}
               onNpcClick={setSelectedNpcId}
               onOpenCharSheet={() => setShowCharSheet(true)}
               onOpenInventory={() => setShowInventory(true)}
