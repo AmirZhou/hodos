@@ -140,13 +140,16 @@ function hasAllyAdjacentToTarget(
 
 /**
  * Apply conditions for a character dropping to 0 HP (unconscious + prone).
+ * If patch.conditions is already set (from earlier processing), uses those; otherwise uses currentConditions.
  * Returns updated patch object with conditions and death saves reset.
  */
 function applyDropTo0HpConditions(
   currentConditions: Array<{ name: string; duration?: number; source?: string; saveDC?: number; saveAbility?: string }>,
   patch: Record<string, unknown>,
 ): void {
-  const conds = [...currentConditions];
+  // Use conditions from patch if already set (e.g., from processConditionDurations), otherwise use original
+  const existingConds = patch.conditions as typeof currentConditions | undefined;
+  const conds = existingConds ? [...existingConds] : [...currentConditions];
   if (!conds.some(c => c.name === "unconscious")) conds.push({ name: "unconscious" });
   if (!conds.some(c => c.name === "prone")) conds.push({ name: "prone" });
   patch.conditions = conds;
