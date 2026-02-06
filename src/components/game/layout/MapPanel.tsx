@@ -15,6 +15,7 @@ export function MapPanel({
   currentCharacterName,
   navigationMode,
   currentMapId,
+  onNpcClick,
 }: {
   campaignId: Id<"campaigns">;
   sessionId?: Id<"gameSessions">;
@@ -23,6 +24,7 @@ export function MapPanel({
   currentCharacterName?: string;
   navigationMode?: "world" | "city" | "location";
   currentMapId?: Id<"maps">;
+  onNpcClick?: (npcId: Id<"npcs">) => void;
 }) {
   const [activeTab, setActiveTab] = useState<"world" | "city" | "location">(
     navigationMode === "location" ? "location" : navigationMode === "city" ? "city" : "world"
