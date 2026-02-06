@@ -166,24 +166,26 @@ export function GameSidebar({
         />
       )}
 
-      {/* Relationships */}
-      {relationships && relationships.length > 0 && (
+      {/* Relationships - only show NPCs NOT at current location (those are shown in "Characters here:") */}
+      {relationships && relationships.filter(rel => !npcIdsAtLocation.has(rel.npcId)).length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-2">
             <Heart className="h-4 w-4 text-[var(--foreground-muted)]" />
             <span className="text-sm font-medium">Relationships</span>
           </div>
           <div className="rounded-xl bg-[var(--card)] p-3 space-y-3">
-            {relationships.map((rel) => (
-              <RelationshipEntry
-                key={rel._id}
-                name={rel.npc?.name ?? "Unknown"}
-                affinity={rel.affinity}
-                trust={rel.trust}
-                attraction={rel.attraction}
-                onClick={onNpcClick ? () => onNpcClick(rel.npcId) : undefined}
-              />
-            ))}
+            {relationships
+              .filter(rel => !npcIdsAtLocation.has(rel.npcId))
+              .map((rel) => (
+                <RelationshipEntry
+                  key={rel._id}
+                  name={rel.npc?.name ?? "Unknown"}
+                  affinity={rel.affinity}
+                  trust={rel.trust}
+                  attraction={rel.attraction}
+                  onClick={onNpcClick ? () => onNpcClick(rel.npcId) : undefined}
+                />
+              ))}
           </div>
         </div>
       )}
