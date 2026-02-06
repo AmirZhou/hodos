@@ -2335,15 +2335,7 @@ export const move = mutation({
               const newHp = Math.max(0, ch.hp - remainingDamage);
               const patch: Record<string, unknown> = { hp: newHp, tempHp: newTempHp };
               if (newHp === 0 && ch.hp > 0) {
-                const currentConditions = [...ch.conditions];
-                if (!currentConditions.some(c => c.name === "unconscious")) {
-                  currentConditions.push({ name: "unconscious" });
-                }
-                if (!currentConditions.some(c => c.name === "prone")) {
-                  currentConditions.push({ name: "prone" });
-                }
-                patch.conditions = currentConditions;
-                patch.deathSaves = { successes: 0, failures: 0 };
+                applyDropTo0HpConditions(ch.conditions, patch);
               }
               if (ch.concentration && remainingDamage > 0) {
                 const conSaveDC = concentrationSaveDC(remainingDamage);
