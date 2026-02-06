@@ -150,15 +150,16 @@ export function LocationView({ currentLocation, sessionId, characterId, onNpcCli
           <h4 className="text-sm font-medium mb-2">Characters here:</h4>
           <div className="space-y-1">
             {currentLocation.npcs.map((npc) => (
-              <div
+              <button
                 key={npc.id}
-                className="flex items-center gap-2 text-sm p-2 rounded bg-[var(--background-tertiary)]"
+                onClick={() => onNpcClick?.(npc.id as Id<"npcs">)}
+                className="w-full flex items-center gap-2 text-sm p-2 rounded bg-[var(--background-tertiary)] hover:bg-[var(--background-tertiary)]/80 transition-colors cursor-pointer text-left"
               >
                 <div className="w-6 h-6 rounded-full bg-[var(--accent-red)] flex items-center justify-center text-white text-xs font-bold">
                   {npc.name[0]}
                 </div>
                 <span>{npc.name}</span>
-              </div>
+              </button>
             ))}
           </div>
         </div>
