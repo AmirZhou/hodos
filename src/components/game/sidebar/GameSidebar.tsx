@@ -22,18 +22,27 @@ import {
 
 export function GameSidebar({
   campaignId,
+  sessionId,
   onNpcClick,
   onOpenCharSheet,
   onOpenInventory,
   onOpenTradeBoard,
 }: {
   campaignId: Id<"campaigns">;
+  sessionId?: Id<"gameSessions">;
   onNpcClick?: (npcId: Id<"npcs">) => void;
   onOpenCharSheet?: () => void;
   onOpenInventory?: () => void;
   onOpenTradeBoard?: () => void;
 }) {
   const { currentCharacter, gameState } = useGame();
+
+  // Query current location to get NPCs that are already displayed in "Characters here:"
+  const currentLocation = useQuery(
+    api.game.travel.getCurrentLocation,
+    sessionId ? { sessionId } : "skip"
+  );
+  const npcIdsAtLocation = new Set(currentLocation?.npcs?.map(n => n.id) ?? []);
   const [equipExpanded, setEquipExpanded] = useState(true);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
 
