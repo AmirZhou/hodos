@@ -42,6 +42,7 @@ export function NpcInteractionModal({
         input: `[To ${npc.name}] ${text.trim()}`,
       });
       setInput("");
+      onClose(); // Close modal after successful submission
     } catch (error) {
       console.error("Failed to send:", error);
     } finally {
