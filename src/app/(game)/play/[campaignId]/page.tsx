@@ -108,6 +108,7 @@ function GameplayContent({ campaignId }: { campaignId: Id<"campaigns"> }) {
               currentCharacterName={currentCharacter?.name}
               navigationMode={gameState.navigationMode as "world" | "city" | "location" | undefined}
               currentMapId={gameState.currentMapId}
+              onNpcClick={setSelectedNpcId}
             />
           </GameErrorBoundary>
 
