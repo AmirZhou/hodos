@@ -49,6 +49,7 @@ interface LocationViewProps {
   } | null | undefined;
   sessionId?: Id<"gameSessions">;
   characterId?: Id<"characters">;
+  onNpcClick?: (npcId: Id<"npcs">) => void;
 }
 
 export function LocationView({ currentLocation, sessionId, characterId }: LocationViewProps) {
