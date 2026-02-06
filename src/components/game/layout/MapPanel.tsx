@@ -153,6 +153,7 @@ export function MapPanel({
               currentLocation={currentLocation}
               sessionId={sessionId}
               characterId={currentCharacterId}
+              onNpcClick={onNpcClick}
             />
           ) : (
             <div className="p-4">
