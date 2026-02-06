@@ -1616,11 +1616,7 @@ export const executeAction = mutation({
             const newHp = Math.max(0, ch.hp - rem);
             const patch: Record<string, unknown> = { hp: newHp, tempHp: tp };
             if (newHp === 0 && ch.hp > 0) {
-              const conds = [...ch.conditions];
-              if (!conds.some(c => c.name === "unconscious")) conds.push({ name: "unconscious" });
-              if (!conds.some(c => c.name === "prone")) conds.push({ name: "prone" });
-              patch.conditions = conds;
-              patch.deathSaves = { successes: 0, failures: 0 };
+              applyDropTo0HpConditions(ch.conditions, patch);
             }
             if (ch.concentration && rem > 0) {
               const dc = concentrationSaveDC(rem);
