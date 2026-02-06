@@ -52,7 +52,7 @@ interface LocationViewProps {
   onNpcClick?: (npcId: Id<"npcs">) => void;
 }
 
-export function LocationView({ currentLocation, sessionId, characterId }: LocationViewProps) {
+export function LocationView({ currentLocation, sessionId, characterId, onNpcClick }: LocationViewProps) {
   const [openContainerId, setOpenContainerId] = useState<Id<"lootContainers"> | null>(null);
 
   const containers = useQuery(
