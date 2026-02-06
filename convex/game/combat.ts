@@ -785,6 +785,10 @@ export const executeAction = mutation({
 
         // Divine Smite (paladin, on melee hit, expend spell slot for 2d8 + 1d8/slot above 1st radiant)
         if (args.action.smiteSlotLevel && charClass === "paladin" && isMelee && atkNum === 0) {
+          // Validate slot level is 1-9 (valid D&D 5e spell slot levels)
+          if (args.action.smiteSlotLevel < 1 || args.action.smiteSlotLevel > 9) {
+            throw new Error("Invalid smite slot level");
+          }
           const smiteChar = await ctx.db.get(current.entityId as Id<"characters">);
           if (smiteChar) {
             const slots = smiteChar.spellSlots || {};
