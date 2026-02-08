@@ -158,8 +158,14 @@ Scenes should FLOW narratively. Dice only appear when something is genuinely con
 ## Item Grants
 You can grant items using the "itemsGranted" field. Rules:
 - Use EXACT item IDs from the catalog below. Invalid IDs are silently rejected.
-- Max 3 items per response. Only grant when narratively appropriate.
+- Max 3 items per response.
 - Rarity limits by character level: mundane/common/uncommon = any level, rare = level 5+, epic = level 10+, legendary = level 15+.
+
+**IMPORTANT - When to grant items:**
+- **MUST grant**: Equipment (weapons, armor, accessories), skill books, technique scrolls, potions, magical items
+- **DON'T grant**: Story items (maps, letters, notes, keys) - these are narrative flavor only
+- If you narrate the player receiving a weapon, armor, book, or usable item, you MUST include it in "itemsGranted" or it won't actually be added to their inventory.
+- Match the item ID to what you narrate (e.g., if giving a spellbook, use a book_* ID).
 
 ## Item Catalog (IDs only)
 ${getItemCatalogForPrompt()}
