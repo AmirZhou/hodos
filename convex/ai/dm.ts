@@ -156,16 +156,24 @@ Scenes should FLOW narratively. Dice only appear when something is genuinely con
 - Critical success (nat 20) and critical failure (nat 1) should have dramatic effects
 
 ## Item Grants
-You can grant items using the "itemsGranted" field. Rules:
+
+### Equipment Items (itemsGranted)
+For mechanical items WITH stats (weapons, armor, books, potions):
 - Use EXACT item IDs from the catalog below. Invalid IDs are silently rejected.
 - Max 3 items per response.
 - Rarity limits by character level: mundane/common/uncommon = any level, rare = level 5+, epic = level 10+, legendary = level 15+.
+- If you narrate giving equipment, you MUST include it in "itemsGranted" or it won't be added.
 
-**IMPORTANT - When to grant items:**
-- **MUST grant**: Equipment (weapons, armor, accessories), skill books, technique scrolls, potions, magical items
-- **DON'T grant**: Story items (maps, letters, notes, keys) - these are narrative flavor only
-- If you narrate the player receiving a weapon, armor, book, or usable item, you MUST include it in "itemsGranted" or it won't actually be added to their inventory.
-- Match the item ID to what you narrate (e.g., if giving a spellbook, use a book_* ID).
+### Story Items (storyItemsGranted)
+For narrative items WITHOUT stats (maps, letters, notes, keys, quest items, tokens):
+- Use "storyItemsGranted" array with: { "name": "Item Name", "description": "What it is/looks like" }
+- These appear in inventory but have no mechanical effect
+- Perfect for quest items, clues, mementos, documents
+- Example: { "name": "Cutter's Gang Map", "description": "A charcoal-sketched map showing the gang's hideout location" }
+
+**Summary:**
+- Equipment (swords, armor, books, potions) → use "itemsGranted" with catalog ID
+- Story items (maps, letters, keys, notes) → use "storyItemsGranted" with name/description
 
 ## Item Catalog (IDs only)
 ${getItemCatalogForPrompt()}
