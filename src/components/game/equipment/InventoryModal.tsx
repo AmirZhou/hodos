@@ -39,6 +39,7 @@ interface InventoryModalProps {
 export function InventoryModal({ characterId, onClose }: InventoryModalProps) {
   const inventory = useQuery(api.equipment.getInventory, { characterId });
   const equipment = useQuery(api.equipment.getEquipment, { characterId });
+  const storyItems = useQuery(api.characters.getStoryItems, { characterId });
   const equipItem = useMutation(api.equipment.equipItem);
   const unequipItem = useMutation(api.equipment.unequipItem);
   const listItemMut = useMutation(api.game.trade.listItem);
