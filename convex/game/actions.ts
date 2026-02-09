@@ -441,7 +441,30 @@ async function executeAction(
     }
   }
 
-  // 12. Process container creation from DM
+  // 12. Process story items from DM (narrative items without stats)
+  if (response.storyItemsGranted && Array.isArray(response.storyItemsGranted)) {
+    for (const storyItem of response.storyItemsGranted) {
+      if (storyItem && typeof storyItem.name === "string" && typeof storyItem.description === "string") {
+        try {
+          await ctx.runMutation(api.characters.addStoryItem, {
+            characterId,
+            name: storyItem.name,
+            description: storyItem.description,
+            source: storyItem.source ?? "unknown",
+          });
+          await ctx.runMutation(api.game.log.add, {
+            campaignId,
+            type: "system",
+            content: `Received: ${storyItem.name}`,
+          });
+        } catch (e) {
+          console.warn("[StoryItem] Failed to add:", storyItem.name, e);
+        }
+      }
+    }
+  }
+
+  // 13. Process container creation from DM
   if (response.containersCreated && session?.locationId) {
     for (const containerSpec of response.containersCreated) {
       try {
