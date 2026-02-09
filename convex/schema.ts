@@ -361,6 +361,15 @@ export default defineSchema({
     // DEPRECATED - kept for data migration only
     intimacyProfile: v.optional(v.any()),
 
+    // Story Items (narrative items without mechanical stats - maps, letters, quest items, etc.)
+    storyItems: v.optional(v.array(v.object({
+      id: v.string(),           // unique ID for reference
+      name: v.string(),
+      description: v.string(),
+      source: v.optional(v.string()),  // who/what gave it (e.g., "Pip", "found in chest")
+      createdAt: v.number(),
+    }))),
+
     createdAt: v.number(),
   })
     .index("by_user", ["userId"])
