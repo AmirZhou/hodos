@@ -248,6 +248,32 @@ export function InventoryModal({ characterId, onClose }: InventoryModalProps) {
                   </div>
                 );
               })}
+
+              {/* Story/Quest Items */}
+              {filteredStoryItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="relative w-full rounded-xl p-3 flex flex-col items-center gap-2 text-left border border-amber-600/50"
+                  style={{ backgroundColor: "rgba(0,0,0,0.3)" }}
+                  title={item.description}
+                >
+                  <span className="absolute top-1.5 right-1.5 text-[8px] px-1.5 py-0.5 rounded bg-amber-600 text-white font-bold">
+                    Quest
+                  </span>
+                  <div
+                    className="w-10 h-10 rounded-lg flex items-center justify-center"
+                    style={{ background: "linear-gradient(135deg, rgba(217, 119, 6, 0.3), transparent)" }}
+                  >
+                    <Map className="h-5 w-5 text-amber-500" />
+                  </div>
+                  <span className="text-xs text-center truncate w-full font-medium text-amber-500">
+                    {item.name}
+                  </span>
+                  {item.source && (
+                    <span className="text-[10px] text-[var(--foreground-muted)]">from {item.source}</span>
+                  )}
+                </div>
+              ))}
             </div>
           )}
         </div>
