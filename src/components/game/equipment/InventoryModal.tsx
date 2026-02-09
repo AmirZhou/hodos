@@ -129,7 +129,9 @@ export function InventoryModal({ characterId, onClose }: InventoryModalProps) {
           <div className="flex items-center gap-2">
             <Package className="h-5 w-5 text-[var(--accent-gold)]" />
             <h2 className="text-lg font-bold">Inventory</h2>
-            <span className="text-sm text-[var(--foreground-muted)]">({inventory?.length ?? 0} items)</span>
+            <span className="text-sm text-[var(--foreground-muted)]">
+              ({(inventory?.length ?? 0) + (storyItems?.length ?? 0)} items)
+            </span>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[var(--background-tertiary)] transition-colors">
             <X className="h-5 w-5" />
