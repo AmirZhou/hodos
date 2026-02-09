@@ -171,9 +171,20 @@ For narrative items WITHOUT stats (maps, letters, notes, keys, quest items, toke
 - Perfect for quest items, clues, mementos, documents
 - Example: { "name": "Cutter's Gang Map", "description": "A charcoal-sketched map showing the gang's hideout location" }
 
+### Generated Items (generatedItems)
+For UNIQUE equipment that NPCs give but doesn't exist in the catalog:
+- Use "generatedItems" array with: { "archetype": "dagger", "rarity": "uncommon", "name": "Pip's Lucky Shiv", "description": "A small blade that's brought luck" }
+- System generates balanced stats based on archetype + rarity
+- Valid archetypes:
+  - Weapons: dagger, club, handaxe, mace, quarterstaff, spear, shortsword, longsword, rapier, scimitar, battleaxe, warhammer, greatsword, greataxe, shortbow, longbow, crossbow, shield
+  - Armor: cap, helm, greathelm, circlet, hood, robes, leather, chainmail, platemail, gloves, gauntlets, bracers, sandals, boots, greaves, cloak, cape
+  - Accessories: ring, necklace, amulet, pendant, book, tome, grimoire
+- Rarity limits same as catalog items (rare = level 5+, epic = level 10+, legendary = level 15+)
+
 **Summary:**
-- Equipment (swords, armor, books, potions) → use "itemsGranted" with catalog ID
-- Story items (maps, letters, keys, notes) → use "storyItemsGranted" with name/description
+- Catalog equipment → use "itemsGranted" with catalog ID (preferred for generic items)
+- Story items (no stats) → use "storyItemsGranted" with name/description
+- Unique equipment → use "generatedItems" with archetype/rarity/name (for NPC-given special items)
 
 ## Item Catalog (IDs only)
 ${getItemCatalogForPrompt()}
