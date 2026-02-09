@@ -466,7 +466,49 @@ async function executeAction(
     }
   }
 
-  // 13. Process container creation from DM
+  // 13. Process generated items from DM (unique equipment created on-the-fly)
+  if (response.generatedItems && Array.isArray(response.generatedItems)) {
+    const { validateGeneratedItem, generateItem, RARITY_MIN_LEVEL } = await import("../data/itemGeneration");
+
+    for (const genSpec of response.generatedItems) {
+      // Validate the request
+      const { valid, error } = validateGeneratedItem(genSpec, character.level);
+      if (!valid) {
+        console.warn("[GeneratedItem] Validation failed:", error);
+        continue;
+      }
+
+      // Generate the item with stats
+      const generated = generateItem(valid);
+      if (!generated) {
+        console.warn("[GeneratedItem] Generation failed for:", valid.archetype);
+        continue;
+      }
+
+      try {
+        await ctx.runMutation(api.equipment.addGeneratedItem, {
+          characterId,
+          name: generated.name,
+          description: generated.description,
+          type: generated.type,
+          rarity: generated.rarity,
+          bindingRule: generated.bindingRule,
+          stats: generated.stats,
+          specialAttributes: generated.specialAttributes,
+          generatedFrom: generated.generatedFrom,
+        });
+        await ctx.runMutation(api.game.log.add, {
+          campaignId,
+          type: "system",
+          content: `Received: ${generated.name} (${generated.rarity} ${valid.archetype})`,
+        });
+      } catch (e) {
+        console.warn("[GeneratedItem] Failed to add:", generated.name, e);
+      }
+    }
+  }
+
+  // 14. Process container creation from DM
   if (response.containersCreated && session?.locationId) {
     for (const containerSpec of response.containersCreated) {
       try {
