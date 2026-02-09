@@ -6,7 +6,7 @@ import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
 import {
   X, Search, Package, Crown, Shirt, Hand, Footprints,
-  Shield, CircleDot, Gem, Sword, BookOpen, Scroll, Lock, ShoppingBag,
+  Shield, CircleDot, Gem, Sword, BookOpen, Scroll, Lock, ShoppingBag, Map,
 } from "lucide-react";
 import {
   getRarityColor, RARITY_BORDER_COLORS, RARITY_BG_COLORS,
