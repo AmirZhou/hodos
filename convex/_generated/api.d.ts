@@ -18,6 +18,7 @@ import type * as characters from "../characters.js";
 import type * as crons from "../crons.js";
 import type * as data_equipmentItems from "../data/equipmentItems.js";
 import type * as data_itemCatalog from "../data/itemCatalog.js";
+import type * as data_itemGeneration from "../data/itemGeneration.js";
 import type * as data_kinkTaxonomy from "../data/kinkTaxonomy.js";
 import type * as data_rivermootCity from "../data/rivermootCity.js";
 import type * as data_rivermootGrid from "../data/rivermootGrid.js";
@@ -90,6 +91,7 @@ declare const fullApi: ApiFromModules<{
   crons: typeof crons;
   "data/equipmentItems": typeof data_equipmentItems;
   "data/itemCatalog": typeof data_itemCatalog;
+  "data/itemGeneration": typeof data_itemGeneration;
   "data/kinkTaxonomy": typeof data_kinkTaxonomy;
   "data/rivermootCity": typeof data_rivermootCity;
   "data/rivermootGrid": typeof data_rivermootGrid;

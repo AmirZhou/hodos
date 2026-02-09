@@ -441,3 +441,79 @@ export const getInventory = query({
       .collect();
   },
 });
+
+// Add a dynamically generated item to character's inventory
+// Used when the DM creates items on-the-fly with archetype + rarity
+export const addGeneratedItem = mutation({
+  args: {
+    characterId: v.id("characters"),
+    name: v.string(),
+    description: v.string(),
+    type: v.string(),
+    rarity: v.string(),
+    bindingRule: v.string(),
+    stats: v.object({
+      ac: v.optional(v.number()),
+      damage: v.optional(v.string()),
+      strength: v.optional(v.number()),
+      dexterity: v.optional(v.number()),
+      constitution: v.optional(v.number()),
+      intelligence: v.optional(v.number()),
+      wisdom: v.optional(v.number()),
+      charisma: v.optional(v.number()),
+    }),
+    specialAttributes: v.optional(v.record(v.string(), v.number())),
+    generatedFrom: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const character = await ctx.db.get(args.characterId);
+    if (!character) throw new Error("Character not found");
+
+    // Create a unique template ID for this generated item
+    const templateId = `generated_${args.generatedFrom}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+
+    const isBop = args.bindingRule === "bop";
+    const isBoe = args.bindingRule === "boe";
+
+    const newItemId = await ctx.db.insert("items", {
+      templateId,
+      name: args.name,
+      description: args.description,
+      type: args.type,
+      rarity: args.rarity,
+      ownerId: args.characterId,
+      campaignId: character.campaignId,
+      status: "inventory",
+      bindingRule: args.bindingRule as "bop" | "boe" | "none",
+      boundTo: isBop ? args.characterId : undefined,
+      stats: args.stats,
+      specialAttributes: args.specialAttributes,
+      itemHistory: [{
+        event: "generated",
+        timestamp: Date.now(),
+        actorId: args.characterId,
+        metadata: `Generated from archetype: ${args.generatedFrom}`,
+      }],
+    });
+
+    await logItemEvent(ctx, {
+      itemId: newItemId,
+      campaignId: character.campaignId,
+      event: "created",
+      actorId: args.characterId,
+      metadata: `Generated: ${args.name}`,
+    });
+
+    if (isBop) {
+      await logItemEvent(ctx, {
+        itemId: newItemId,
+        campaignId: character.campaignId,
+        event: "bound",
+        actorId: args.characterId,
+        metadata: "Bind on Pickup (legendary)",
+      });
+    }
+
+    return newItemId;
+  },
+});
