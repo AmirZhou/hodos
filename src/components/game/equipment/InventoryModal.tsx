@@ -20,14 +20,15 @@ const SLOT_ICONS: Record<string, React.ComponentType<{ className?: string }>> = 
   mainHand: Sword, offHand: Shield, book: BookOpen,
 };
 
-type FilterTab = "all" | "weapons" | "armor" | "accessories" | "books";
+type FilterTab = "all" | "weapons" | "armor" | "accessories" | "books" | "quest";
 
-const FILTER_SLOTS: Record<FilterTab, EquipmentSlot[] | null> = {
+const FILTER_SLOTS: Record<FilterTab, EquipmentSlot[] | null | "quest"> = {
   all: null,
   weapons: ["mainHand", "offHand"],
   armor: ["head", "chest", "hands", "boots", "cloak"],
   accessories: ["ring", "necklace"],
   books: ["book"],
+  quest: "quest", // Special value for story items
 };
 
 interface InventoryModalProps {
