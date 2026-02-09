@@ -29,6 +29,7 @@ interface DMResponse {
   };
   suggestTechnique?: string; // technique_id if DM thinks freeform action matches a known technique
   itemsGranted?: Array<{ itemId: string; source: string; reason: string }>;
+  storyItemsGranted?: Array<{ name: string; description: string; source?: string }>;
   containersCreated?: Array<{
     containerType: "ground" | "chest" | "corpse" | "container";
     name: string;
