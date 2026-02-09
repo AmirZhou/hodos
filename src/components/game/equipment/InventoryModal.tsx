@@ -141,7 +141,7 @@ export function InventoryModal({ characterId, onClose }: InventoryModalProps) {
         {/* Filter tabs + search */}
         <div className="p-4 pb-2 space-y-3">
           <div className="flex gap-1">
-            {(["all", "weapons", "armor", "accessories", "books"] as FilterTab[]).map((tab) => (
+            {(["all", "weapons", "armor", "accessories", "books", "quest"] as FilterTab[]).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setFilter(tab)}
