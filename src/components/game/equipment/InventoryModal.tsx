@@ -169,7 +169,7 @@ export function InventoryModal({ characterId, onClose }: InventoryModalProps) {
 
         {/* Item grid */}
         <div className="flex-1 overflow-y-auto p-4 pt-2">
-          {filteredItems.length === 0 ? (
+          {filteredItems.length === 0 && filteredStoryItems.length === 0 ? (
             <div className="text-center py-12 text-[var(--foreground-muted)]">No items found</div>
           ) : (
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
