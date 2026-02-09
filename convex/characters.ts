@@ -358,3 +358,63 @@ export const addXp = mutation({
     return { newXp, newLevel, leveledUp: newLevel > character.level };
   },
 });
+
+// Add a story item to character's inventory (narrative items without mechanical stats)
+export const addStoryItem = mutation({
+  args: {
+    characterId: v.id("characters"),
+    name: v.string(),
+    description: v.string(),
+    source: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const character = await ctx.db.get(args.characterId);
+    if (!character) throw new Error("Character not found");
+
+    const storyItems = character.storyItems ?? [];
+    const newItem = {
+      id: `story_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      name: args.name,
+      description: args.description,
+      source: args.source,
+      createdAt: Date.now(),
+    };
+
+    await ctx.db.patch(args.characterId, {
+      storyItems: [...storyItems, newItem],
+    });
+
+    return newItem;
+  },
+});
+
+// Remove a story item from character's inventory
+export const removeStoryItem = mutation({
+  args: {
+    characterId: v.id("characters"),
+    itemId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const character = await ctx.db.get(args.characterId);
+    if (!character) throw new Error("Character not found");
+
+    const storyItems = character.storyItems ?? [];
+    const filtered = storyItems.filter(item => item.id !== args.itemId);
+
+    await ctx.db.patch(args.characterId, {
+      storyItems: filtered,
+    });
+  },
+});
+
+// Get all story items for a character
+export const getStoryItems = query({
+  args: {
+    characterId: v.id("characters"),
+  },
+  handler: async (ctx, args) => {
+    const character = await ctx.db.get(args.characterId);
+    if (!character) return [];
+    return character.storyItems ?? [];
+  },
+});
