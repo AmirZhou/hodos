@@ -134,7 +134,7 @@ export interface GeneratedItem {
   bindingRule: BindingRule;
   stats: {
     ac?: number;
-    damage?: string;
+    damage?: string; // e.g., "1d8+2"
     strength?: number;
     dexterity?: number;
     constitution?: number;
@@ -143,7 +143,7 @@ export interface GeneratedItem {
     charisma?: number;
   };
   specialAttributes?: Record<string, number>;
-  generatedFrom: ItemArchetype; // Track the source archetype
+  generatedFrom: string; // Track the source archetype
 }
 
 /**
