@@ -61,10 +61,18 @@ export function InventoryModal({ characterId, onClose }: InventoryModalProps) {
     }
   }
 
-  const filteredItems = (inventory ?? []).filter((item: any) => {
+  // Filter equipment items (skip if viewing quest tab)
+  const filteredItems = filter === "quest" ? [] : (inventory ?? []).filter((item: any) => {
     if (search && !item.name.toLowerCase().includes(search.toLowerCase())) return false;
     const slots = FILTER_SLOTS[filter];
-    if (slots && !slots.includes(item.type)) return false;
+    if (slots && slots !== "quest" && !slots.includes(item.type)) return false;
+    return true;
+  });
+
+  // Filter story/quest items
+  const filteredStoryItems = (storyItems ?? []).filter((item) => {
+    if (filter !== "all" && filter !== "quest") return false;
+    if (search && !item.name.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
 
