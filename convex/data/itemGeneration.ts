@@ -163,7 +163,7 @@ export function generateItem(input: GeneratedItemInput): GeneratedItem | null {
     const template = WEAPON_ARCHETYPES[archetype as WeaponArchetype];
 
     // Build damage string with bonus
-    let damage = template.baseDamage;
+    let damage: string = template.baseDamage;
     if (damage && modifier.damageBonus > 0) {
       damage = `${damage}+${modifier.damageBonus}`;
     }
