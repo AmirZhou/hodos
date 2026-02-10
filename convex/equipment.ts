@@ -477,6 +477,7 @@ export const addGeneratedItem = mutation({
 
     const newItemId = await ctx.db.insert("items", {
       templateId,
+      instanceId: `inst_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`,
       name: args.name,
       description: args.description,
       type: args.type,
@@ -488,12 +489,7 @@ export const addGeneratedItem = mutation({
       boundTo: isBop ? args.characterId : undefined,
       stats: args.stats,
       specialAttributes: args.specialAttributes,
-      itemHistory: [{
-        event: "generated",
-        timestamp: Date.now(),
-        actorId: args.characterId,
-        metadata: `Generated from archetype: ${args.generatedFrom}`,
-      }],
+      createdAt: Date.now(),
     });
 
     await logItemEvent(ctx, {
